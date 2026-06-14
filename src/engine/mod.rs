@@ -1,0 +1,131 @@
+//! # The Universal Routing Engine
+//!
+//! Mamba's defining idea: a single entry point, [`verify`], inspects a
+//! problem's [`Domain`] and dispatches the user's raw answer string to exactly
+//! one of three specialized verification pipelines, each backed by a crate
+//! chosen for that kind of mathematics:
+//!
+//! | Domain               | Pipeline           | Crate         | Verifies by                    |
+//! |----------------------|--------------------|---------------|--------------------------------|
+//! | [`Domain::Symbolic`] | [`symbolic`]       | `meval`       | algebraic (numeric-probe) equiv|
+//! | [`Domain::Tensor`]   | [`tensor`]         | `ndarray`     | element-wise matrix comparison |
+//! | [`Domain::Exact`]    | [`exact`]          | `num-bigint`  | exact big-integer comparison   |
+//!
+//! Each pipeline exposes a `verify(expected, input, ...) -> Verdict` function
+//! and owns its own parsing, normalization, and comparison. The router below
+//! is therefore tiny and total: one `match` arm per domain. Adding a domain is
+//! a new [`Domain`] variant, a new module, and one arm here — nothing else in
+//! the app changes.
+
+pub mod exact;
+pub mod symbolic;
+pub mod tensor;
+
+use crate::storage::problem::{Domain, Problem};
+
+/// The outcome of verifying a user's answer. The UI ([`crate::ui`]) renders
+/// each variant differently in the verification console, and a [`Verdict::Correct`]
+/// triggers the vault export in [`crate::app`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Verdict {
+    /// The answer is mathematically equivalent to the expected one.
+    Correct,
+    /// The answer parsed cleanly but is wrong; `detail` explains how (e.g.
+    /// "shapes differ: got 2×3, expected 3×2").
+    Incorrect { detail: String },
+    /// The answer could not be parsed in this domain's syntax. `message` is
+    /// the parser error; `hint` is an optional nudge toward the right syntax.
+    ParseError {
+        message: String,
+        hint: Option<String>,
+    },
+}
+
+impl Verdict {
+    /// Convenience for the common "couldn't parse, here's a hint" case.
+    pub(crate) fn parse_error(message: impl Into<String>, hint: Option<String>) -> Self {
+        Verdict::ParseError {
+            message: message.into(),
+            hint,
+        }
+    }
+
+    /// Convenience for a wrong-but-well-formed answer.
+    pub(crate) fn incorrect(detail: impl Into<String>) -> Self {
+        Verdict::Incorrect {
+            detail: detail.into(),
+        }
+    }
+
+    /// `true` only for [`Verdict::Correct`].
+    pub fn is_correct(&self) -> bool {
+        matches!(self, Verdict::Correct)
+    }
+}
+
+/// **The Universal Router.** Routes `input` to the pipeline that matches
+/// `problem.domain` and returns its [`Verdict`].
+///
+/// This is the entire dispatch surface of the engine: a total `match` over the
+/// three domains. Each arm hands the pipeline only what it needs — the
+/// canonical `expected` answer, the user's `input`, and (for the exact
+/// pipeline) how to interpret them.
+pub fn verify(problem: &Problem, input: &str) -> Verdict {
+    let input = input.trim();
+    if input.is_empty() {
+        return Verdict::parse_error("empty answer", Some("type an answer, then press Enter".into()));
+    }
+
+    match problem.domain {
+        // Algebra / calculus → symbolic equivalence.
+        Domain::Symbolic => symbolic::verify(&problem.expected, input),
+
+        // Linear algebra → tensor (matrix) comparison.
+        Domain::Tensor => tensor::verify(&problem.expected, input),
+
+        // Number theory → exact arbitrary-precision arithmetic. The
+        // `answer_kind` selects plain-integer vs. prime-factorization checking.
+        Domain::Exact => exact::verify(&problem.expected, input, problem.answer_kind),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::storage::problem::{AnswerKind, Difficulty, Domain};
+
+    fn problem(domain: Domain, expected: &str, answer_kind: AnswerKind) -> Problem {
+        Problem {
+            id: "t".into(),
+            title: "T".into(),
+            domain,
+            topic: "X".into(),
+            difficulty: Difficulty::Easy,
+            prompt: "p".into(),
+            expected: expected.into(),
+            answer_kind,
+            hint: None,
+        }
+    }
+
+    #[test]
+    fn router_dispatches_each_domain_to_the_right_pipeline() {
+        // Symbolic: algebraically-equal but textually different.
+        let sym = problem(Domain::Symbolic, "x^2 - x - 6", AnswerKind::Scalar);
+        assert!(verify(&sym, "(x - 3)*(x + 2)").is_correct());
+
+        // Tensor: same matrix, different whitespace.
+        let ten = problem(Domain::Tensor, "1 4; 2 5; 3 6", AnswerKind::Scalar);
+        assert!(verify(&ten, "1 4;2 5;3 6").is_correct());
+
+        // Exact: a 10 000th-prime factorization (the number is itself prime).
+        let exa = problem(Domain::Exact, "104729", AnswerKind::Factorization);
+        assert!(verify(&exa, "104729").is_correct());
+    }
+
+    #[test]
+    fn empty_input_is_a_parse_error_before_routing() {
+        let sym = problem(Domain::Symbolic, "x", AnswerKind::Scalar);
+        assert!(matches!(verify(&sym, "   "), Verdict::ParseError { .. }));
+    }
+}

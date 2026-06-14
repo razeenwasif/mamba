@@ -1,0 +1,43 @@
+[package]
+name = "mamba"
+version = "0.1.0"
+edition = "2024"
+description = "A local, terminal-based mathematics practice engine that verifies answers with a universal multi-domain routing engine (symbolic, tensor, exact)."
+license = "MIT"
+repository = "https://github.com/razeenwasif/mamba"
+keywords = ["tui", "mathematics", "cas", "ratatui", "number-theory"]
+categories = ["command-line-utilities", "mathematics"]
+
+[dependencies]
+# --- TUI: immediate-mode rendering + terminal backend (mirrors ~/Kata) ------
+ratatui = "0.29"
+crossterm = "0.28"
+# Single-line text-input widget reuse; we drive a plain buffer for the answer
+# bar but keep the dependency for the future multi-line scratchpad.
+tui-textarea = "0.7"
+
+# --- Storage: declarative JSON problem bank + Markdown/YAML vault -----------
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+chrono = "0.4"
+dirs = "6"
+
+# --- Math engine: one specialized crate per verification pipeline -----------
+# Symbolic pipeline (algebra / calculus): parses string expressions into an
+# AST and verifies *algebraic* equivalence by randomized numeric probing.
+meval = "0.2"
+# Tensor pipeline (linear algebra): parses inputs into n-dimensional arrays so
+# matrix answers can be compared element-wise with a shape check.
+ndarray = "0.16"
+# Exact-arithmetic pipeline (number theory): arbitrary-precision integers so
+# validating massive exact answers (factorizations, modular powers) never
+# overflows. `num-integer`/`num-traits` add gcd, div_rem, and Zero/One generics.
+num-bigint = "0.4"
+num-integer = "0.1"
+num-traits = "0.2"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

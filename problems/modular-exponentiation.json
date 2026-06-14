@@ -1,0 +1,11 @@
+{
+  "id": "modular-exponentiation",
+  "title": "Modular Exponentiation",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Hard",
+  "prompt": "Compute the modular power:\n\n    7¹²⁸ mod 13\n\nReduce to its least non-negative residue. (Hint: Fermat's little theorem says 7¹² ≡ 1 (mod 13), so reduce the exponent mod 12 first.)",
+  "expected": "3",
+  "answer_kind": "Scalar",
+  "hint": "enter a single whole number in the range 0 .. 12"
+}

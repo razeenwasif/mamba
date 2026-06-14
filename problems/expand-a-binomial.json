@@ -1,0 +1,11 @@
+{
+  "id": "expand-a-binomial",
+  "title": "Expand a Binomial",
+  "domain": "Symbolic",
+  "topic": "Algebra",
+  "difficulty": "Easy",
+  "prompt": "Expand the product into a polynomial in standard form:\n\n    (x − 3)(x + 2)\n\nAny algebraically-equivalent form is accepted — the symbolic pipeline checks equivalence, not spelling.",
+  "expected": "x^2 - x - 6",
+  "answer_kind": "Scalar",
+  "hint": "use ^ for powers and * for products, e.g. x^2 - x - 6  (implicit 2x and (..)(..) also work)"
+}

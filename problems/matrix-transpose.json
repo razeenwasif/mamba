@@ -1,0 +1,11 @@
+{
+  "id": "matrix-transpose",
+  "title": "Transpose a Matrix",
+  "domain": "Tensor",
+  "topic": "Linear Algebra",
+  "difficulty": "Medium",
+  "prompt": "Write the transpose Aᵀ of:\n\n    ⎡ 1   2   3 ⎤\n    ⎣ 4   5   6 ⎦\n\nThe transpose swaps rows and columns, giving a 3×2 matrix.",
+  "expected": "1 4; 2 5; 3 6",
+  "answer_kind": "Scalar",
+  "hint": "rows separated by ';', elements by spaces or commas, e.g. 1 4; 2 5; 3 6"
+}

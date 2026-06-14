@@ -1,0 +1,103 @@
+# 🐍 Mamba
+
+A local, single-binary, terminal-based **mathematics practice engine**. Browse
+problems, type an answer, and have it *mathematically verified* — then archive
+solves as Markdown notes in a local vault. Sibling tool to [`~/Kata`](../Kata).
+
+Mamba's defining idea is the **Universal Routing Engine**: a problem's domain
+routes your answer to one of three specialized verification pipelines, each
+backed by a crate chosen for that kind of mathematics.
+
+| Domain     | Verifies                          | Pipeline / crate            |
+|------------|-----------------------------------|-----------------------------|
+| `Symbolic` | algebra & calculus (equivalence)  | `engine/symbolic` · `meval` |
+| `Tensor`   | linear algebra (matrices/scalars) | `engine/tensor` · `ndarray` |
+| `Exact`    | number theory (exact integers)    | `engine/exact` · `num-bigint` |
+
+See [`docs/adr/0001-universal-math-routing.md`](docs/adr/0001-universal-math-routing.md)
+for the design rationale.
+
+## Install (run `mamba` from anywhere)
+
+```sh
+make install        # = cargo install --path . --force, then syncs the problem
+                    #   bank into ~/.local/share/mamba/problems
+```
+
+This builds in release, drops `mamba` onto your PATH (`~/.cargo/bin`), and
+installs the problem bank to the platform data dir, so the binary works from any
+directory:
+
+```sh
+mamba               # launch the TUI from anywhere
+mamba --version
+mamba --help
+mamba --check       # load the problem bank and report (no TUI) — a health check
+```
+
+Keys: `⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll · `esc`
+return to navigator · `^Q` quit.
+
+### From a checkout, without installing
+
+```sh
+make run            # = cargo run --release  (uses ./problems)
+```
+
+## Development workflow
+
+The standing loop for every feature:
+
+```sh
+edit  →  update docs (README + CHANGELOG)  →  make test  →  make install  →  git commit  →  git push
+```
+
+`make install` after each feature keeps the on-PATH `mamba` current. `make help`
+lists all targets (`install`, `build`, `test`, `run`, `check`, `fmt`, `clean`).
+
+## How verification works
+
+- **Symbolic** — parses both your answer and the canonical one, then checks
+  *algebraic equivalence* by evaluating at several probe points (so `(x-3)(x+2)`,
+  `x^2-x-6`, and `x*x-x-6` all pass).
+- **Tensor** — parses `1 2; 3 4`-style input into a matrix and compares shape
+  then elements (a scalar is a 1×1 matrix).
+- **Exact** — arbitrary-precision integers; factorizations are checked by
+  reconstructing the product *and* verifying each factor is prime
+  (deterministic Miller–Rabin).
+
+## Layout
+
+```
+src/
+├── main.rs              # thin binary + immediate-mode event loop
+├── lib.rs               # module tree + architecture docs
+├── app.rs               # App: single source of truth + on_key router
+├── engine/
+│   ├── mod.rs           # the Universal Router (verify) + Verdict
+│   ├── symbolic/        # meval  — algebraic equivalence (numeric probe)
+│   ├── tensor/          # ndarray — matrix/scalar comparison
+│   └── exact/           # num-bigint — exact arithmetic + primality
+├── storage/
+│   ├── problem.rs       # Domain/Problem model + JSON loader
+│   └── vault.rs         # Markdown + YAML vault exporter
+└── ui/
+    ├── mod.rs           # pure render: navigator · problem · console · answer bar
+    └── theme.rs         # role-based palette (MAMBA_THEME)
+problems/                # declarative JSON problem bank (data, not code)
+docs/adr/                # architecture decision records
+```
+
+## Environment
+
+- `MAMBA_PROBLEMS` — override the problem-bank directory.
+- `MAMBA_VAULT` — override the export vault (default `~/OnyxVault/Mamba`).
+- `MAMBA_THEME` — `venom` (default), `midnight`, or `slate`.
+
+## Tests
+
+```sh
+cargo test               # unit tests for all three pipelines + the router,
+                         # plus a guard that every shipped problem accepts its
+                         # own canonical answer
+```
