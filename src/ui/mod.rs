@@ -11,7 +11,7 @@ use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{List, ListItem, Paragraph, Wrap};
+use ratatui::widgets::{Block, BorderType, Borders, Clear, List, ListItem, Paragraph, Wrap};
 
 use crate::app::{App, Focus, NavRow};
 use crate::engine::Verdict;
@@ -32,7 +32,7 @@ use crate::storage::problem::{Difficulty, Domain};
 /// ╭ Answer · Symbolic ───────────────────────────────────────────────╮
 /// │ › (x-3)(x+2)▌                                                     │
 /// ╰───────────────────────────────────────────────────────────────────╯
-///  ⇥ focus  ↵ submit  esc nav  ^Q quit                        CORRECT
+///  / find  ⇥ focus  ↵ submit  esc nav  ^Q quit                CORRECT
 /// ```
 pub fn draw(frame: &mut Frame, app: &mut App) {
     // Framing chrome painted behind everything.
@@ -67,6 +67,118 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
     draw_console(frame, app, console);
     draw_input(frame, app, input_bar);
     draw_footer(frame, app, footer);
+
+    // The fuzzy finder floats over everything, Spotlight-style.
+    if app.search_active {
+        draw_search_overlay(frame, app, frame.area());
+    }
+}
+
+/// A `Rect` of the given proportions, centered within `area`.
+fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
+    let w = width.min(area.width);
+    let h = height.min(area.height);
+    Rect {
+        x: area.x + (area.width.saturating_sub(w)) / 2,
+        y: area.y + (area.height.saturating_sub(h)) / 2,
+        width: w,
+        height: h,
+    }
+}
+
+/// The Spotlight-style fuzzy finder: a centered floating panel with a query
+/// line and a full-width, best-first ranked list of matching problems.
+fn draw_search_overlay(frame: &mut Frame, app: &mut App, area: Rect) {
+    let pal = theme::palette();
+    let w = (area.width * 8 / 10).clamp(48, 96);
+    let h = (area.height * 8 / 10).clamp(10, 32);
+    let popup = centered_rect(w, h, area);
+
+    // Blank the area, then frame it.
+    frame.render_widget(Clear, popup);
+    let block = Block::default()
+        .title(Span::styled(
+            "  ⌕  Find a problem  ",
+            Style::default()
+                .fg(pal.accent_deep)
+                .add_modifier(Modifier::BOLD),
+        ))
+        .title_bottom(Span::styled(
+            "  ↑↓ move · ↵ open · esc cancel  ",
+            Style::default().fg(pal.overlay),
+        ))
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .border_style(Style::default().fg(pal.accent))
+        .style(Style::default().bg(pal.base));
+    let inner = block.inner(popup);
+    frame.render_widget(block, popup);
+
+    let [query_area, list_area] = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Length(1), Constraint::Min(0)])
+        .areas(inner);
+
+    // Query line: a prompt + the live query + cursor, with a match count.
+    let [prompt_area, count_area] = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Min(0), Constraint::Length(14)])
+        .areas(query_area);
+    let prompt = Line::from(vec![
+        Span::styled(" › ", Style::default().fg(pal.accent)),
+        Span::styled(app.search_query.clone(), Style::default().fg(pal.text)),
+        Span::styled("▌", Style::default().fg(pal.accent)),
+    ]);
+    frame.render_widget(
+        Paragraph::new(prompt).style(Style::default().bg(pal.base)),
+        prompt_area,
+    );
+    frame.render_widget(
+        Paragraph::new(Line::from(Span::styled(
+            format!("{} ", app.filtered.len()),
+            Style::default().fg(pal.subtext),
+        )))
+        .alignment(Alignment::Right)
+        .style(Style::default().bg(pal.base)),
+        count_area,
+    );
+
+    // Full-width result rows: dot · title · topic · domain · difficulty · score.
+    let show_score = !app.search_query.is_empty();
+    let items: Vec<ListItem> = app
+        .filtered
+        .iter()
+        .map(|&(i, score)| {
+            let p = &app.problems[i];
+            let mut spans = vec![
+                Span::styled(" ● ", Style::default().fg(difficulty_color(p.difficulty))),
+                Span::styled(p.title.clone(), Style::default().fg(pal.text)),
+                Span::styled(
+                    format!("   {}  ", p.topic),
+                    Style::default().fg(pal.overlay),
+                ),
+                Span::styled(
+                    p.domain.to_string(),
+                    Style::default().fg(domain_color(p.domain)),
+                ),
+                Span::styled(
+                    format!("  {}", p.difficulty),
+                    Style::default().fg(difficulty_color(p.difficulty)),
+                ),
+            ];
+            if show_score {
+                spans.push(Span::styled(
+                    format!("   ·  {score}"),
+                    Style::default().fg(pal.overlay),
+                ));
+            }
+            ListItem::new(Line::from(spans))
+        })
+        .collect();
+    let list = List::new(items)
+        .style(Style::default().bg(pal.base))
+        .highlight_style(theme::selection());
+    frame.render_stateful_widget(list, list_area, &mut app.search_state);
 }
 
 /// Domain → accent color, shared across the navigator and headers.
@@ -107,15 +219,24 @@ fn draw_topbar(frame: &mut Frame, app: &App, area: Rect) {
     ]);
     frame.render_widget(Paragraph::new(brand).style(theme::canvas()), left);
 
-    let legend = Line::from(vec![
-        Span::styled(
-            format!("{} problems  ", app.problems.len()),
-            Style::default().fg(p.subtext),
-        ),
-        Span::styled("● ", Style::default().fg(p.green)),
-        Span::styled("● ", Style::default().fg(p.yellow)),
-        Span::styled("● ", Style::default().fg(p.red)),
-    ]);
+    // While the finder is open the right side becomes a live match-count
+    // badge; otherwise it shows the total and a difficulty legend.
+    let legend = if app.search_active {
+        Line::from(Span::styled(
+            format!(" ⌕ {} / {} ", app.filtered.len(), app.problems.len()),
+            theme::badge(p.accent),
+        ))
+    } else {
+        Line::from(vec![
+            Span::styled(
+                format!("{} problems  ", app.problems.len()),
+                Style::default().fg(p.subtext),
+            ),
+            Span::styled("● ", Style::default().fg(p.green)),
+            Span::styled("● ", Style::default().fg(p.yellow)),
+            Span::styled("● ", Style::default().fg(p.red)),
+        ])
+    };
     frame.render_widget(
         Paragraph::new(legend)
             .alignment(Alignment::Right)
@@ -315,6 +436,7 @@ fn draw_input(frame: &mut Frame, app: &App, area: Rect) {
 fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let mut spans: Vec<Span> = vec![Span::raw(" ")];
     for (key, action) in [
+        ("/", "find"),
         ("⇥", "focus"),
         ("↵", "submit"),
         ("esc", "nav"),

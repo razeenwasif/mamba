@@ -39,8 +39,8 @@ mamba --help
 mamba --check       # load the problem bank and report (no TUI) — a health check
 ```
 
-Keys: `⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll · `esc`
-return to navigator · `^Q` quit.
+Keys: `/` fuzzy-find a problem · `⇥` cycle focus · `↵` open/submit · `j`/`k`
+navigate & scroll · `esc` return to navigator · `^Q` quit.
 
 ### From a checkout, without installing
 

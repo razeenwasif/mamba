@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Fuzzy problem finder (`/`).** A Spotlight-style floating overlay (ported
+  from `~/Kata`, `fuzzy-matcher`/SkimMatcherV2) filters the bank as you type,
+  matching against title, topic, difficulty, and domain, ranked best-first.
+  `↑`/`↓` move, `↵` opens the highlight and jumps to the answer bar, `esc`
+  cancels and restores the navigator. `/` stays a literal character while typing
+  an answer. Adds a live match-count badge in the top bar.
 - **Off-thread verification.** `engine::verify` now runs on a detached worker
   thread; the result is delivered over an `mpsc` channel and drained each
   main-loop tick (`App::poll_verify`), so a slow check never blocks input,

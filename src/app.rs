@@ -12,6 +12,8 @@ use std::time::Instant;
 
 use chrono::Local;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use fuzzy_matcher::FuzzyMatcher;
+use fuzzy_matcher::skim::SkimMatcherV2;
 use ratatui::widgets::ListState;
 
 use crate::engine::{self, Verdict};
@@ -87,6 +89,19 @@ pub struct App {
     pub nav_state: ListState,
     /// The pane that currently receives keyboard input.
     pub focus: Focus,
+    /// Whether the fuzzy problem finder (`/`) overlay is active. While `true`
+    /// it owns the keyboard and floats over the panes.
+    pub search_active: bool,
+    /// The current fuzzy-search query.
+    pub search_query: String,
+    /// `(problem index, score)` for problems matching the query, ranked
+    /// best-first. Meaningful only while [`search_active`](App::search_active);
+    /// an empty query lists every problem (score 0).
+    pub filtered: Vec<(usize, i64)>,
+    /// Selection/scroll state for the floating search results — separate from
+    /// [`nav_state`](App::nav_state), which keeps the tree selection behind the
+    /// overlay.
+    pub search_state: ListState,
     /// Index into [`problems`](App::problems) of the problem currently being
     /// attempted (what gets verified and exported).
     pub open_problem: Option<usize>,
@@ -127,6 +142,10 @@ impl App {
             nav_rows,
             nav_state: ListState::default(),
             focus: Focus::Navigator,
+            search_active: false,
+            search_query: String::new(),
+            filtered: Vec::new(),
+            search_state: ListState::default(),
             open_problem: None,
             input: String::new(),
             verdict: None,
@@ -150,12 +169,26 @@ impl App {
         app
     }
 
-    /// Index into [`problems`](App::problems) the navigator points at, if any.
+    /// Index into [`problems`](App::problems) the user currently points at —
+    /// the highlighted search result while the finder is open, otherwise the
+    /// navigator selection. `None` on a header row or an empty result set.
     pub fn selected_index(&self) -> Option<usize> {
-        match self.nav_rows.get(self.nav_state.selected()?)? {
-            NavRow::Problem(i) => Some(*i),
-            NavRow::Header(_) => None,
+        if self.search_active {
+            self.filtered
+                .get(self.search_state.selected()?)
+                .map(|&(i, _)| i)
+        } else {
+            match self.nav_rows.get(self.nav_state.selected()?)? {
+                NavRow::Problem(i) => Some(*i),
+                NavRow::Header(_) => None,
+            }
         }
+    }
+
+    /// The problem the user currently points at (search-aware), if any. Drives
+    /// the finder's preview; the navigator otherwise tracks the open problem.
+    pub fn selected_problem(&self) -> Option<&Problem> {
+        self.problems.get(self.selected_index()?)
     }
 
     /// The problem currently open for attempting (what verifies and exports).
@@ -174,9 +207,22 @@ impl App {
             return;
         }
 
+        // -- The fuzzy finder owns the keyboard while it is open ----------
+        if self.search_active {
+            self.on_search_key(key, ctrl);
+            return;
+        }
+
         // -- The answer bar owns the keyboard while it has focus ----------
         if self.focus == Focus::Input {
             self.on_input_key(key, ctrl);
+            return;
+        }
+
+        // `/` opens the fuzzy finder from any non-input pane (it stays a
+        // literal character — e.g. in a fraction — while typing an answer).
+        if key.code == KeyCode::Char('/') && !ctrl {
+            self.enter_search();
             return;
         }
 
@@ -216,6 +262,112 @@ impl App {
                 self.focus = Focus::Input;
             }
             _ => {}
+        }
+    }
+
+    // -- Fuzzy finder (`/`) --------------------------------------------------
+
+    /// Opens the finder with an empty query (all problems listed).
+    fn enter_search(&mut self) {
+        self.search_active = true;
+        self.search_query.clear();
+        self.focus = Focus::Navigator;
+        self.recompute_filter();
+    }
+
+    /// Closes the finder, restoring the navigator selection to whatever problem
+    /// is currently open (or the first problem).
+    fn exit_search(&mut self) {
+        self.search_active = false;
+        self.search_query.clear();
+        match self.open_problem {
+            Some(idx) => self.select_problem_row(idx),
+            None => {
+                if let Some(first) = self
+                    .nav_rows
+                    .iter()
+                    .position(|r| matches!(r, NavRow::Problem(_)))
+                {
+                    self.nav_state.select(Some(first));
+                }
+            }
+        }
+    }
+
+    /// Keys handled while the finder is active: printable characters (including
+    /// `j`/`k`) extend the query, arrows move the highlight, Enter opens the
+    /// highlighted problem and jumps to the answer bar, Esc cancels.
+    fn on_search_key(&mut self, key: KeyEvent, ctrl: bool) {
+        match key.code {
+            KeyCode::Esc => self.exit_search(),
+            KeyCode::Enter if self.selected_index().is_some() => {
+                // `open_selected` is search-aware while the finder is still
+                // active, so it opens the highlighted result.
+                self.open_selected();
+                self.exit_search();
+                self.focus = Focus::Input;
+            }
+            KeyCode::Up => self.search_move(-1),
+            KeyCode::Down => self.search_move(1),
+            KeyCode::Backspace => {
+                self.search_query.pop();
+                self.recompute_filter();
+            }
+            KeyCode::Char(c) if !ctrl => {
+                self.search_query.push(c);
+                self.recompute_filter();
+            }
+            _ => {}
+        }
+    }
+
+    /// Recomputes [`filtered`](App::filtered) for the current query, ranking
+    /// matches best-first, and resets the highlight to the top match. An empty
+    /// query lists every problem (score 0).
+    fn recompute_filter(&mut self) {
+        if self.search_query.is_empty() {
+            self.filtered = (0..self.problems.len()).map(|i| (i, 0)).collect();
+        } else {
+            let matcher = SkimMatcherV2::default();
+            let mut scored: Vec<(usize, i64)> = self
+                .problems
+                .iter()
+                .enumerate()
+                .filter_map(|(i, p)| {
+                    // Match against title, topic, difficulty, and domain, so
+                    // "calculus", "hard", or "exact" also narrow the list.
+                    let hay = format!("{} {} {} {}", p.title, p.topic, p.difficulty, p.domain);
+                    matcher
+                        .fuzzy_match(&hay, &self.search_query)
+                        .map(|s| (i, s))
+                })
+                .collect();
+            // Highest score first; ties keep the bank's order.
+            scored.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+            self.filtered = scored;
+        }
+        self.search_state
+            .select((!self.filtered.is_empty()).then_some(0));
+    }
+
+    /// Moves the search highlight within the filtered results (no open).
+    fn search_move(&mut self, dir: isize) {
+        if self.filtered.is_empty() {
+            return;
+        }
+        let cur = self.search_state.selected().unwrap_or(0) as isize;
+        let next = (cur + dir).clamp(0, self.filtered.len() as isize - 1) as usize;
+        self.search_state.select(Some(next));
+    }
+
+    /// Selects the `NavRow::Problem(idx)` row in the (non-search) navigator.
+    fn select_problem_row(&mut self, idx: usize) {
+        if let Some(row) = self
+            .nav_rows
+            .iter()
+            .position(|r| matches!(r, NavRow::Problem(i) if *i == idx))
+        {
+            self.nav_state.select(Some(row));
         }
     }
 
@@ -520,5 +672,60 @@ mod tests {
         a.select_adjacent(1);
         assert!(!a.is_verifying());
         assert_eq!(a.verdict, None);
+    }
+
+    fn key(code: KeyCode) -> KeyEvent {
+        KeyEvent::new(code, KeyModifiers::NONE)
+    }
+
+    #[test]
+    fn fuzzy_finder_filters_ranks_and_restores() {
+        // app(): Expand (Symbolic), Determinant (Tensor), Factorize (Exact).
+        let mut a = app();
+        assert_eq!(a.open_problem, Some(0));
+
+        a.enter_search();
+        assert!(a.search_active);
+        assert_eq!(a.filtered.len(), 3); // empty query lists every problem
+
+        a.search_query.push_str("determ");
+        a.recompute_filter();
+        let idx = a.selected_index().expect("a match");
+        assert_eq!(a.problems[idx].title, "Determinant");
+        // The open problem is untouched while previewing search results.
+        assert_eq!(a.open_problem, Some(0));
+
+        // Esc cancels and restores the selection to the open problem.
+        a.exit_search();
+        assert!(!a.search_active);
+        assert_eq!(a.selected_index(), Some(0));
+    }
+
+    #[test]
+    fn finder_enter_opens_the_highlight_and_focuses_the_answer_bar() {
+        let mut a = app();
+        // `/` opens the finder from the navigator.
+        a.on_key(key(KeyCode::Char('/')));
+        assert!(a.search_active);
+
+        for c in "factor".chars() {
+            a.on_key(key(KeyCode::Char(c)));
+        }
+        a.on_key(key(KeyCode::Enter));
+
+        assert!(!a.search_active);
+        assert_eq!(a.focus, Focus::Input);
+        assert_eq!(a.open_problem_ref().unwrap().title, "Factorize");
+    }
+
+    #[test]
+    fn slash_is_a_literal_character_in_the_answer_bar() {
+        let mut a = app();
+        a.focus = Focus::Input;
+        a.on_key(key(KeyCode::Char('1')));
+        a.on_key(key(KeyCode::Char('/')));
+        a.on_key(key(KeyCode::Char('2')));
+        assert!(!a.search_active);
+        assert_eq!(a.input, "1/2");
     }
 }
