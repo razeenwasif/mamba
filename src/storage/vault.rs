@@ -148,7 +148,10 @@ mod tests {
     fn format_duration_picks_the_right_granularity() {
         assert_eq!(format_duration(Duration::from_secs(45)), "45s");
         assert_eq!(format_duration(Duration::from_secs(12 * 60 + 3)), "12m 03s");
-        assert_eq!(format_duration(Duration::from_secs(3600 + 7 * 60)), "1h 07m");
+        assert_eq!(
+            format_duration(Duration::from_secs(3600 + 7 * 60)),
+            "1h 07m"
+        );
     }
 
     #[test]

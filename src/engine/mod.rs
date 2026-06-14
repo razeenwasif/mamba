@@ -73,7 +73,10 @@ impl Verdict {
 pub fn verify(problem: &Problem, input: &str) -> Verdict {
     let input = input.trim();
     if input.is_empty() {
-        return Verdict::parse_error("empty answer", Some("type an answer, then press Enter".into()));
+        return Verdict::parse_error(
+            "empty answer",
+            Some("type an answer, then press Enter".into()),
+        );
     }
 
     match problem.domain {

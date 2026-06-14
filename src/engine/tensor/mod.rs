@@ -97,7 +97,10 @@ fn parse_matrix(src: &str) -> Result<Array2<f64>, String> {
 fn parse_row(row: &str) -> Result<Vec<f64>, String> {
     row.split([',', ' ', '\t'])
         .filter(|t| !t.is_empty())
-        .map(|t| t.parse::<f64>().map_err(|_| format!("'{t}' is not a number")))
+        .map(|t| {
+            t.parse::<f64>()
+                .map_err(|_| format!("'{t}' is not a number"))
+        })
         .collect()
 }
 

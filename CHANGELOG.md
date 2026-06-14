@@ -7,6 +7,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Off-thread verification.** `engine::verify` now runs on a detached worker
+  thread; the result is delivered over an `mpsc` channel and drained each
+  main-loop tick (`App::poll_verify`), so a slow check never blocks input,
+  scrolling, or quit. Adds a `Verifying…` console state and a `VERIFYING` badge,
+  one-verification-at-a-time, a 16 ms busy-poll, and cancellation when the user
+  navigates to another problem. See
+  [ADR 0002](docs/adr/0002-off-thread-verification.md).
 - **Installable binary on PATH.** `make install` builds in release, installs
   `mamba` to `~/.cargo/bin`, and syncs the problem bank into the platform data
   dir (`~/.local/share/mamba/problems`) so the TUI runs from any directory.
@@ -16,9 +23,6 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`Makefile`** with `install`, `build`, `test`, `run`, `check`, `fmt`,
   `clean`, and `help` targets — `make install` is the after-every-feature
   command.
-
-### Planned
-- Worker-thread verification (move `engine::verify` off the UI thread).
 
 ## [0.1.0] — 2026-06-14
 

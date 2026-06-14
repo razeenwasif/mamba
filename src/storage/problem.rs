@@ -126,8 +126,12 @@ pub fn load_all(dir: &Path) -> anyhow::Result<Vec<Problem>> {
     }
 
     problems.sort_by(|a, b| {
-        (a.domain, a.difficulty, &a.topic, &a.title)
-            .cmp(&(b.domain, b.difficulty, &b.topic, &b.title))
+        (a.domain, a.difficulty, &a.topic, &a.title).cmp(&(
+            b.domain,
+            b.difficulty,
+            &b.topic,
+            &b.title,
+        ))
     });
     Ok(problems)
 }

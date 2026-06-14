@@ -25,6 +25,11 @@ use mamba::{storage, ui};
 /// process effectively idle (no busy-loop) when the user is thinking.
 const TICK_RATE: Duration = Duration::from_millis(100);
 
+/// A tighter poll used only while a verification worker is in flight, so the
+/// `Verifying…` state flips to the verdict within a frame instead of waiting up
+/// to a full [`TICK_RATE`].
+const POLL_BUSY: Duration = Duration::from_millis(16);
+
 fn main() -> anyhow::Result<()> {
     // Lightweight CLI handling *before* we touch the terminal, so `mamba
     // --version` and `mamba --help` work from any directory and are scriptable
@@ -47,7 +52,11 @@ fn main() -> anyhow::Result<()> {
                 let dir = storage::default_problems_path()?;
                 let problems = storage::problem::load_all(&dir)
                     .with_context(|| format!("loading problem bank from {}", dir.display()))?;
-                println!("ok: {} problems loaded from {}", problems.len(), dir.display());
+                println!(
+                    "ok: {} problems loaded from {}",
+                    problems.len(),
+                    dir.display()
+                );
                 return Ok(());
             }
             other => {
@@ -110,9 +119,20 @@ fn print_help() {
 /// most one input event. State mutation and rendering never interleave.
 fn run(terminal: &mut ratatui::DefaultTerminal, app: &mut App) -> anyhow::Result<()> {
     while !app.should_quit {
+        // Drain a finished worker verification so the verdict lands in state
+        // before we draw — the UI never blocks on verification itself.
+        app.poll_verify();
+
         terminal.draw(|frame| ui::draw(frame, app))?;
 
-        if event::poll(TICK_RATE)?
+        // Poll faster while verifying so the result appears promptly; idle at
+        // the normal tick otherwise.
+        let timeout = if app.is_verifying() {
+            POLL_BUSY
+        } else {
+            TICK_RATE
+        };
+        if event::poll(timeout)?
             && let Event::Key(key) = event::read()?
             // Windows terminals emit Release events too; act on Press only.
             && key.kind == KeyEventKind::Press

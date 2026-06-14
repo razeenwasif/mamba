@@ -6,6 +6,8 @@
 //! trivially correct.
 
 use std::path::PathBuf;
+use std::sync::mpsc::{self, Receiver, TryRecvError};
+use std::thread;
 use std::time::Instant;
 
 use chrono::Local;
@@ -15,6 +17,17 @@ use ratatui::widgets::ListState;
 use crate::engine::{self, Verdict};
 use crate::storage::problem::Problem;
 use crate::storage::vault;
+
+/// An in-flight verification running on a worker thread. It carries everything
+/// the main thread needs to finalize the result once the worker replies — the
+/// *captured* problem and answer (so navigating away can't corrupt the export)
+/// and the instant the problem was opened (for the `time_spent` frontmatter).
+struct VerifyJob {
+    problem: Problem,
+    answer: String,
+    opened_at: Instant,
+    rx: Receiver<Verdict>,
+}
 
 /// Which pane currently owns keyboard input. Exactly one is focused at a time;
 /// `Tab` cycles forward through the variants in declaration order and
@@ -79,9 +92,14 @@ pub struct App {
     pub open_problem: Option<usize>,
     /// The answer currently being typed into the input bar.
     pub input: String,
-    /// The most recent verification result, shown in the console. `None`
-    /// before the first submission for the open problem.
+    /// The most recent *completed* verification result, shown in the console.
+    /// `None` before the first submission, or while one is in flight.
     pub verdict: Option<Verdict>,
+    /// The verification currently running on a worker thread, if any. While
+    /// `Some`, the UI shows a `Verifying…` state and further submits are
+    /// ignored. Drained by [`poll_verify`](App::poll_verify); never read
+    /// directly by the UI (use [`is_verifying`](App::is_verifying)).
+    verify_job: Option<VerifyJob>,
     /// How many answers have been submitted for the open problem.
     pub attempts: u32,
     /// Vertical scroll offset of the description pane, in lines.
@@ -112,6 +130,7 @@ impl App {
             open_problem: None,
             input: String::new(),
             verdict: None,
+            verify_job: None,
             attempts: 0,
             description_scroll: 0,
             console_scroll: 0,
@@ -259,6 +278,9 @@ impl App {
         self.open_problem = Some(idx);
         self.input.clear();
         self.verdict = None;
+        // Cancel any in-flight verification for the previous problem: dropping
+        // the job drops the receiver, so the worker's result is discarded.
+        self.verify_job = None;
         self.attempts = 0;
         self.description_scroll = 0;
         self.console_scroll = 0;
@@ -266,33 +288,94 @@ impl App {
         self.opened_at = Instant::now();
     }
 
-    /// Verifies the typed answer through the [universal router](engine::verify)
-    /// and, on a correct answer, exports the solve to the Markdown vault.
+    /// Kicks off verification of the typed answer **on a worker thread**, so a
+    /// slow check (a future CAS, a large factorization) never blocks input. The
+    /// worker runs the [universal router](engine::verify) and sends back only a
+    /// [`Verdict`]; the result is finalized on the main thread by
+    /// [`poll_verify`](App::poll_verify). The UI shows `Verifying…` meanwhile.
     fn submit_answer(&mut self) {
+        // One verification at a time — ignore Enter while one is in flight.
+        if self.verify_job.is_some() {
+            return;
+        }
         let Some(problem) = self.open_problem_ref().cloned() else {
             return;
         };
-        let answer = self.input.clone();
+        let answer = self.input.trim().to_string();
+        if answer.is_empty() {
+            return; // don't spawn a worker — or count an attempt — for a blank
+        }
 
-        let verdict = engine::verify(&problem, &answer);
         self.attempts += 1;
         self.console_scroll = 0;
+        self.verdict = None; // clear the previous result while we recompute
 
-        if verdict.is_correct() {
-            self.export_solution(&problem, &answer);
+        // Owned copies move into the worker; it returns only the `Verdict`, so
+        // every App mutation (the vault export included) stays on this thread.
+        let (tx, rx) = mpsc::channel();
+        let job_problem = problem.clone();
+        let job_answer = answer.clone();
+        thread::spawn(move || {
+            let verdict = engine::verify(&job_problem, &job_answer);
+            // A send error just means the receiver was dropped (the user moved
+            // on) — the stale result is harmlessly discarded.
+            let _ = tx.send(verdict);
+        });
+
+        self.verify_job = Some(VerifyJob {
+            problem,
+            answer,
+            opened_at: self.opened_at,
+            rx,
+        });
+    }
+
+    /// Drains a finished worker verification into state: records the verdict
+    /// and, on success, exports the *captured* solve to the Markdown vault.
+    /// Called once per main-loop tick, so the result appears promptly without
+    /// the UI ever having blocked on it. A no-op when nothing is in flight.
+    pub fn poll_verify(&mut self) {
+        let Some(job) = &self.verify_job else {
+            return;
+        };
+        match job.rx.try_recv() {
+            Ok(verdict) => {
+                let job = self.verify_job.take().expect("just matched Some");
+                if verdict.is_correct() {
+                    self.export_solution(&job.problem, &job.answer, job.opened_at);
+                }
+                self.verdict = Some(verdict);
+                self.console_scroll = 0;
+            }
+            Err(TryRecvError::Empty) => {} // still computing — try again next tick
+            Err(TryRecvError::Disconnected) => {
+                // The worker panicked or exited without sending — surface it
+                // rather than spin forever showing `Verifying…`.
+                self.verify_job = None;
+                self.verdict = Some(Verdict::incorrect(
+                    "verification worker stopped before returning a result",
+                ));
+            }
         }
-        self.verdict = Some(verdict);
+    }
+
+    /// `true` while a verification worker is in flight (drives the `Verifying…`
+    /// console state and the faster main-loop poll).
+    pub fn is_verifying(&self) -> bool {
+        self.verify_job.is_some()
     }
 
     /// Writes the accepted answer into the Markdown vault, recording any
-    /// failure as an [`Verdict::Incorrect`] so a silent data-loss never hides
-    /// behind a green check.
-    fn export_solution(&mut self, problem: &Problem, answer: &str) {
+    /// failure as a [`Verdict::Incorrect`] so a silent data-loss never hides
+    /// behind a green check. `opened_at` is the captured open-time of the
+    /// verified problem, so `time_spent` is correct even if the user has since
+    /// navigated elsewhere.
+    fn export_solution(&mut self, problem: &Problem, answer: &str, opened_at: Instant) {
         match vault::export(
             &self.vault_path,
             problem,
             answer,
-            self.opened_at.elapsed(),
+            opened_at.elapsed(),
             Local::now().date_naive(),
         ) {
             Ok(path) => self.exported_to = Some(path),
@@ -341,11 +424,36 @@ mod tests {
 
     fn app() -> App {
         let problems = vec![
-            problem("Expand", Domain::Symbolic, "x^2 - x - 6", AnswerKind::Scalar),
+            problem(
+                "Expand",
+                Domain::Symbolic,
+                "x^2 - x - 6",
+                AnswerKind::Scalar,
+            ),
             problem("Determinant", Domain::Tensor, "10", AnswerKind::Scalar),
-            problem("Factorize", Domain::Exact, "104729", AnswerKind::Factorization),
+            problem(
+                "Factorize",
+                Domain::Exact,
+                "104729",
+                AnswerKind::Factorization,
+            ),
         ];
         App::new(problems, std::env::temp_dir().join("mamba-vault-test"))
+    }
+
+    /// Submits an answer and pumps `poll_verify` until the worker thread
+    /// finishes, so tests can assert on the (now asynchronous) verdict.
+    fn submit_blocking(app: &mut App, answer: &str) {
+        app.input = answer.into();
+        app.submit_answer();
+        for _ in 0..2000 {
+            app.poll_verify();
+            if !app.is_verifying() {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1));
+        }
+        panic!("verification did not complete within the timeout");
     }
 
     #[test]
@@ -378,8 +486,7 @@ mod tests {
     #[test]
     fn submitting_a_correct_answer_marks_it_and_exports() {
         let mut a = app();
-        a.input = "(x-3)(x+2)".into();
-        a.submit_answer();
+        submit_blocking(&mut a, "(x-3)(x+2)");
         assert_eq!(a.verdict, Some(Verdict::Correct));
         assert_eq!(a.attempts, 1);
         assert!(a.exported_to.is_some());
@@ -388,9 +495,30 @@ mod tests {
     #[test]
     fn submitting_a_wrong_answer_does_not_export() {
         let mut a = app();
-        a.input = "x^2 + x - 6".into();
-        a.submit_answer();
+        submit_blocking(&mut a, "x^2 + x - 6");
         assert!(matches!(a.verdict, Some(Verdict::Incorrect { .. })));
         assert!(a.exported_to.is_none());
+    }
+
+    #[test]
+    fn a_blank_answer_neither_verifies_nor_counts_an_attempt() {
+        let mut a = app();
+        a.input = "   ".into();
+        a.submit_answer();
+        assert!(!a.is_verifying());
+        assert_eq!(a.attempts, 0);
+        assert_eq!(a.verdict, None);
+    }
+
+    #[test]
+    fn navigating_away_cancels_an_in_flight_verification() {
+        let mut a = app();
+        a.input = "(x-3)(x+2)".into();
+        a.submit_answer();
+        assert!(a.is_verifying());
+        // Opening another problem must drop the job (and its receiver).
+        a.select_adjacent(1);
+        assert!(!a.is_verifying());
+        assert_eq!(a.verdict, None);
     }
 }

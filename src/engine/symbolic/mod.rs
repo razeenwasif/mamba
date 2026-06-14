@@ -90,9 +90,7 @@ pub fn verify(expected: &str, input: &str) -> Verdict {
 /// single variable `x`, returning an evaluator closure.
 fn compile(src: &str) -> Result<impl Fn(f64) -> f64, String> {
     let normalized = normalize_implicit_mul(src);
-    let expr: Expr = normalized
-        .parse()
-        .map_err(|e| format!("{e}"))?;
+    let expr: Expr = normalized.parse().map_err(|e| format!("{e}"))?;
     expr.bind("x").map_err(|e| format!("{e}"))
 }
 
@@ -166,9 +164,6 @@ mod tests {
 
     #[test]
     fn surfaces_user_syntax_errors_as_parse_errors() {
-        assert!(matches!(
-            verify("x^2", "x^^2"),
-            Verdict::ParseError { .. }
-        ));
+        assert!(matches!(verify("x^2", "x^^2"), Verdict::ParseError { .. }));
     }
 }

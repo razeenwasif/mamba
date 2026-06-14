@@ -32,7 +32,9 @@ pub fn verify(expected: &str, input: &str, kind: AnswerKind) -> Verdict {
 fn verify_scalar(expected: &str, input: &str) -> Verdict {
     let want: BigInt = match expected.trim().parse() {
         Ok(n) => n,
-        Err(e) => return Verdict::parse_error(format!("internal: expected '{expected}' ({e})"), None),
+        Err(e) => {
+            return Verdict::parse_error(format!("internal: expected '{expected}' ({e})"), None);
+        }
     };
     match input.trim().parse::<BigInt>() {
         Ok(got) if got == want => Verdict::Correct,
@@ -50,7 +52,9 @@ fn verify_scalar(expected: &str, input: &str) -> Verdict {
 fn verify_factorization(expected: &str, input: &str) -> Verdict {
     let target: BigUint = match expected.trim().parse() {
         Ok(n) => n,
-        Err(e) => return Verdict::parse_error(format!("internal: target '{expected}' ({e})"), None),
+        Err(e) => {
+            return Verdict::parse_error(format!("internal: target '{expected}' ({e})"), None);
+        }
     };
 
     let factors = match parse_factors(input) {

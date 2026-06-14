@@ -14,8 +14,12 @@ backed by a crate chosen for that kind of mathematics.
 | `Tensor`   | linear algebra (matrices/scalars) | `engine/tensor` · `ndarray` |
 | `Exact`    | number theory (exact integers)    | `engine/exact` · `num-bigint` |
 
-See [`docs/adr/0001-universal-math-routing.md`](docs/adr/0001-universal-math-routing.md)
-for the design rationale.
+Verification runs on a **worker thread** (delivered back over an `mpsc` channel),
+so even a slow check never freezes the UI — the console shows `Verifying…` while
+input, scrolling, and quit stay live.
+
+Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-math-routing.md)
+· [ADR 0002 — Off-thread Verification](docs/adr/0002-off-thread-verification.md).
 
 ## Install (run `mamba` from anywhere)
 

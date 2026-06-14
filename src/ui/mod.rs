@@ -184,7 +184,10 @@ fn draw_description(frame: &mut Frame, app: &App, area: Rect) {
 
     let paragraph = Paragraph::new(lines)
         .style(theme::body())
-        .block(theme::pane_block("Problem", app.focus == Focus::Description))
+        .block(theme::pane_block(
+            "Problem",
+            app.focus == Focus::Description,
+        ))
         .wrap(Wrap { trim: false })
         .scroll((app.description_scroll, 0));
     frame.render_widget(paragraph, area);
@@ -196,47 +199,62 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
     let pal = theme::palette();
     let mut lines: Vec<Line> = Vec::new();
 
-    match &app.verdict {
-        None => lines.push(Line::from(Span::styled(
-            "Type your answer below and press Enter to verify.",
-            Style::default().fg(pal.overlay),
-        ))),
-        Some(Verdict::Correct) => {
+    // A verification in flight pre-empts the last verdict — the worker runs off
+    // the UI thread, so this frame (and input) stay responsive while it does.
+    if app.is_verifying() {
+        lines.push(Line::from(Span::styled(
+            "⏳ Verifying…",
+            Style::default().fg(pal.yellow).add_modifier(Modifier::BOLD),
+        )));
+        if let Some(p) = app.open_problem_ref() {
             lines.push(Line::from(Span::styled(
-                "✔ Correct — mathematically verified.",
-                Style::default().fg(pal.green).add_modifier(Modifier::BOLD),
+                format!("  routing through the {} pipeline", p.domain),
+                Style::default().fg(pal.subtext),
             )));
-            if let Some(path) = &app.exported_to {
+        }
+    } else {
+        match &app.verdict {
+            None => lines.push(Line::from(Span::styled(
+                "Type your answer below and press Enter to verify.",
+                Style::default().fg(pal.overlay),
+            ))),
+            Some(Verdict::Correct) => {
                 lines.push(Line::from(Span::styled(
-                    format!("  exported → {}", path.display()),
-                    Style::default().fg(pal.blue),
+                    "✔ Correct — mathematically verified.",
+                    Style::default().fg(pal.green).add_modifier(Modifier::BOLD),
+                )));
+                if let Some(path) = &app.exported_to {
+                    lines.push(Line::from(Span::styled(
+                        format!("  exported → {}", path.display()),
+                        Style::default().fg(pal.blue),
+                    )));
+                }
+            }
+            Some(Verdict::Incorrect { detail }) => {
+                lines.push(Line::from(Span::styled(
+                    "✘ Not quite.",
+                    Style::default().fg(pal.red).add_modifier(Modifier::BOLD),
+                )));
+                lines.push(Line::from(Span::styled(
+                    format!("  {detail}"),
+                    Style::default().fg(pal.subtext),
                 )));
             }
-        }
-        Some(Verdict::Incorrect { detail }) => {
-            lines.push(Line::from(Span::styled(
-                "✘ Not quite.",
-                Style::default().fg(pal.red).add_modifier(Modifier::BOLD),
-            )));
-            lines.push(Line::from(Span::styled(
-                format!("  {detail}"),
-                Style::default().fg(pal.subtext),
-            )));
-        }
-        Some(Verdict::ParseError { message, hint }) => {
-            lines.push(Line::from(Span::styled(
-                "⚠ Couldn't read that answer.",
-                Style::default().fg(pal.yellow).add_modifier(Modifier::BOLD),
-            )));
-            lines.push(Line::from(Span::styled(
-                format!("  {message}"),
-                Style::default().fg(pal.subtext),
-            )));
-            if let Some(h) = hint {
+            Some(Verdict::ParseError { message, hint }) => {
                 lines.push(Line::from(Span::styled(
-                    format!("  hint: {h}"),
-                    Style::default().fg(pal.teal),
+                    "⚠ Couldn't read that answer.",
+                    Style::default().fg(pal.yellow).add_modifier(Modifier::BOLD),
                 )));
+                lines.push(Line::from(Span::styled(
+                    format!("  {message}"),
+                    Style::default().fg(pal.subtext),
+                )));
+                if let Some(h) = hint {
+                    lines.push(Line::from(Span::styled(
+                        format!("  hint: {h}"),
+                        Style::default().fg(pal.teal),
+                    )));
+                }
             }
         }
     }
@@ -306,11 +324,15 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     }
 
     let pal = theme::palette();
-    let badge = match &app.verdict {
-        None => None,
-        Some(Verdict::Correct) => Some((" CORRECT ", pal.green)),
-        Some(Verdict::Incorrect { .. }) => Some((" WRONG ", pal.red)),
-        Some(Verdict::ParseError { .. }) => Some((" INVALID ", pal.yellow)),
+    let badge = if app.is_verifying() {
+        Some((" VERIFYING ", pal.yellow))
+    } else {
+        match &app.verdict {
+            None => None,
+            Some(Verdict::Correct) => Some((" CORRECT ", pal.green)),
+            Some(Verdict::Incorrect { .. }) => Some((" WRONG ", pal.red)),
+            Some(Verdict::ParseError { .. }) => Some((" INVALID ", pal.yellow)),
+        }
     };
     if let Some((label, color)) = badge {
         spans.push(Span::styled(label, theme::badge(color)));
