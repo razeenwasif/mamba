@@ -31,6 +31,15 @@ test:
 run:
 	cargo run --release
 
+## gen     : mass-generate problems with the Python builder, then verify them
+gen:
+	python3 tools/build_problems/generate.py --out problems
+	cargo run --quiet -- --verify problems
+
+## verify  : run every problem's canonical answer back through the engine
+verify:
+	cargo run --quiet -- --verify problems
+
 ## check   : fast type-check without producing a binary
 check:
 	cargo check

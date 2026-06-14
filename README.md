@@ -37,6 +37,7 @@ mamba               # launch the TUI from anywhere
 mamba --version
 mamba --help
 mamba --check       # load the problem bank and report (no TUI) — a health check
+mamba --verify      # run every problem's canonical answer through the engine
 ```
 
 Keys: `/` fuzzy-find a problem · `⇥` cycle focus · `↵` open/submit · `j`/`k`
@@ -95,7 +96,19 @@ src/
     └── theme.rs         # role-based palette (MAMBA_THEME)
 problems/                # declarative JSON problem bank (data, not code)
 docs/adr/                # architecture decision records
+tools/build_problems/    # pure-Python problem-bank generator (see its README)
 ```
+
+## Generating problems
+
+```sh
+make gen                 # mass-generate problems, then verify them end-to-end
+```
+
+The generator (`tools/build_problems/generate.py`) computes each answer with
+exact arithmetic (correct by construction) and emits it in Mamba syntax;
+`mamba --verify` then feeds every `expected` back through the engine. See
+[`tools/build_problems/README.md`](tools/build_problems/README.md).
 
 ## Environment
 

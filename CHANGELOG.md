@@ -7,6 +7,15 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Problem-bank generator + `mamba --verify`.** A pure-Python generator
+  (`tools/build_problems/generate.py`) mass-authors problems across all three
+  domains with answers that are *correct by construction* (exact `int`/`Fraction`
+  arithmetic — no SymPy), emitted in Mamba's own input syntax. A new
+  `mamba --verify [DIR]` CLI mode runs every problem's canonical answer back
+  through the engine (PASS/FAIL, non-zero exit on failure), closing the loop
+  end-to-end; `make gen` does both. The exact pipeline now derives a
+  factorization's target from the **product of `expected`'s factors**, so
+  composite factorization problems self-verify (not just primes).
 - **Exact-rational tensor backend.** Matrix cells are now parsed as a hybrid
   [`Cell`]: an exact rational (`num-rational`) for integers/fractions, or an
   approximate float for decimals. Both-exact cells compare with `==` (so a `2×2`

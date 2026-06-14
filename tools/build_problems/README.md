@@ -1,0 +1,59 @@
+# Problem-bank generator
+
+`generate.py` mass-authors `problems/*.json` files in Mamba's schema, computing
+each problem's canonical `expected` answer **arithmetically** so it is *correct by
+construction*. It is pure Python standard library — no SymPy/NumPy — mirroring the
+self-contained Python tooling in `~/Kata`.
+
+## Use
+
+```sh
+make gen                                   # generate into ./problems, then verify
+# or directly:
+python3 tools/build_problems/generate.py --count 5 --out problems --seed 0
+mamba --verify problems                    # end-to-end check against the engine
+```
+
+Flags:
+
+| flag | default | meaning |
+|------|---------|---------|
+| `--count N` | `2` | problems generated per template |
+| `--out DIR` | `<repo>/problems` | output directory |
+| `--seed S` | `0` | RNG seed — deterministic, so re-running overwrites the same files |
+
+Generated files are named `gen-<template>-<index>.json`, so they sit alongside
+the hand-authored bank and are easy to spot (and `git rm 'problems/gen-*.json'`
+to clear).
+
+## Templates
+
+| template | domain | answer computed by |
+|----------|--------|--------------------|
+| `expand-binomial` | Symbolic | `(x+a)(x+b)` → expanded quadratic |
+| `power-derivative` | Symbolic | power rule `d/dx[c·xⁿ]` |
+| `determinant` | Tensor | `ad − bc` |
+| `transpose` | Tensor | index swap |
+| `inverse` | Tensor | `(1/det)·adj`, exact `Fraction`s |
+| `factorization` | Exact | trial division → `2^3 * 3^2 * 5` |
+| `modexp` | Exact | `pow(base, exp, mod)` |
+| `gcd` | Exact | Euclid (`math.gcd`) |
+
+## Why answers are trustworthy
+
+Two independent guarantees:
+
+1. **Correct by construction** — the generator computes the answer with exact
+   arithmetic (Python `int`/`Fraction`), never guesses.
+2. **Verified end-to-end** — `mamba --verify` feeds every problem's `expected`
+   back through the real engine (the same path `tests/bank_is_solvable.rs`
+   guards), catching any mismatch between the emitted string and Mamba's input
+   syntax. The exit code is non-zero on any failure, so it gates CI and `make gen`.
+
+## Adding a template
+
+Write a `t_<name>(rng, i) -> dict` returning a problem dict (see existing ones),
+add it to `TEMPLATES`, and emit `expected` in **Mamba syntax**: `^` for powers,
+explicit `*`, `*` between variables, `a/b` fractions, and the factored form
+(`2^3 * 3^2 * 5`) for `Factorization` problems. Then `make gen` and check the
+verify output.

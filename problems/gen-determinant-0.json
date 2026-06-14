@@ -1,0 +1,11 @@
+{
+  "id": "gen-determinant-0",
+  "title": "Determinant of a 2×2",
+  "domain": "Tensor",
+  "topic": "Linear Algebra",
+  "difficulty": "Easy",
+  "prompt": "Find the determinant:\n\n    ⎡   2   9 ⎤\n    ⎣  -3   7 ⎦",
+  "expected": "41",
+  "answer_kind": "Scalar",
+  "hint": "for [[a,b],[c,d]], det = ad - bc"
+}

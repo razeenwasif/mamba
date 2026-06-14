@@ -1,0 +1,11 @@
+{
+  "id": "gen-modexp-0",
+  "title": "Modular Exponentiation",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Hard",
+  "prompt": "Compute the least non-negative residue:\n\n    6^149 mod 17",
+  "expected": "7",
+  "answer_kind": "Scalar",
+  "hint": "reduce the exponent with Fermat's little theorem; enter one integer"
+}

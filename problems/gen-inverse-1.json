@@ -1,0 +1,11 @@
+{
+  "id": "gen-inverse-1",
+  "title": "Inverse of a 2×2",
+  "domain": "Tensor",
+  "topic": "Linear Algebra",
+  "difficulty": "Hard",
+  "prompt": "Find the inverse:\n\n    ⎡   0   5 ⎤\n    ⎣   6   4 ⎦\n\nEnter exact fractions.",
+  "expected": "-2/15 1/6; 1/5 0",
+  "answer_kind": "Scalar",
+  "hint": "inverse of [[a,b],[c,d]] is (1/(ad-bc))*[[d,-b],[-c,a]]; use fractions"
+}

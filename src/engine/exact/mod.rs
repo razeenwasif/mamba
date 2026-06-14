@@ -46,14 +46,22 @@ fn verify_scalar(expected: &str, input: &str) -> Verdict {
     }
 }
 
-/// Verifies that `input` is a valid prime factorization of the integer named
-/// in `expected`: the product of the prime powers must equal the target and
-/// every base must be prime.
+/// Verifies that `input` is a valid prime factorization of the same integer the
+/// canonical `expected` factorization describes: both must have the same product
+/// *and* every base of the user's answer must be prime.
+///
+/// The target is the **product of `expected`'s factors**, not `expected` parsed
+/// as a bare number — so `expected` may itself be a factored form (`2^3 * 3^2 *
+/// 5`) for a composite, or just the number for a prime (which factorizes to
+/// itself). This is what lets composite factorization problems self-verify.
 fn verify_factorization(expected: &str, input: &str) -> Verdict {
-    let target: BigUint = match expected.trim().parse() {
-        Ok(n) => n,
+    let target = match parse_factors(expected) {
+        Ok(f) => product_of(&f),
         Err(e) => {
-            return Verdict::parse_error(format!("internal: target '{expected}' ({e})"), None);
+            return Verdict::parse_error(
+                format!("internal: expected factorization '{expected}' invalid ({e})"),
+                None,
+            );
         }
     };
 
@@ -68,13 +76,10 @@ fn verify_factorization(expected: &str, input: &str) -> Verdict {
     };
 
     // 1. The product of the claimed factors must reconstruct the target.
-    let mut product = BigUint::one();
-    for (base, exp) in &factors {
-        product *= num_traits::pow(base.clone(), *exp as usize);
-    }
-    if product != target {
+    if product_of(&factors) != target {
         return Verdict::incorrect(format!(
-            "those factors multiply to {product}, but the number is {target}"
+            "those factors multiply to {}, but the number is {target}",
+            product_of(&factors)
         ));
     }
 
@@ -87,6 +92,15 @@ fn verify_factorization(expected: &str, input: &str) -> Verdict {
     }
 
     Verdict::Correct
+}
+
+/// Multiplies a list of `(base, exponent)` prime powers into a single integer.
+fn product_of(factors: &[(BigUint, u32)]) -> BigUint {
+    let mut product = BigUint::one();
+    for (base, exp) in factors {
+        product *= num_traits::pow(base.clone(), *exp as usize);
+    }
+    product
 }
 
 /// Parses `2^3 * 3^2 * 5` (or whitespace-separated `2 2 2 3 3 5`, or a bare
@@ -212,6 +226,19 @@ mod tests {
         // Wrong product entirely.
         assert!(matches!(
             verify("360", "2^3 * 3^2", AnswerKind::Factorization),
+            Verdict::Incorrect { .. }
+        ));
+    }
+
+    #[test]
+    fn factored_expected_self_verifies_for_composites() {
+        // Composite factorization problems store the *factored* form as
+        // `expected`; the target is its product (360 here).
+        let f = "2^3 * 3^2 * 5";
+        assert!(verify(f, f, AnswerKind::Factorization).is_correct());
+        assert!(verify(f, "5 * 2*2*2 * 3*3", AnswerKind::Factorization).is_correct());
+        assert!(matches!(
+            verify(f, "8 * 9 * 5", AnswerKind::Factorization),
             Verdict::Incorrect { .. }
         ));
     }

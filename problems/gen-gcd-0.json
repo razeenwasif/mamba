@@ -1,0 +1,11 @@
+{
+  "id": "gen-gcd-0",
+  "title": "Greatest Common Divisor",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Easy",
+  "prompt": "Find the greatest common divisor:\n\n    gcd(8422, 8116)",
+  "expected": "2",
+  "answer_kind": "Scalar",
+  "hint": "the Euclidean algorithm; enter a single integer"
+}

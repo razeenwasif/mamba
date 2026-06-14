@@ -1,0 +1,11 @@
+{
+  "id": "gen-power-derivative-1",
+  "title": "Derivative of a Power",
+  "domain": "Symbolic",
+  "topic": "Calculus",
+  "difficulty": "Easy",
+  "prompt": "Differentiate with respect to x:\n\n    d/dx [ 6x^5 ]",
+  "expected": "30*x^4",
+  "answer_kind": "Scalar",
+  "hint": "power rule: d/dx[a*x^n] = a*n*x^(n-1)"
+}

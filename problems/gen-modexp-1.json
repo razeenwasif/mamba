@@ -1,0 +1,11 @@
+{
+  "id": "gen-modexp-1",
+  "title": "Modular Exponentiation",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Hard",
+  "prompt": "Compute the least non-negative residue:\n\n    4^30 mod 13",
+  "expected": "1",
+  "answer_kind": "Scalar",
+  "hint": "reduce the exponent with Fermat's little theorem; enter one integer"
+}
