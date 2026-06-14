@@ -7,6 +7,16 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Multivariate symbolic verification.** The symbolic pipeline now detects every
+  free variable in both expressions and probes over all of them at once, so
+  multi-variable answers verify by algebraic equivalence
+  (`(x+y)^2 ≡ x^2 + 2*x*y + y^2`). The same machinery covers trigonometric
+  identities (`sin(x)^2 + cos(x)^2 ≡ 1`) and rational forms via `meval`'s
+  built-ins — at no dependency cost. Two new bootstrap problems (Expand a Perfect
+  Square, Pythagorean Identity). See
+  [ADR 0003](docs/adr/0003-multivariate-symbolic-probing.md), which also records
+  why `symbolica` was **not** adopted (proprietary/key-gated license + GMP/mimalloc
+  C deps, incompatible with Mamba's MIT pure-Rust single-binary design).
 - **Fuzzy problem finder (`/`).** A Spotlight-style floating overlay (ported
   from `~/Kata`, `fuzzy-matcher`/SkimMatcherV2) filters the bank as you type,
   matching against title, topic, difficulty, and domain, ranked best-first.

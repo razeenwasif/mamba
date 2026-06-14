@@ -62,8 +62,10 @@ lists all targets (`install`, `build`, `test`, `run`, `check`, `fmt`, `clean`).
 ## How verification works
 
 - **Symbolic** — parses both your answer and the canonical one, then checks
-  *algebraic equivalence* by evaluating at several probe points (so `(x-3)(x+2)`,
-  `x^2-x-6`, and `x*x-x-6` all pass).
+  *algebraic equivalence* by evaluating at several probe points over **every free
+  variable** (so `(x-3)(x+2)` ≡ `x^2-x-6`, `(x+y)^2` ≡ `x^2 + 2*x*y + y^2`, and
+  `sin(x)^2 + cos(x)^2` ≡ `1` all pass). Write `*` between variables (`2*x*y`,
+  not `2xy`). See [ADR 0003](docs/adr/0003-multivariate-symbolic-probing.md).
 - **Tensor** — parses `1 2; 3 4`-style input into a matrix and compares shape
   then elements (a scalar is a 1×1 matrix).
 - **Exact** — arbitrary-precision integers; factorizations are checked by

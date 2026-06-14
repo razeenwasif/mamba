@@ -1,0 +1,11 @@
+{
+  "id": "pythagorean-identity",
+  "title": "Pythagorean Identity",
+  "domain": "Symbolic",
+  "topic": "Trigonometry",
+  "difficulty": "Easy",
+  "prompt": "Simplify the trigonometric expression to its simplest form:\n\n    sin²(x) + cos²(x)\n\nEnter the simplified result.",
+  "expected": "1",
+  "answer_kind": "Scalar",
+  "hint": "the Pythagorean identity — functions are written sin(x), cos(x)"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "expand-a-perfect-square",
+  "title": "Expand a Perfect Square",
+  "domain": "Symbolic",
+  "topic": "Algebra",
+  "difficulty": "Medium",
+  "prompt": "Expand the binomial square into a polynomial in two variables:\n\n    (x + y)²\n\nAny algebraically-equivalent form is accepted — the symbolic pipeline probes over both x and y.",
+  "expected": "x^2 + 2*x*y + y^2",
+  "answer_kind": "Scalar",
+  "hint": "use * between variables: write 2*x*y, not 2xy  (powers with ^, e.g. x^2)"
+}
