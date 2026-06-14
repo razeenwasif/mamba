@@ -67,7 +67,10 @@ lists all targets (`install`, `build`, `test`, `run`, `check`, `fmt`, `clean`).
   `sin(x)^2 + cos(x)^2` ≡ `1` all pass). Write `*` between variables (`2*x*y`,
   not `2xy`). See [ADR 0003](docs/adr/0003-multivariate-symbolic-probing.md).
 - **Tensor** — parses `1 2; 3 4`-style input into a matrix and compares shape
-  then elements (a scalar is a 1×1 matrix).
+  then elements (a scalar is a 1×1 matrix). Cells are **exact rationals** when
+  written as integers/fractions (so `3/5 -7/10; -1/5 2/5` verifies an inverse
+  with no rounding, and `6/10` = `3/5`) and fall back to float tolerance for
+  decimals. See [ADR 0004](docs/adr/0004-rational-tensor-cells.md).
 - **Exact** — arbitrary-precision integers; factorizations are checked by
   reconstructing the product *and* verifying each factor is prime
   (deterministic Miller–Rabin).

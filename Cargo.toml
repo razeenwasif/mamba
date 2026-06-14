@@ -30,8 +30,11 @@ dirs = "6"
 # AST and verifies *algebraic* equivalence by randomized numeric probing.
 meval = "0.2"
 # Tensor pipeline (linear algebra): parses inputs into n-dimensional arrays so
-# matrix answers can be compared element-wise with a shape check.
+# matrix answers can be compared element-wise with a shape check. `num-rational`
+# gives exact-fraction cells, so answers like a matrix inverse (1/3, -7/10) are
+# verified exactly rather than within a float tolerance.
 ndarray = "0.16"
+num-rational = "0.4"
 # Exact-arithmetic pipeline (number theory): arbitrary-precision integers so
 # validating massive exact answers (factorizations, modular powers) never
 # overflows. `num-integer`/`num-traits` add gcd, div_rem, and Zero/One generics.

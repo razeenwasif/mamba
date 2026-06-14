@@ -7,6 +7,14 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Exact-rational tensor backend.** Matrix cells are now parsed as a hybrid
+  [`Cell`]: an exact rational (`num-rational`) for integers/fractions, or an
+  approximate float for decimals. Both-exact cells compare with `==` (so a `2×2`
+  inverse with entries like `3/5`, `-7/10` verifies with no rounding error, and
+  `6/10` equals `3/5`); a decimal on either side falls back to float tolerance.
+  Backward compatible — integer matrices still pass. New bootstrap problem
+  (Inverse of a 2×2). See
+  [ADR 0004](docs/adr/0004-rational-tensor-cells.md).
 - **Multivariate symbolic verification.** The symbolic pipeline now detects every
   free variable in both expressions and probes over all of them at once, so
   multi-variable answers verify by algebraic equivalence
