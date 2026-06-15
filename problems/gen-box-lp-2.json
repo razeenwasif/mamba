@@ -1,0 +1,11 @@
+{
+  "id": "gen-box-lp-2",
+  "title": "Box-Constrained LP",
+  "domain": "Exact",
+  "topic": "Linear Programming",
+  "difficulty": "Medium",
+  "prompt": "Minimize  -3*x1 - 3*x2 + 5*x3\nsubject to  0 ≤ x_j ≤ u_j  with  u = [3, 3, 4].\n\nWhat is the minimum objective value?",
+  "expected": "-18",
+  "answer_kind": "Scalar",
+  "hint": "each x_j is at a bound: u_j if c_j < 0, else 0"
+}

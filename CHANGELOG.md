@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Signals & DSP, Linear Programming, and Hypothesis Testing topics** (bank
+  124 → 159): convolution length & sequences, Nyquist frequency, radix-2 FFT
+  stages; box-constrained LP minima, standard-form variable counts, objective
+  values; t-test/chi-square/two-sample degrees of freedom, z-scores, and exact
+  standard errors. Ten new generator templates + four curated problems; all pass
+  `mamba --verify`.
 - **`mamba review` subcommand.** Lists the problems due for review from the
   shell — most-overdue first, each with its topic and `new` / `last DATE (N
   solves)` status — using the same spaced-repetition schedule and vault history

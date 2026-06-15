@@ -1,0 +1,11 @@
+{
+  "id": "gen-box-lp-1",
+  "title": "Box-Constrained LP",
+  "domain": "Exact",
+  "topic": "Linear Programming",
+  "difficulty": "Medium",
+  "prompt": "Minimize  1*x1 - 4*x2 + 1*x3\nsubject to  0 ≤ x_j ≤ u_j  with  u = [5, 1, 1].\n\nWhat is the minimum objective value?",
+  "expected": "-4",
+  "answer_kind": "Scalar",
+  "hint": "each x_j is at a bound: u_j if c_j < 0, else 0"
+}

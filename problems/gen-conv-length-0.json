@@ -1,0 +1,11 @@
+{
+  "id": "gen-conv-length-0",
+  "title": "Convolution Length",
+  "domain": "Exact",
+  "topic": "Signals & DSP",
+  "difficulty": "Easy",
+  "prompt": "Two finite signals of length 61 and 31 are linearly convolved.\n\nWhat is the length of the result?",
+  "expected": "91",
+  "answer_kind": "Scalar",
+  "hint": "M + N − 1"
+}

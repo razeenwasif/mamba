@@ -1,0 +1,11 @@
+{
+  "id": "gen-lp-standard-vars-1",
+  "title": "Standard-Form Variables",
+  "domain": "Exact",
+  "topic": "Linear Programming",
+  "difficulty": "Easy",
+  "prompt": "An LP has 4 decision variables and 1 inequality (≤) constraints.\n\nConverting to standard form (adding slack variables), how many variables in total?",
+  "expected": "5",
+  "answer_kind": "Scalar",
+  "hint": "one slack per ≤-constraint: n + m"
+}

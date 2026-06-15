@@ -1,0 +1,11 @@
+{
+  "id": "stats-two-sample-df",
+  "title": "Two-Sample t-Test df",
+  "domain": "Exact",
+  "topic": "Hypothesis Testing",
+  "difficulty": "Medium",
+  "prompt": "A pooled two-sample t-test has groups of sizes n1 = 10 and n2 = 12. How many degrees of freedom?",
+  "expected": "20",
+  "answer_kind": "Scalar",
+  "hint": "df = n1 + n2 − 2"
+}

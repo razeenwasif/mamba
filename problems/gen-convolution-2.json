@@ -1,0 +1,11 @@
+{
+  "id": "gen-convolution-2",
+  "title": "Convolve Two Signals",
+  "domain": "Tensor",
+  "topic": "Signals & DSP",
+  "difficulty": "Hard",
+  "prompt": "Compute the linear convolution of\n\n    x = [1, 4, -2]\n    h = [2, 0]\n\nEnter the result as a space-separated row.",
+  "expected": "2 8 -4 0",
+  "answer_kind": "Scalar",
+  "hint": "y[n] = Σ x[k]·h[n−k]; length is len(x)+len(h)−1"
+}

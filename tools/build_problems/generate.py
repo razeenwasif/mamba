@@ -20,7 +20,7 @@ import argparse
 import json
 import random
 from fractions import Fraction
-from math import comb, factorial, gcd, lcm, perm
+from math import comb, factorial, gcd, isqrt, lcm, perm
 from pathlib import Path
 
 # --------------------------------------------------------------------------
@@ -684,6 +684,205 @@ def t_variance_discrete(rng: random.Random, i: int) -> dict:
     }
 
 
+def _convolve(x: list[int], h: list[int]) -> list[int]:
+    """Linear convolution of two integer sequences."""
+    y = [0] * (len(x) + len(h) - 1)
+    for i, xi in enumerate(x):
+        for j, hj in enumerate(h):
+            y[i + j] += xi * hj
+    return y
+
+
+# ---- Signals & DSP --------------------------------------------------------
+
+
+def t_conv_length(rng: random.Random, i: int) -> dict:
+    m, n = rng.randint(3, 64), rng.randint(3, 64)
+    return {
+        "id": f"gen-conv-length-{i}",
+        "title": "Convolution Length",
+        "domain": "Exact",
+        "topic": "Signals & DSP",
+        "difficulty": "Easy",
+        "prompt": (
+            f"Two finite signals of length {m} and {n} are linearly convolved.\n\n"
+            "What is the length of the result?"
+        ),
+        "expected": str(m + n - 1),
+        "answer_kind": "Scalar",
+        "hint": "M + N − 1",
+    }
+
+
+def t_nyquist(rng: random.Random, i: int) -> dict:
+    fs = rng.choice([8000, 16000, 32000, 44100 - 100, 48000, 96000])  # even rates
+    return {
+        "id": f"gen-nyquist-{i}",
+        "title": "Nyquist Frequency",
+        "domain": "Exact",
+        "topic": "Signals & DSP",
+        "difficulty": "Easy",
+        "prompt": f"A signal is sampled at f_s = {fs} Hz.\n\nWhat is the Nyquist frequency (in Hz)?",
+        "expected": str(fs // 2),
+        "answer_kind": "Scalar",
+        "hint": "the Nyquist frequency is f_s / 2",
+    }
+
+
+def t_fft_stages(rng: random.Random, i: int) -> dict:
+    k = rng.randint(3, 12)
+    return {
+        "id": f"gen-fft-stages-{i}",
+        "title": "Radix-2 FFT Stages",
+        "domain": "Exact",
+        "topic": "Signals & DSP",
+        "difficulty": "Medium",
+        "prompt": f"A radix-2 FFT has size N = {2**k}.\n\nHow many butterfly stages does it use?",
+        "expected": str(k),
+        "answer_kind": "Scalar",
+        "hint": "log₂(N) stages",
+    }
+
+
+def t_convolution_sequence(rng: random.Random, i: int) -> dict:
+    x = [rng.randint(-4, 4) for _ in range(rng.randint(2, 3))]
+    h = [rng.randint(-4, 4) for _ in range(rng.randint(2, 3))]
+    y = _convolve(x, h)
+    return {
+        "id": f"gen-convolution-{i}",
+        "title": "Convolve Two Signals",
+        "domain": "Tensor",
+        "topic": "Signals & DSP",
+        "difficulty": "Hard",
+        "prompt": (
+            f"Compute the linear convolution of\n\n    x = {x}\n    h = {h}\n\n"
+            "Enter the result as a space-separated row."
+        ),
+        "expected": " ".join(str(v) for v in y),
+        "answer_kind": "Scalar",
+        "hint": "y[n] = Σ x[k]·h[n−k]; length is len(x)+len(h)−1",
+    }
+
+
+# ---- Linear Programming ---------------------------------------------------
+
+
+def t_box_lp_min(rng: random.Random, i: int) -> dict:
+    n = rng.randint(2, 3)
+    c = [rng.choice([k for k in range(-5, 6) if k != 0]) for _ in range(n)]
+    u = [rng.randint(1, 6) for _ in range(n)]
+    obj = " + ".join(f"{ci}*x{j}" for j, ci in enumerate(c, start=1)).replace("+ -", "- ")
+    # For a minimization over [0, u_i], pick x_i = u_i where c_i < 0, else 0.
+    minimum = sum(ci * ui for ci, ui in zip(c, u) if ci < 0)
+    return {
+        "id": f"gen-box-lp-{i}",
+        "title": "Box-Constrained LP",
+        "domain": "Exact",
+        "topic": "Linear Programming",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Minimize  {obj}\nsubject to  0 ≤ x_j ≤ u_j  with  u = {u}.\n\n"
+            "What is the minimum objective value?"
+        ),
+        "expected": str(minimum),
+        "answer_kind": "Scalar",
+        "hint": "each x_j is at a bound: u_j if c_j < 0, else 0",
+    }
+
+
+def t_lp_standard_vars(rng: random.Random, i: int) -> dict:
+    n, m = rng.randint(2, 8), rng.randint(1, 6)
+    return {
+        "id": f"gen-lp-standard-vars-{i}",
+        "title": "Standard-Form Variables",
+        "domain": "Exact",
+        "topic": "Linear Programming",
+        "difficulty": "Easy",
+        "prompt": (
+            f"An LP has {n} decision variables and {m} inequality (≤) constraints.\n\n"
+            "Converting to standard form (adding slack variables), how many variables in total?"
+        ),
+        "expected": str(n + m),
+        "answer_kind": "Scalar",
+        "hint": "one slack per ≤-constraint: n + m",
+    }
+
+
+def t_lp_objective(rng: random.Random, i: int) -> dict:
+    n = rng.randint(2, 3)
+    c = [rng.randint(-5, 6) for _ in range(n)]
+    x = [rng.randint(0, 6) for _ in range(n)]
+    return {
+        "id": f"gen-lp-objective-{i}",
+        "title": "Objective Value",
+        "domain": "Exact",
+        "topic": "Linear Programming",
+        "difficulty": "Easy",
+        "prompt": f"For c = {c} and the feasible point x = {x}, compute the objective c·x.",
+        "expected": str(sum(ci * xi for ci, xi in zip(c, x))),
+        "answer_kind": "Scalar",
+        "hint": "c·x = Σ cⱼ·xⱼ",
+    }
+
+
+# ---- Hypothesis Testing ---------------------------------------------------
+
+
+def t_t_test_df(rng: random.Random, i: int) -> dict:
+    n = rng.randint(5, 60)
+    return {
+        "id": f"gen-t-test-df-{i}",
+        "title": "t-Test Degrees of Freedom",
+        "domain": "Exact",
+        "topic": "Hypothesis Testing",
+        "difficulty": "Easy",
+        "prompt": f"A one-sample t-test uses n = {n} observations.\n\nHow many degrees of freedom?",
+        "expected": str(n - 1),
+        "answer_kind": "Scalar",
+        "hint": "df = n − 1",
+    }
+
+
+def t_z_score(rng: random.Random, i: int) -> dict:
+    sigma = rng.randint(2, 9)
+    mu = rng.randint(-5, 10)
+    x = rng.randint(-5, 20)
+    return {
+        "id": f"gen-z-score-{i}",
+        "title": "Z-Score",
+        "domain": "Tensor",
+        "topic": "Hypothesis Testing",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A value x = {x} comes from a distribution with mean μ = {mu} and "
+            f"standard deviation σ = {sigma}.\n\nFind the z-score (x − μ)/σ as an exact fraction."
+        ),
+        "expected": frac(Fraction(x - mu, sigma)),
+        "answer_kind": "Scalar",
+        "hint": "z = (x − μ)/σ",
+    }
+
+
+def t_standard_error(rng: random.Random, i: int) -> dict:
+    n = rng.choice([4, 9, 16, 25, 36, 49, 64])  # perfect squares → exact SE
+    sigma = rng.randint(2, 24)
+    se = Fraction(sigma, isqrt(n))
+    return {
+        "id": f"gen-standard-error-{i}",
+        "title": "Standard Error",
+        "domain": "Tensor",
+        "topic": "Hypothesis Testing",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A sample of n = {n} observations has population σ = {sigma}.\n\n"
+            "Find the standard error SE = σ/√n as an exact fraction."
+        ),
+        "expected": frac(se),
+        "answer_kind": "Scalar",
+        "hint": "SE = σ/√n; √n is exact since n is a perfect square",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -716,6 +915,16 @@ TEMPLATES = [
     t_two_dice_sum,
     t_expected_value,
     t_variance_discrete,
+    t_conv_length,
+    t_nyquist,
+    t_fft_stages,
+    t_convolution_sequence,
+    t_box_lp_min,
+    t_lp_standard_vars,
+    t_lp_objective,
+    t_t_test_df,
+    t_z_score,
+    t_standard_error,
 ]
 
 
@@ -814,6 +1023,25 @@ FIXED = [
     _p("stats-sample-mean", "Sample Mean", "Tensor", "Statistics", "Easy",
        "Find the mean of the sample\n\n    [2, 4, 4, 4, 5, 5, 7, 9]",
        "5", "sum the values and divide by the count"),
+    # ---- Signals & DSP ----
+    _p("dsp-convolution", "Linear Convolution", "Tensor", "Signals & DSP", "Medium",
+       "Compute the linear convolution\n\n    [1, 2, 3] * [1, 1]\n\nEnter the result as a row.",
+       "1 3 5 3", "y[n] = Σ x[k]·h[n−k]; the result has length 4"),
+    _p("dsp-nyquist-cd", "CD Nyquist Frequency", "Exact", "Signals & DSP", "Easy",
+       "CD audio is sampled at 44100 Hz. What is the Nyquist frequency (in Hz)?",
+       "22050", "f_s / 2"),
+    # ---- Linear Programming ----
+    _p("lp-box-min", "LP Minimum over a Box", "Exact", "Linear Programming", "Medium",
+       "Minimize  -2*x1 + 3*x2  subject to  0 ≤ x1 ≤ 4, 0 ≤ x2 ≤ 5.\n\n"
+       "What is the minimum objective value?",
+       "-8", "x1 = 4 (its coefficient is negative), x2 = 0"),
+    # ---- Hypothesis Testing ----
+    _p("stats-chi-square-df", "Chi-Square Degrees of Freedom", "Exact", "Hypothesis Testing", "Easy",
+       "A chi-square goodness-of-fit test is run over 6 categories. How many degrees of freedom?",
+       "5", "df = k − 1 for k categories"),
+    _p("stats-two-sample-df", "Two-Sample t-Test df", "Exact", "Hypothesis Testing", "Medium",
+       "A pooled two-sample t-test has groups of sizes n1 = 10 and n2 = 12. How many degrees of freedom?",
+       "20", "df = n1 + n2 − 2"),
 ]
 
 

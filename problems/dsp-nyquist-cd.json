@@ -1,0 +1,11 @@
+{
+  "id": "dsp-nyquist-cd",
+  "title": "CD Nyquist Frequency",
+  "domain": "Exact",
+  "topic": "Signals & DSP",
+  "difficulty": "Easy",
+  "prompt": "CD audio is sampled at 44100 Hz. What is the Nyquist frequency (in Hz)?",
+  "expected": "22050",
+  "answer_kind": "Scalar",
+  "hint": "f_s / 2"
+}

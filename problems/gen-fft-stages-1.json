@@ -1,0 +1,11 @@
+{
+  "id": "gen-fft-stages-1",
+  "title": "Radix-2 FFT Stages",
+  "domain": "Exact",
+  "topic": "Signals & DSP",
+  "difficulty": "Medium",
+  "prompt": "A radix-2 FFT has size N = 256.\n\nHow many butterfly stages does it use?",
+  "expected": "8",
+  "answer_kind": "Scalar",
+  "hint": "log₂(N) stages"
+}

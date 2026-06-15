@@ -1,0 +1,11 @@
+{
+  "id": "gen-z-score-0",
+  "title": "Z-Score",
+  "domain": "Tensor",
+  "topic": "Hypothesis Testing",
+  "difficulty": "Medium",
+  "prompt": "A value x = 10 comes from a distribution with mean μ = -2 and standard deviation σ = 7.\n\nFind the z-score (x − μ)/σ as an exact fraction.",
+  "expected": "12/7",
+  "answer_kind": "Scalar",
+  "hint": "z = (x − μ)/σ"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "stats-chi-square-df",
+  "title": "Chi-Square Degrees of Freedom",
+  "domain": "Exact",
+  "topic": "Hypothesis Testing",
+  "difficulty": "Easy",
+  "prompt": "A chi-square goodness-of-fit test is run over 6 categories. How many degrees of freedom?",
+  "expected": "5",
+  "answer_kind": "Scalar",
+  "hint": "df = k − 1 for k categories"
+}

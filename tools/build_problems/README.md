@@ -55,6 +55,9 @@ parametrized templates `--count` times each:
 | `dice-sum` | Tensor | two-dice P(sum) fraction (Probability) |
 | `expected-value` | Tensor | weighted E[X] fraction (Statistics) |
 | `variance` | Tensor | discrete Var(X) fraction (Statistics) |
+| `convolution` | Tensor | linear convolution sequence (DSP) |
+| `z-score` | Tensor | `(x−μ)/σ` fraction (Hypothesis Testing) |
+| `standard-error` | Tensor | `σ/√n` exact fraction (Hypothesis Testing) |
 | `combination` | Exact | `C(n, k)` (Probability) |
 | `permutation` | Exact | `P(n, k)` (Probability) |
 | `factorial` | Exact | `n!` (Probability) |
@@ -66,6 +69,13 @@ parametrized templates `--count` times each:
 | `conv-output` | Exact | `floor((L−K+2P)/S)+1` (DL) |
 | `linear-params` | Exact | `a·b + b` (DL) |
 | `conv-params` | Exact | `C_out·(C_in·K² + 1)` (DL) |
+| `conv-length` | Exact | `M+N−1` (DSP) |
+| `nyquist` | Exact | `f_s/2` (DSP) |
+| `fft-stages` | Exact | `log₂(N)` (DSP) |
+| `box-lp` | Exact | min of `c·x` over a box (LP) |
+| `lp-standard-vars` | Exact | `n+m` standard-form vars (LP) |
+| `lp-objective` | Exact | `c·x` at a point (LP) |
+| `t-test-df` | Exact | `n−1` degrees of freedom (Hyp. Testing) |
 
 The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
 materialized JSON in `problems/` is the committed, browseable data.

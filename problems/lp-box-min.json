@@ -1,0 +1,11 @@
+{
+  "id": "lp-box-min",
+  "title": "LP Minimum over a Box",
+  "domain": "Exact",
+  "topic": "Linear Programming",
+  "difficulty": "Medium",
+  "prompt": "Minimize  -2*x1 + 3*x2  subject to  0 ≤ x1 ≤ 4, 0 ≤ x2 ≤ 5.\n\nWhat is the minimum objective value?",
+  "expected": "-8",
+  "answer_kind": "Scalar",
+  "hint": "x1 = 4 (its coefficient is negative), x2 = 0"
+}

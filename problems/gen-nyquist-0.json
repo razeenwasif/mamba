@@ -1,0 +1,11 @@
+{
+  "id": "gen-nyquist-0",
+  "title": "Nyquist Frequency",
+  "domain": "Exact",
+  "topic": "Signals & DSP",
+  "difficulty": "Easy",
+  "prompt": "A signal is sampled at f_s = 32000 Hz.\n\nWhat is the Nyquist frequency (in Hz)?",
+  "expected": "16000",
+  "answer_kind": "Scalar",
+  "hint": "the Nyquist frequency is f_s / 2"
+}

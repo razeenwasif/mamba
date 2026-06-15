@@ -1,0 +1,11 @@
+{
+  "id": "gen-t-test-df-2",
+  "title": "t-Test Degrees of Freedom",
+  "domain": "Exact",
+  "topic": "Hypothesis Testing",
+  "difficulty": "Easy",
+  "prompt": "A one-sample t-test uses n = 56 observations.\n\nHow many degrees of freedom?",
+  "expected": "55",
+  "answer_kind": "Scalar",
+  "hint": "df = n − 1"
+}

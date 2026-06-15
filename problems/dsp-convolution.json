@@ -1,0 +1,11 @@
+{
+  "id": "dsp-convolution",
+  "title": "Linear Convolution",
+  "domain": "Tensor",
+  "topic": "Signals & DSP",
+  "difficulty": "Medium",
+  "prompt": "Compute the linear convolution\n\n    [1, 2, 3] * [1, 1]\n\nEnter the result as a row.",
+  "expected": "1 3 5 3",
+  "answer_kind": "Scalar",
+  "hint": "y[n] = Σ x[k]·h[n−k]; the result has length 4"
+}

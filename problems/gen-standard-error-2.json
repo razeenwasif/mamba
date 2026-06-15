@@ -1,0 +1,11 @@
+{
+  "id": "gen-standard-error-2",
+  "title": "Standard Error",
+  "domain": "Tensor",
+  "topic": "Hypothesis Testing",
+  "difficulty": "Medium",
+  "prompt": "A sample of n = 49 observations has population σ = 20.\n\nFind the standard error SE = σ/√n as an exact fraction.",
+  "expected": "20/7",
+  "answer_kind": "Scalar",
+  "hint": "SE = σ/√n; √n is exact since n is a perfect square"
+}

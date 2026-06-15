@@ -1,0 +1,11 @@
+{
+  "id": "gen-lp-objective-2",
+  "title": "Objective Value",
+  "domain": "Exact",
+  "topic": "Linear Programming",
+  "difficulty": "Easy",
+  "prompt": "For c = [1, -4, -4] and the feasible point x = [4, 3, 3], compute the objective c·x.",
+  "expected": "-20",
+  "answer_kind": "Scalar",
+  "hint": "c·x = Σ cⱼ·xⱼ"
+}
