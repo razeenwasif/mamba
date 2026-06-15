@@ -17,6 +17,7 @@ use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use ratatui::widgets::ListState;
 
+use crate::agent::{self, AgentEvent, ChatMessage};
 use crate::engine::{self, Verdict};
 use crate::review;
 use crate::storage::problem::Problem;
@@ -46,6 +47,8 @@ pub enum Focus {
     Input,
     /// The verification console.
     Console,
+    /// The AI tutor chat input (toggled with `Ctrl-A`, not in the `Tab` cycle).
+    Agent,
 }
 
 impl Focus {
@@ -148,6 +151,19 @@ pub struct App {
     pub stats_visible: bool,
     /// Stats snapshot, recomputed from the vault each time the overlay opens.
     pub stats: Option<progress::Stats>,
+    /// Whether the AI tutor panel is shown on the right (toggle: `Ctrl-A`).
+    pub agent_visible: bool,
+    /// The tutor conversation so far (user/assistant turns).
+    pub agent_messages: Vec<ChatMessage>,
+    /// The prompt currently being typed into the tutor input.
+    pub agent_input: String,
+    /// `true` while a model response is streaming in.
+    pub agent_streaming: bool,
+    /// Receiver for the in-flight streaming response, if any.
+    pub agent_rx: Option<Receiver<AgentEvent>>,
+    /// Ollama model tag and server URL (from `MAMBA_OLLAMA_*` or defaults).
+    pub agent_model: String,
+    pub agent_url: String,
     /// When `true`, the main loop tears down the terminal and exits.
     pub should_quit: bool,
 }
@@ -185,6 +201,13 @@ impl App {
             open_history: None,
             stats_visible: false,
             stats: None,
+            agent_visible: false,
+            agent_messages: Vec::new(),
+            agent_input: String::new(),
+            agent_streaming: false,
+            agent_rx: None,
+            agent_model: agent::default_model(),
+            agent_url: agent::default_url(),
             should_quit: false,
         };
         if let Some(first) = app
@@ -233,6 +256,18 @@ impl App {
         // -- Global bindings (work regardless of focus) -------------------
         if (key.code == KeyCode::Char('q') || key.code == KeyCode::Char('c')) && ctrl {
             self.should_quit = true;
+            return;
+        }
+
+        // Ctrl-A toggles the AI tutor panel from anywhere.
+        if key.code == KeyCode::Char('a') && ctrl {
+            self.toggle_agent();
+            return;
+        }
+        // The tutor input owns the keyboard while it has focus (so `/`, `t`,
+        // `r`, etc. are literal characters there).
+        if self.focus == Focus::Agent {
+            self.on_agent_key(key, ctrl);
             return;
         }
 
@@ -303,7 +338,7 @@ impl App {
             Focus::Navigator => self.on_navigator_key(key),
             Focus::Description => self.scroll_pane(key, true),
             Focus::Console => self.scroll_pane(key, false),
-            Focus::Input => {} // routed earlier; never reached
+            Focus::Input | Focus::Agent => {} // routed earlier; never reached
         }
     }
 
@@ -651,6 +686,135 @@ impl App {
             self.stats = Some(progress::stats(&self.vault_path, today));
             self.search_active = false;
             self.stats_visible = true;
+        }
+    }
+
+    // -- AI tutor (`Ctrl-A`) -------------------------------------------------
+
+    /// Summon/dismiss the tutor: if it already has focus, hide it and return to
+    /// the answer bar; otherwise show it (if needed) and focus it.
+    fn toggle_agent(&mut self) {
+        if self.focus == Focus::Agent {
+            self.agent_visible = false;
+            self.focus = Focus::Input;
+        } else {
+            self.agent_visible = true;
+            self.focus = Focus::Agent;
+        }
+    }
+
+    /// Keys handled while the tutor input has focus. Enter sends; Esc/Tab leave
+    /// the input (the panel stays visible); printable chars extend the prompt.
+    fn on_agent_key(&mut self, key: KeyEvent, ctrl: bool) {
+        match key.code {
+            KeyCode::Esc | KeyCode::Tab => self.focus = Focus::Input,
+            KeyCode::Enter => self.send_prompt(),
+            KeyCode::Backspace => {
+                self.agent_input.pop();
+            }
+            KeyCode::Char(c) if !ctrl => self.agent_input.push(c),
+            _ => {}
+        }
+    }
+
+    /// A system prompt giving the model the current problem and the user's
+    /// in-progress answer, so its help is targeted.
+    fn agent_context(&self) -> String {
+        let base = "You are a concise math tutor inside Mamba, a terminal practice tool. \
+             Prefer hints, the method, and intuition over giving the full answer unless \
+             explicitly asked. Keep replies short and terminal-friendly — plain text, no \
+             markdown tables.";
+        match self.open_problem_ref() {
+            Some(p) => format!(
+                "{base}\n\nThe user is working on:\n{} [{}] — {} · {}\n\n{}\n\nTheir current answer attempt:\n{}",
+                p.title,
+                p.difficulty,
+                p.domain,
+                p.topic,
+                p.prompt,
+                if self.input.trim().is_empty() {
+                    "(blank)"
+                } else {
+                    self.input.trim()
+                },
+            ),
+            None => base.to_string(),
+        }
+    }
+
+    /// Sends the typed prompt to Ollama and begins streaming the reply.
+    fn send_prompt(&mut self) {
+        if self.agent_streaming {
+            return;
+        }
+        let prompt = self.agent_input.trim().to_string();
+        if prompt.is_empty() {
+            return;
+        }
+        self.agent_input.clear();
+        self.agent_messages.push(ChatMessage::user(prompt));
+
+        // System context + full history; the empty assistant turn is the sink
+        // the streamed tokens append into.
+        let mut wire = vec![ChatMessage::system(self.agent_context())];
+        wire.extend(self.agent_messages.iter().cloned());
+        self.agent_messages
+            .push(ChatMessage::assistant(String::new()));
+
+        self.agent_streaming = true;
+        self.agent_rx = Some(agent::stream_chat(
+            self.agent_url.clone(),
+            self.agent_model.clone(),
+            wire,
+        ));
+    }
+
+    /// Drains any streamed tutor tokens into the last assistant message. Called
+    /// once per main-loop tick so replies appear live.
+    pub fn poll_agent(&mut self) {
+        let mut tokens = String::new();
+        let mut finished = false;
+        let mut error = None;
+        if let Some(rx) = &self.agent_rx {
+            loop {
+                match rx.try_recv() {
+                    Ok(AgentEvent::Token(t)) => tokens.push_str(&t),
+                    Ok(AgentEvent::Done) => {
+                        finished = true;
+                        break;
+                    }
+                    Ok(AgentEvent::Error(e)) => {
+                        error = Some(e);
+                        break;
+                    }
+                    Err(TryRecvError::Empty) => break,
+                    Err(TryRecvError::Disconnected) => {
+                        finished = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if !tokens.is_empty()
+            && let Some(last) = self.agent_messages.last_mut()
+        {
+            last.content.push_str(&tokens);
+        }
+        if let Some(e) = error {
+            if let Some(last) = self.agent_messages.last_mut()
+                && last.role == "assistant"
+                && last.content.is_empty()
+            {
+                last.content = format!("⚠ {e}");
+            } else {
+                self.agent_messages
+                    .push(ChatMessage::assistant(format!("⚠ {e}")));
+            }
+            finished = true;
+        }
+        if finished {
+            self.agent_streaming = false;
+            self.agent_rx = None;
         }
     }
 

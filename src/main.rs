@@ -207,15 +207,16 @@ fn print_help() {
 /// most one input event. State mutation and rendering never interleave.
 fn run(terminal: &mut ratatui::DefaultTerminal, app: &mut App) -> anyhow::Result<()> {
     while !app.should_quit {
-        // Drain a finished worker verification so the verdict lands in state
-        // before we draw — the UI never blocks on verification itself.
+        // Drain finished worker output (verification + streamed tutor tokens)
+        // so it lands in state before we draw — the UI never blocks on either.
         app.poll_verify();
+        app.poll_agent();
 
         terminal.draw(|frame| ui::draw(frame, app))?;
 
-        // Poll faster while verifying so the result appears promptly; idle at
-        // the normal tick otherwise.
-        let timeout = if app.is_verifying() {
+        // Poll faster while verifying or while the tutor is streaming so output
+        // appears promptly; idle at the normal tick otherwise.
+        let timeout = if app.is_verifying() || app.agent_streaming {
             POLL_BUSY
         } else {
             TICK_RATE

@@ -59,5 +59,14 @@ fn renders_navigator_and_stats_overlay() {
     assert!(overlay.contains("By topic"), "expected the topic section");
     assert!(overlay.contains("solved"), "expected the totals line");
 
+    // The AI tutor panel renders in its right-hand column when visible.
+    app.stats_visible = false;
+    app.agent_visible = true;
+    terminal.draw(|f| ui::draw(f, &mut app)).unwrap();
+    assert!(
+        text(terminal.backend().buffer()).contains("Tutor"),
+        "expected the tutor panel"
+    );
+
     let _ = std::fs::remove_dir_all(&vault);
 }

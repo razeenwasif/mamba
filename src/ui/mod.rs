@@ -52,9 +52,15 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
         ])
         .areas(frame.area());
 
-    let [sidebar, center] = Layout::default()
+    // The AI tutor claims a right-hand column when visible (Ctrl-A).
+    let agent_w = if app.agent_visible { 46 } else { 0 };
+    let [sidebar, center, agent_area] = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Length(30), Constraint::Min(0)])
+        .constraints([
+            Constraint::Length(30),
+            Constraint::Min(0),
+            Constraint::Length(agent_w),
+        ])
         .areas(main);
 
     let [description, console] = Layout::default()
@@ -66,6 +72,9 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
     draw_navigator(frame, app, sidebar);
     draw_description(frame, app, description);
     draw_console(frame, app, console);
+    if app.agent_visible {
+        draw_agent(frame, app, agent_area);
+    }
     draw_input(frame, app, input_bar);
     draw_footer(frame, app, footer);
 
@@ -660,6 +669,108 @@ fn draw_input(frame: &mut Frame, app: &App, area: Rect) {
     );
 }
 
+/// Right-hand AI tutor panel: a streaming chat with the local Ollama model,
+/// scoped to the open problem and the user's current answer.
+fn draw_agent(frame: &mut Frame, app: &App, area: Rect) {
+    let pal = theme::palette();
+    let focused = app.focus == Focus::Agent;
+    let block = theme::pane_block(format!("Tutor · {}", app.agent_model), focused);
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    let [transcript, input] = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(0), Constraint::Length(3)])
+        .areas(inner);
+
+    let mut lines: Vec<Line> = Vec::new();
+    if app.agent_messages.is_empty() {
+        for hint in [
+            "Ask about the open problem:",
+            "  \"give me a hint\"",
+            "  \"explain the method\"",
+            "  \"why is my answer wrong?\"",
+            "",
+            "Ctrl-A hides this panel.",
+        ] {
+            lines.push(Line::from(Span::styled(
+                hint,
+                Style::default().fg(pal.overlay),
+            )));
+        }
+    }
+    for (mi, m) in app.agent_messages.iter().enumerate() {
+        let (label, color) = if m.role == "user" {
+            ("you", pal.subtext)
+        } else {
+            ("tutor", pal.accent)
+        };
+        lines.push(Line::from(Span::styled(
+            label,
+            Style::default().fg(color).add_modifier(Modifier::BOLD),
+        )));
+        let is_last = mi + 1 == app.agent_messages.len();
+        if m.content.is_empty() && is_last && app.agent_streaming {
+            lines.push(Line::from(Span::styled(
+                "▌",
+                Style::default().fg(pal.accent),
+            )));
+        } else {
+            for l in m.content.lines() {
+                lines.push(Line::from(Span::styled(
+                    l.to_string(),
+                    Style::default().fg(pal.text),
+                )));
+            }
+            if is_last
+                && app.agent_streaming
+                && let Some(last) = lines.last_mut()
+            {
+                last.spans
+                    .push(Span::styled(" ▌", Style::default().fg(pal.accent)));
+            }
+        }
+        lines.push(Line::default());
+    }
+
+    // Auto-scroll to the bottom (estimate wrapped rows for accuracy).
+    let w = transcript.width.max(1) as usize;
+    let wrapped: usize = lines
+        .iter()
+        .map(|l| {
+            let len: usize = l.spans.iter().map(|s| s.content.chars().count()).sum();
+            len / w + 1
+        })
+        .sum();
+    let scroll = wrapped.saturating_sub(transcript.height as usize) as u16;
+    frame.render_widget(
+        Paragraph::new(lines)
+            .style(theme::body())
+            .wrap(Wrap { trim: false })
+            .scroll((scroll, 0)),
+        transcript,
+    );
+
+    // Input box.
+    let (in_title, cursor) = if app.agent_streaming {
+        (" generating… ", "")
+    } else {
+        (" ask ", "▌")
+    };
+    let in_block = Block::default()
+        .title(Span::styled(in_title, Style::default().fg(pal.subtext)))
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .border_style(Style::default().fg(if focused { pal.accent } else { pal.surface1 }))
+        .style(Style::default().bg(pal.base));
+    let in_line = Line::from(vec![
+        Span::styled(" › ", Style::default().fg(pal.accent)),
+        Span::styled(app.agent_input.clone(), Style::default().fg(pal.text)),
+        Span::styled(cursor, Style::default().fg(pal.accent)),
+    ]);
+    frame.render_widget(Paragraph::new(in_line).block(in_block), input);
+}
+
 /// One-line status bar: pill-style key hints plus the live verdict badge.
 fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let mut spans: Vec<Span> = vec![Span::raw(" ")];
@@ -667,7 +778,7 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
         ("/", "find"),
         ("t", "topic"),
         ("r", "review"),
-        ("↵", "submit"),
+        ("^A", "tutor"),
         ("^P", "stats"),
         ("esc", "nav"),
         ("^Q", "quit"),

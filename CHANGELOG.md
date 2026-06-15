@@ -4,6 +4,19 @@ All notable changes to Mamba are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims
 to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Local AI tutor (`Ctrl-A`).** A right-hand chat panel powered by a local
+  [Ollama](https://ollama.com) model (default `gemma4:12b-it-qat`, overridable
+  via `MAMBA_OLLAMA_MODEL`/`MAMBA_OLLAMA_URL`). The system prompt is scoped to
+  the open problem and your current answer attempt, and the model is asked to
+  prefer hints and method over the full answer. Replies stream token-by-token on
+  a worker thread over an `mpsc` channel (the same pattern as verification), so
+  the UI never blocks; failures (server down, model not pulled) surface in the
+  panel and nothing else breaks. See
+  [ADR 0005](docs/adr/0005-local-ai-tutor-via-ollama.md).
+
 ## [0.1.0] — 2026-06-15
 
 The first tagged release. A single-binary terminal math practice engine with a

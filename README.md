@@ -34,6 +34,9 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
 - **A real study loop**: a `/` fuzzy finder, `t` topic filter, `r`
   spaced-repetition review, a `^P` progress overlay (streaks, per-domain /
   per-difficulty / per-topic bars), and a per-problem attempt-history peek.
+- **A local AI tutor** (`^A`): a streaming chat with a local
+  [Ollama](https://ollama.com) model, scoped to the open problem — private,
+  offline, no API keys.
 - **A Markdown vault**: each solve writes a note (with a `## History` table) and
   refreshes a rolling `_progress.md` dashboard — local-first, Obsidian-ready.
 - **Batteries included**: a pure-Python generator (`make gen`) mass-authors
@@ -61,8 +64,8 @@ mamba solve <id> "<answer>"   # verify one answer from the shell (exit 0 iff cor
 ```
 
 Keys: `/` fuzzy-find · `t` cycle topic filter · `r` spaced-repetition review ·
-`⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll · `^P`
-progress/stats overlay · `esc` return to navigator · `^Q` quit. The sidebar
+`^A` AI tutor · `⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll ·
+`^P` progress/stats overlay · `esc` return to navigator · `^Q` quit. The sidebar
 groups problems by topic within each domain.
 
 ### From a checkout, without installing
@@ -139,6 +142,8 @@ exact arithmetic (correct by construction) and emits it in Mamba syntax;
 - `MAMBA_PROBLEMS` — override the problem-bank directory.
 - `MAMBA_VAULT` — override the export vault (default `~/OnyxVault/Mamba`).
 - `MAMBA_THEME` — `venom` (default), `midnight`, or `slate`.
+- `MAMBA_OLLAMA_MODEL` — tutor model tag (default `gemma4:12b-it-qat`).
+- `MAMBA_OLLAMA_URL` — Ollama server URL (default `http://localhost:11434`).
 
 ## Tests
 

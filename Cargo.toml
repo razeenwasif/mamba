@@ -42,6 +42,11 @@ num-bigint = "0.4"
 num-integer = "0.1"
 num-traits = "0.2"
 
+# --- AI tutor: streaming chat with a local Ollama server -------------------
+# Blocking HTTP client driven on a worker thread (no async runtime), mirroring
+# the verification worker. `ureq` 2.x for the streaming-reader API.
+ureq = { version = "2", features = ["json"] }
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

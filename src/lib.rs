@@ -28,6 +28,7 @@
 //! * [`storage`] — problem-bank loading and the Markdown vault exporter.
 //! * [`ui`]      — stateless rendering of [`app::App`] into a [`ratatui::Frame`].
 
+pub mod agent;
 pub mod app;
 pub mod engine;
 pub mod review;
