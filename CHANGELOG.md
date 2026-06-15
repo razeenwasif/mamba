@@ -7,6 +7,11 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **In-TUI attempt-history peek.** When a problem opens (and after each solve),
+  the verification console shows a `📒 solved N× · last YYYY-MM-DD` line read
+  from the problem's vault note — at-a-glance recall of how often and how
+  recently you've solved it. `vault::history` reads it back from the `## History`
+  table.
 - **Deep Learning problem topic** (bank 86 → 103): conv output length, linear/conv
   layer parameter counts, activation mean & (biased) variance for LayerNorm, plus
   cross-entropy derivative and BatchNorm normalization. Five new generator

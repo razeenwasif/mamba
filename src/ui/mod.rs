@@ -598,6 +598,18 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
         )));
     }
 
+    // A peek at this problem's prior solve history, read from the vault.
+    if let Some(h) = &app.open_history {
+        let last = h
+            .last_solved
+            .map(|d| d.format("%Y-%m-%d").to_string())
+            .unwrap_or_else(|| "—".into());
+        lines.push(Line::from(Span::styled(
+            format!("📒 solved {}× · last {last}", h.solves),
+            Style::default().fg(pal.blue),
+        )));
+    }
+
     let paragraph = Paragraph::new(lines)
         .style(theme::body())
         .block(theme::pane_block(

@@ -56,6 +56,35 @@ pub fn export(
     Ok(path)
 }
 
+/// A peek at a problem's solve history, read back from its vault note for
+/// display in the TUI.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProblemHistory {
+    /// How many times the problem has been solved (history rows).
+    pub solves: u32,
+    /// The date of the most recent solve, if parseable.
+    pub last_solved: Option<NaiveDate>,
+}
+
+/// Reads the solve history for `problem` from its vault note, or `None` if it
+/// has never been solved (no note yet).
+pub fn history(vault: &Path, problem: &Problem) -> Option<ProblemHistory> {
+    let path = vault.join(format!("{}.md", slugify(&problem.title)));
+    let content = fs::read_to_string(&path).ok()?;
+    let rows = extract_history_rows(&content);
+    if rows.is_empty() {
+        return None;
+    }
+    let last_solved = rows
+        .last()
+        .and_then(|row| row.trim_start_matches("| ").split('|').next())
+        .and_then(|cell| NaiveDate::parse_from_str(cell.trim(), "%Y-%m-%d").ok());
+    Some(ProblemHistory {
+        solves: rows.len() as u32,
+        last_solved,
+    })
+}
+
 /// Extracts the data rows of a prior note's `## History` table — lines that
 /// begin with `| ` whose first cell parses as a `YYYY-MM-DD` date (so the
 /// header and separator rows are skipped). Order is preserved.
@@ -276,6 +305,23 @@ mod tests {
         assert!(note.contains("| 2026-06-15 | 1 |"));
         // Latest accepted answer is the second one.
         assert!(note.contains("```text\nx*x - x - 6\n```"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn history_reads_solve_count_and_last_date() {
+        let dir = std::env::temp_dir().join(format!("mamba-vault-hist2-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let day = |d: u32| NaiveDate::from_ymd_opt(2026, 6, d).unwrap();
+
+        assert_eq!(history(&dir, &fixture()), None); // never solved → no note
+        export(&dir, &fixture(), "x", 2, Duration::from_secs(60), day(14)).unwrap();
+        export(&dir, &fixture(), "x", 1, Duration::from_secs(30), day(16)).unwrap();
+
+        let h = history(&dir, &fixture()).unwrap();
+        assert_eq!(h.solves, 2);
+        assert_eq!(h.last_solved, Some(day(16)));
 
         let _ = fs::remove_dir_all(&dir);
     }

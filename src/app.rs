@@ -131,6 +131,9 @@ pub struct App {
     pub opened_at: Instant,
     /// Vault file written by the most recent correct answer, if any.
     pub exported_to: Option<PathBuf>,
+    /// The open problem's solve history (solves, last date), read from the vault
+    /// when it opens and after each solve. `None` if never solved.
+    pub open_history: Option<vault::ProblemHistory>,
     /// Whether the progress/stats overlay is shown (toggle: `Ctrl-P`). Modal:
     /// it floats over the panes and owns the keyboard while open.
     pub stats_visible: bool,
@@ -164,6 +167,7 @@ impl App {
             vault_path,
             opened_at: Instant::now(),
             exported_to: None,
+            open_history: None,
             stats_visible: false,
             stats: None,
             should_quit: false,
@@ -463,6 +467,17 @@ impl App {
         self.console_scroll = 0;
         self.exported_to = None;
         self.opened_at = Instant::now();
+        self.refresh_open_history();
+    }
+
+    /// Reads the open problem's solve history from the vault (if it has a note),
+    /// so the console can show a "solved N×" peek. Called on open and re-read
+    /// after each solve.
+    fn refresh_open_history(&mut self) {
+        self.open_history = self
+            .open_problem_ref()
+            .cloned()
+            .and_then(|problem| vault::history(&self.vault_path, &problem));
     }
 
     /// Kicks off verification of the typed answer **on a worker thread**, so a
@@ -575,6 +590,7 @@ impl App {
                 // Best-effort: refresh the rolling progress dashboard. A failure
                 // here must not sink an otherwise-correct, already-saved solve.
                 let _ = progress::update(&self.vault_path, today);
+                self.refresh_open_history();
             }
             Err(err) => {
                 self.verdict = Some(Verdict::incorrect(format!("export failed: {err:#}")));
@@ -701,6 +717,21 @@ mod tests {
         assert_eq!(a.verdict, Some(Verdict::Correct));
         assert_eq!(a.attempts, 1);
         assert!(a.exported_to.is_some());
+    }
+
+    #[test]
+    fn open_history_peek_reflects_solves() {
+        // A fresh, unique vault so the solve count is deterministic.
+        let problems = vec![problem("Expand", Domain::Symbolic, "x^2 - x - 6", AnswerKind::Scalar)];
+        let vault = std::env::temp_dir().join(format!("mamba-app-hist-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&vault);
+
+        let mut a = App::new(problems, vault.clone());
+        assert!(a.open_history.is_none()); // never solved yet
+        submit_blocking(&mut a, "(x-3)(x+2)");
+        assert_eq!(a.open_history.as_ref().map(|h| h.solves), Some(1));
+
+        let _ = std::fs::remove_dir_all(&vault);
     }
 
     #[test]
