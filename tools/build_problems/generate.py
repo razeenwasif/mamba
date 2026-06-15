@@ -20,7 +20,7 @@ import argparse
 import json
 import random
 from fractions import Fraction
-from math import gcd, lcm
+from math import comb, factorial, gcd, lcm, perm
 from pathlib import Path
 
 # --------------------------------------------------------------------------
@@ -576,6 +576,114 @@ def t_conv_param_count(rng: random.Random, i: int) -> dict:
     }
 
 
+def t_combination(rng: random.Random, i: int) -> dict:
+    n = rng.randint(6, 20)
+    k = rng.randint(2, n - 2)
+    return {
+        "id": f"gen-combination-{i}",
+        "title": "Combinations",
+        "domain": "Exact",
+        "topic": "Probability",
+        "difficulty": "Easy",
+        "prompt": f"How many ways to choose {k} items from {n} (order doesn't matter)?\n\n    C({n}, {k})",
+        "expected": str(comb(n, k)),
+        "answer_kind": "Scalar",
+        "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer",
+    }
+
+
+def t_permutation(rng: random.Random, i: int) -> dict:
+    n = rng.randint(6, 16)
+    k = rng.randint(2, n - 1)
+    return {
+        "id": f"gen-permutation-{i}",
+        "title": "Permutations",
+        "domain": "Exact",
+        "topic": "Probability",
+        "difficulty": "Medium",
+        "prompt": f"How many ordered arrangements of {k} items from {n}?\n\n    P({n}, {k})",
+        "expected": str(perm(n, k)),
+        "answer_kind": "Scalar",
+        "hint": "P(n, k) = n! / (n−k)!; enter one integer",
+    }
+
+
+def t_factorial(rng: random.Random, i: int) -> dict:
+    n = rng.randint(8, 25)  # large enough to exercise arbitrary precision
+    return {
+        "id": f"gen-factorial-{i}",
+        "title": "Factorial",
+        "domain": "Exact",
+        "topic": "Probability",
+        "difficulty": "Easy",
+        "prompt": f"Compute the factorial:\n\n    {n}!",
+        "expected": str(factorial(n)),
+        "answer_kind": "Scalar",
+        "hint": "n! = n·(n−1)···1; enter the full integer",
+    }
+
+
+def t_two_dice_sum(rng: random.Random, i: int) -> dict:
+    s = rng.randint(2, 12)
+    count = 6 - abs(s - 7)  # number of (a, b) with a + b = s, a,b ∈ 1..6
+    prob = Fraction(count, 36)
+    return {
+        "id": f"gen-dice-sum-{i}",
+        "title": "Two-Dice Probability",
+        "domain": "Tensor",
+        "topic": "Probability",
+        "difficulty": "Medium",
+        "prompt": f"Two fair dice are rolled. What is P(sum = {s})?\n\nGive an exact fraction.",
+        "expected": frac(prob),
+        "answer_kind": "Scalar",
+        "hint": "favorable outcomes over 36; reduce the fraction",
+    }
+
+
+def t_expected_value(rng: random.Random, i: int) -> dict:
+    vals = rng.sample(range(-5, 10), 3)
+    weights = [rng.randint(1, 5) for _ in vals]
+    total = sum(weights)
+    ev = Fraction(sum(v * w for v, w in zip(vals, weights)), total)
+    return {
+        "id": f"gen-expected-value-{i}",
+        "title": "Expected Value",
+        "domain": "Tensor",
+        "topic": "Statistics",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A random variable X takes values {vals} with relative weights {weights}.\n\n"
+            "Find E[X] as an exact fraction."
+        ),
+        "expected": frac(ev),
+        "answer_kind": "Scalar",
+        "hint": "E[X] = Σ wᵢ·vᵢ / Σ wᵢ",
+    }
+
+
+def t_variance_discrete(rng: random.Random, i: int) -> dict:
+    vals = rng.sample(range(-4, 8), 3)
+    weights = [rng.randint(1, 4) for _ in vals]
+    total = sum(weights)
+    ex = Fraction(sum(v * w for v, w in zip(vals, weights)), total)
+    ex2 = Fraction(sum(v * v * w for v, w in zip(vals, weights)), total)
+    var = ex2 - ex * ex
+    return {
+        "id": f"gen-variance-{i}",
+        "title": "Discrete Variance",
+        "domain": "Tensor",
+        "topic": "Statistics",
+        "difficulty": "Hard",
+        "prompt": (
+            f"X takes values {vals} with relative weights {weights}.\n\n"
+            "Find Var(X) = E[X²] − E[X]² as an exact fraction."
+        ),
+        "expected": frac(var),
+        "answer_kind": "Scalar",
+        "hint": "compute E[X²] and E[X] from the weights, then subtract the square",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -602,6 +710,12 @@ TEMPLATES = [
     t_layernorm_variance,
     t_linear_param_count,
     t_conv_param_count,
+    t_combination,
+    t_permutation,
+    t_factorial,
+    t_two_dice_sum,
+    t_expected_value,
+    t_variance_discrete,
 ]
 
 
@@ -689,6 +803,17 @@ FIXED = [
     _p("dl-batchnorm-normalize", "BatchNorm Normalize", "Tensor", "Deep Learning", "Easy",
        "BatchNorm normalizes with (x − μ)/√(σ² + ε). For x = 2, μ = 1, σ² = 4, ε = 0, compute it.",
        "1/2", "√4 = 2, so (2 − 1)/2"),
+    # ---- Probability & Statistics ----
+    _p("prob-bayes-disease", "Bayes' Rule", "Tensor", "Probability", "Hard",
+       "A disease affects 1% of people. A test is 90% sensitive (P(+|D) = 9/10) with a 10% "
+       "false-positive rate (P(+|¬D) = 1/10). Given a positive test, find P(D|+) as an exact fraction.",
+       "1/12", "P(D|+) = P(+|D)P(D) / P(+); the base rate dominates"),
+    _p("prob-three-coins", "At Least One Head", "Tensor", "Probability", "Easy",
+       "Three fair coins are flipped. What is P(at least one head)? Give an exact fraction.",
+       "7/8", "use the complement: 1 − P(all tails)"),
+    _p("stats-sample-mean", "Sample Mean", "Tensor", "Statistics", "Easy",
+       "Find the mean of the sample\n\n    [2, 4, 4, 4, 5, 5, 7, 9]",
+       "5", "sum the values and divide by the count"),
 ]
 
 

@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Probability & Statistics problems** (bank 103 → 124): combinations,
+  permutations, and factorials (Exact, exercising arbitrary-precision integers);
+  two-dice probabilities, expected value, discrete variance, Bayes' rule, the
+  complement rule, and the sample mean (Tensor, exact `BigRational` fractions).
+  Six new generator templates + three curated problems under new `Probability`
+  and `Statistics` topics; all pass `mamba --verify`.
 - **Spaced-repetition review mode (`r`).** Pressing `r` scans the vault and
   filters the navigator to the problems **due for review** — never-solved ones,
   and solved ones whose Leitner-style interval (1 → 3 → 7 → 16 → 35 → 90 days,

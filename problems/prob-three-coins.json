@@ -1,0 +1,11 @@
+{
+  "id": "prob-three-coins",
+  "title": "At Least One Head",
+  "domain": "Tensor",
+  "topic": "Probability",
+  "difficulty": "Easy",
+  "prompt": "Three fair coins are flipped. What is P(at least one head)? Give an exact fraction.",
+  "expected": "7/8",
+  "answer_kind": "Scalar",
+  "hint": "use the complement: 1 − P(all tails)"
+}

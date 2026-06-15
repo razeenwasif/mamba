@@ -1,0 +1,11 @@
+{
+  "id": "gen-combination-0",
+  "title": "Combinations",
+  "domain": "Exact",
+  "topic": "Probability",
+  "difficulty": "Easy",
+  "prompt": "How many ways to choose 8 items from 12 (order doesn't matter)?\n\n    C(12, 8)",
+  "expected": "495",
+  "answer_kind": "Scalar",
+  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer"
+}

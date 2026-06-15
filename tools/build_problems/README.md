@@ -52,6 +52,12 @@ parametrized templates `--count` times each:
 | `psd-check` | Exact | 2×2 PSD test → `1`/`0` (convex opt) |
 | `layernorm-mean` | Tensor | activation mean (DL) |
 | `layernorm-variance` | Tensor | biased activation variance (DL) |
+| `dice-sum` | Tensor | two-dice P(sum) fraction (Probability) |
+| `expected-value` | Tensor | weighted E[X] fraction (Statistics) |
+| `variance` | Tensor | discrete Var(X) fraction (Statistics) |
+| `combination` | Exact | `C(n, k)` (Probability) |
+| `permutation` | Exact | `P(n, k)` (Probability) |
+| `factorial` | Exact | `n!` (Probability) |
 | `factorization` | Exact | trial division → `2^3 * 3^2 * 5` |
 | `modexp` | Exact | `pow(base, exp, mod)` |
 | `gcd` | Exact | Euclid (`math.gcd`) |

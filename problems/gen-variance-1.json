@@ -1,0 +1,11 @@
+{
+  "id": "gen-variance-1",
+  "title": "Discrete Variance",
+  "domain": "Tensor",
+  "topic": "Statistics",
+  "difficulty": "Hard",
+  "prompt": "X takes values [5, 6, -1] with relative weights [3, 3, 2].\n\nFind Var(X) = E[X²] − E[X]² as an exact fraction.",
+  "expected": "519/64",
+  "answer_kind": "Scalar",
+  "hint": "compute E[X²] and E[X] from the weights, then subtract the square"
+}

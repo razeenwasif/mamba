@@ -1,0 +1,11 @@
+{
+  "id": "gen-factorial-1",
+  "title": "Factorial",
+  "domain": "Exact",
+  "topic": "Probability",
+  "difficulty": "Easy",
+  "prompt": "Compute the factorial:\n\n    23!",
+  "expected": "25852016738884976640000",
+  "answer_kind": "Scalar",
+  "hint": "n! = n·(n−1)···1; enter the full integer"
+}

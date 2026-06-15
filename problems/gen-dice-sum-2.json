@@ -1,0 +1,11 @@
+{
+  "id": "gen-dice-sum-2",
+  "title": "Two-Dice Probability",
+  "domain": "Tensor",
+  "topic": "Probability",
+  "difficulty": "Medium",
+  "prompt": "Two fair dice are rolled. What is P(sum = 2)?\n\nGive an exact fraction.",
+  "expected": "1/36",
+  "answer_kind": "Scalar",
+  "hint": "favorable outcomes over 36; reduce the fraction"
+}

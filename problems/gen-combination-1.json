@@ -1,0 +1,11 @@
+{
+  "id": "gen-combination-1",
+  "title": "Combinations",
+  "domain": "Exact",
+  "topic": "Probability",
+  "difficulty": "Easy",
+  "prompt": "How many ways to choose 12 items from 18 (order doesn't matter)?\n\n    C(18, 12)",
+  "expected": "18564",
+  "answer_kind": "Scalar",
+  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer"
+}

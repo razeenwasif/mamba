@@ -1,0 +1,11 @@
+{
+  "id": "stats-sample-mean",
+  "title": "Sample Mean",
+  "domain": "Tensor",
+  "topic": "Statistics",
+  "difficulty": "Easy",
+  "prompt": "Find the mean of the sample\n\n    [2, 4, 4, 4, 5, 5, 7, 9]",
+  "expected": "5",
+  "answer_kind": "Scalar",
+  "hint": "sum the values and divide by the count"
+}

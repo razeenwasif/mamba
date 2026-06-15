@@ -1,0 +1,11 @@
+{
+  "id": "gen-expected-value-2",
+  "title": "Expected Value",
+  "domain": "Tensor",
+  "topic": "Statistics",
+  "difficulty": "Medium",
+  "prompt": "A random variable X takes values [1, 5, 9] with relative weights [3, 1, 2].\n\nFind E[X] as an exact fraction.",
+  "expected": "13/3",
+  "answer_kind": "Scalar",
+  "hint": "E[X] = Σ wᵢ·vᵢ / Σ wᵢ"
+}

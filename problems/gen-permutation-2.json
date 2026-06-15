@@ -1,0 +1,11 @@
+{
+  "id": "gen-permutation-2",
+  "title": "Permutations",
+  "domain": "Exact",
+  "topic": "Probability",
+  "difficulty": "Medium",
+  "prompt": "How many ordered arrangements of 5 items from 8?\n\n    P(8, 5)",
+  "expected": "6720",
+  "answer_kind": "Scalar",
+  "hint": "P(n, k) = n! / (n−k)!; enter one integer"
+}

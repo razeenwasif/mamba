@@ -1,0 +1,11 @@
+{
+  "id": "gen-combination-2",
+  "title": "Combinations",
+  "domain": "Exact",
+  "topic": "Probability",
+  "difficulty": "Easy",
+  "prompt": "How many ways to choose 2 items from 17 (order doesn't matter)?\n\n    C(17, 2)",
+  "expected": "136",
+  "answer_kind": "Scalar",
+  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer"
+}
