@@ -45,6 +45,11 @@ parametrized templates `--count` times each:
 | `hessian-quadratic` | Tensor | `[[2a, b], [b, 2c]]` (convex opt) |
 | `eigenvalues` | Tensor | diagonal of a triangular matrix |
 | `linear-system` | Tensor | Cramer's rule, exact `Fraction`s |
+| `matmul-grad-shape` | Tensor | backprop weight-gradient shape (ML) |
+| `attention-shape` | Tensor | attention output shape (ML) |
+| `gd-step` | Tensor | gradient-descent update `x(1−2α)` (ML) |
+| `lagrangian` | Symbolic | `∂L/∂x = 2a·x + λ` (convex opt) |
+| `psd-check` | Exact | 2×2 PSD test → `1`/`0` (convex opt) |
 | `factorization` | Exact | trial division → `2^3 * 3^2 * 5` |
 | `modexp` | Exact | `pow(base, exp, mod)` |
 | `gcd` | Exact | Euclid (`math.gcd`) |

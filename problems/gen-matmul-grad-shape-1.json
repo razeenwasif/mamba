@@ -1,0 +1,11 @@
+{
+  "id": "gen-matmul-grad-shape-1",
+  "title": "Backprop Gradient Shape",
+  "domain": "Tensor",
+  "topic": "Machine Learning",
+  "difficulty": "Easy",
+  "prompt": "In a linear layer Y = X·W with X of shape [48×32] and W of shape [32×55], the weight gradient is dL/dW = Xᵀ·(dL/dY).\n\nWhat is its shape? Enter `rows cols`.",
+  "expected": "32 55",
+  "answer_kind": "Scalar",
+  "hint": "dL/dW has the same shape as W"
+}

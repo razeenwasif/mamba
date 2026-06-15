@@ -380,6 +380,104 @@ def t_linear_system(rng: random.Random, i: int) -> dict:
     }
 
 
+def t_psd_check(rng: random.Random, i: int) -> dict:
+    a = rng.randint(-3, 5)
+    c = rng.randint(-3, 5)
+    b = rng.randint(-3, 3)
+    psd = a >= 0 and c >= 0 and a * c - b * b >= 0
+    return {
+        "id": f"gen-psd-check-{i}",
+        "title": "Positive Semidefinite?",
+        "domain": "Exact",
+        "topic": "Convex Optimization",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Is the symmetric matrix\n\n    [[{a}, {b}], [{b}, {c}]]\n\n"
+            "positive semidefinite? Answer 1 for yes, 0 for no."
+        ),
+        "expected": "1" if psd else "0",
+        "answer_kind": "Scalar",
+        "hint": "2×2 symmetric is PSD iff a ≥ 0, c ≥ 0, and ac − b² ≥ 0",
+    }
+
+
+def t_lagrangian_stationarity(rng: random.Random, i: int) -> dict:
+    a = rng.randint(1, 5)
+    c = rng.randint(-6, 6)
+    sign = "-" if c < 0 else "+"
+    return {
+        "id": f"gen-lagrangian-{i}",
+        "title": "Lagrangian Stationarity",
+        "domain": "Symbolic",
+        "topic": "Convex Optimization",
+        "difficulty": "Medium",
+        "prompt": (
+            f"For the Lagrangian\n\n    L(x, lambda) = {a}*x^2 + lambda*(x {sign} {abs(c)})\n\n"
+            "write the stationarity condition ∂L/∂x (as an expression in x and lambda)."
+        ),
+        "expected": f"{2 * a}*x + lambda",
+        "answer_kind": "Scalar",
+        "hint": "differentiate L with respect to x; the constant term drops out",
+    }
+
+
+def t_matmul_grad_shape(rng: random.Random, i: int) -> dict:
+    n, k, m = rng.randint(2, 64), rng.randint(2, 64), rng.randint(2, 64)
+    return {
+        "id": f"gen-matmul-grad-shape-{i}",
+        "title": "Backprop Gradient Shape",
+        "domain": "Tensor",
+        "topic": "Machine Learning",
+        "difficulty": "Easy",
+        "prompt": (
+            f"In a linear layer Y = X·W with X of shape [{n}×{k}] and W of shape [{k}×{m}], "
+            "the weight gradient is dL/dW = Xᵀ·(dL/dY).\n\nWhat is its shape? Enter `rows cols`."
+        ),
+        "expected": f"{k} {m}",
+        "answer_kind": "Scalar",
+        "hint": "dL/dW has the same shape as W",
+    }
+
+
+def t_attention_shape(rng: random.Random, i: int) -> dict:
+    n, m, d = rng.randint(2, 32), rng.randint(2, 32), rng.randint(2, 64)
+    return {
+        "id": f"gen-attention-shape-{i}",
+        "title": "Attention Output Shape",
+        "domain": "Tensor",
+        "topic": "Machine Learning",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Scaled dot-product attention with Q [{n}×{d}], K [{m}×{d}], V [{m}×{d}]:\n\n"
+            "    softmax(Q·Kᵀ / √d)·V\n\nWhat is the output shape? Enter `rows cols`."
+        ),
+        "expected": f"{n} {d}",
+        "answer_kind": "Scalar",
+        "hint": "scores are [n×m]; multiplying by V [m×d] gives [n×d]",
+    }
+
+
+def t_gradient_descent_step(rng: random.Random, i: int) -> dict:
+    xk = rng.choice([k for k in range(-9, 10) if k != 0])
+    alpha = rng.choice([Fraction(1, 10), Fraction(1, 4), Fraction(1, 2)])
+    nxt = Fraction(xk) * (1 - 2 * alpha)  # x - α·(2x)
+    return {
+        "id": f"gen-gd-step-{i}",
+        "title": "Gradient Descent Step",
+        "domain": "Tensor",
+        "topic": "Machine Learning",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Gradient descent on f(x) = x^2 (so ∇f = 2x).\n\n"
+            f"From x_k = {xk} with step size α = {frac(alpha)}, compute the next iterate "
+            "x_k − α·∇f(x_k)."
+        ),
+        "expected": frac(nxt),
+        "answer_kind": "Scalar",
+        "hint": "x_k − α·2·x_k; an exact fraction or a decimal is accepted",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -396,6 +494,11 @@ TEMPLATES = [
     t_ridge_gradient,
     t_eigenvalues_triangular,
     t_linear_system,
+    t_psd_check,
+    t_lagrangian_stationarity,
+    t_matmul_grad_shape,
+    t_attention_shape,
+    t_gradient_descent_step,
 ]
 
 
@@ -464,6 +567,18 @@ FIXED = [
     _p("convex-gradient-linear", "Gradient of a Linear Form", "Tensor", "Convex Optimization", "Easy",
        "Find the gradient ∇f of:\n\n    f(x) = 2*x1 - 3*x2 + 5*x3\n\nEnter it as a column vector.",
        "2; -3; 5", "∇(aᵀx) = a; one component per row"),
+    # ---- Richer ML / Convex staples ----
+    _p("ml-softmax-jacobian", "Softmax Jacobian", "Tensor", "Machine Learning", "Hard",
+       "The softmax Jacobian is J(i,j) = s_i*(δ(i,j) − s_j). At logits z = [0, 0] "
+       "(so s = [1/2, 1/2]), compute J.",
+       "1/4 -1/4; -1/4 1/4", "diagonal: s_i*(1−s_i); off-diagonal: −s_i*s_j; exact fractions"),
+    _p("ml-softmax-ce-gradient", "Softmax Cross-Entropy Gradient", "Tensor", "Machine Learning", "Medium",
+       "For softmax + cross-entropy with logits z = [0, 0] and one-hot target y = [1, 0], the "
+       "gradient is dL/dz = softmax(z) − y. Compute it as a column.",
+       "-1/2; 1/2", "the famous result dL/dz = p − y, with p = [1/2, 1/2]"),
+    _p("convex-kkt-optimum", "KKT Optimum", "Exact", "Convex Optimization", "Medium",
+       "Minimize (1/2)*x^2 subject to x ≥ 1. By the KKT conditions, what is the optimal x?",
+       "1", "the constraint is active at the optimum"),
 ]
 
 

@@ -1,0 +1,11 @@
+{
+  "id": "gen-lagrangian-1",
+  "title": "Lagrangian Stationarity",
+  "domain": "Symbolic",
+  "topic": "Convex Optimization",
+  "difficulty": "Medium",
+  "prompt": "For the Lagrangian\n\n    L(x, lambda) = 5*x^2 + lambda*(x - 5)\n\nwrite the stationarity condition ∂L/∂x (as an expression in x and lambda).",
+  "expected": "10*x + lambda",
+  "answer_kind": "Scalar",
+  "hint": "differentiate L with respect to x; the constant term drops out"
+}

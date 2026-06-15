@@ -1,0 +1,11 @@
+{
+  "id": "ml-softmax-jacobian",
+  "title": "Softmax Jacobian",
+  "domain": "Tensor",
+  "topic": "Machine Learning",
+  "difficulty": "Hard",
+  "prompt": "The softmax Jacobian is J(i,j) = s_i*(δ(i,j) − s_j). At logits z = [0, 0] (so s = [1/2, 1/2]), compute J.",
+  "expected": "1/4 -1/4; -1/4 1/4",
+  "answer_kind": "Scalar",
+  "hint": "diagonal: s_i*(1−s_i); off-diagonal: −s_i*s_j; exact fractions"
+}

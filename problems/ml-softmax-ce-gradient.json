@@ -1,0 +1,11 @@
+{
+  "id": "ml-softmax-ce-gradient",
+  "title": "Softmax Cross-Entropy Gradient",
+  "domain": "Tensor",
+  "topic": "Machine Learning",
+  "difficulty": "Medium",
+  "prompt": "For softmax + cross-entropy with logits z = [0, 0] and one-hot target y = [1, 0], the gradient is dL/dz = softmax(z) − y. Compute it as a column.",
+  "expected": "-1/2; 1/2",
+  "answer_kind": "Scalar",
+  "hint": "the famous result dL/dz = p − y, with p = [1/2, 1/2]"
+}

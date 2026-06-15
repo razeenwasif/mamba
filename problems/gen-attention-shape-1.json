@@ -1,0 +1,11 @@
+{
+  "id": "gen-attention-shape-1",
+  "title": "Attention Output Shape",
+  "domain": "Tensor",
+  "topic": "Machine Learning",
+  "difficulty": "Medium",
+  "prompt": "Scaled dot-product attention with Q [8×51], K [32×51], V [32×51]:\n\n    softmax(Q·Kᵀ / √d)·V\n\nWhat is the output shape? Enter `rows cols`.",
+  "expected": "8 51",
+  "answer_kind": "Scalar",
+  "hint": "scores are [n×m]; multiplying by V [m×d] gives [n×d]"
+}

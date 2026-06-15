@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Richer ML/AI & convex-optimization problems** (bank 68 → 86, 41 ML/Convex):
+  softmax Jacobian and softmax cross-entropy gradient (`p − y`), KKT optimum,
+  positive-semidefinite checks (1/0), Lagrangian stationarity, gradient-descent
+  steps, and deep-learning shape arithmetic (backprop weight-gradient and
+  attention output shapes). Five new parametrized generator templates plus three
+  curated problems; all pass `mamba --verify`.
 - **Per-problem attempt history in the vault.** A solved problem's note now
   accumulates a `## History` table — one row per solve (date · attempts-to-solve
   · time) — by reading the prior note and appending, instead of overwriting it.

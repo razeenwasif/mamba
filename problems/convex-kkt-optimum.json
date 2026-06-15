@@ -1,0 +1,11 @@
+{
+  "id": "convex-kkt-optimum",
+  "title": "KKT Optimum",
+  "domain": "Exact",
+  "topic": "Convex Optimization",
+  "difficulty": "Medium",
+  "prompt": "Minimize (1/2)*x^2 subject to x ≥ 1. By the KKT conditions, what is the optimal x?",
+  "expected": "1",
+  "answer_kind": "Scalar",
+  "hint": "the constraint is active at the optimum"
+}
