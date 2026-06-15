@@ -44,7 +44,8 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
 - **A real study loop**: a `/` finder — fuzzy by character or, with `Tab`,
   **semantic by meaning** (local `nomic-embed-text` embeddings, so “rate of
   change of a curve” finds the derivative problems) — a `t` topic filter, `r`
-  spaced-repetition review, an `s` **study session** over the due queue (with a
+  **FSRS** spaced-repetition review (modern stability/difficulty scheduling, not
+  a fixed ladder), an `s` **study session** over the due queue (with a
   live progress HUD and an end-of-session summary), an `n` **adaptive “next
   problem”** (`mamba next`) that blends due-ness, topic mastery, and difficulty,
   a `^P` progress overlay (streaks, per-domain / per-difficulty bars, and a

@@ -29,9 +29,23 @@ pub fn interval_days(solves: u32) -> i64 {
 /// A problem with no history (never solved) is due; otherwise it is due once
 /// its interval has elapsed since the last solve.
 pub fn is_due(history: Option<&ProblemHistory>, today: NaiveDate) -> bool {
-    match history.and_then(|h| h.last_solved.map(|d| (h.solves, d))) {
-        None => true, // never solved → a new card, always due
-        Some((solves, last)) => (today - last).num_days() >= interval_days(solves),
+    let Some(h) = history else {
+        return true; // never solved → a new card, always due
+    };
+    match h.last_solved {
+        None => true,
+        Some(last) => (today - last).num_days() >= interval_for(h),
+    }
+}
+
+/// Days until a card is due again: the FSRS interval when the note carries
+/// memory ([`ProblemHistory::memory`]), else the Leitner ladder for a pre-FSRS
+/// note. The single source of "how long until this resurfaces", shared by the
+/// review filter and the [`crate::recommend`] ranking.
+pub fn interval_for(history: &ProblemHistory) -> i64 {
+    match history.memory {
+        Some(m) => m.interval(crate::fsrs::DEFAULT_RETENTION),
+        None => interval_days(history.solves),
     }
 }
 
@@ -47,6 +61,7 @@ mod tests {
         ProblemHistory {
             solves,
             last_solved: Some(last),
+            memory: None,
         }
     }
 
@@ -64,7 +79,8 @@ mod tests {
         assert!(is_due(
             Some(&ProblemHistory {
                 solves: 0,
-                last_solved: None
+                last_solved: None,
+                memory: None,
             }),
             day(15)
         ));

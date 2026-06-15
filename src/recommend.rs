@@ -57,9 +57,12 @@ fn topic_mastery(
 /// never-solved card is treated as "due today" (`0`), so genuinely overdue
 /// reviews outrank brand-new cards.
 fn overdue_days(history: Option<&ProblemHistory>, today: NaiveDate) -> i64 {
-    match history.and_then(|h| h.last_solved.map(|d| (h.solves, d))) {
+    match history {
+        Some(h) => match h.last_solved {
+            Some(last) => (today - last).num_days() - review::interval_for(h),
+            None => 0,
+        },
         None => 0,
-        Some((solves, last)) => (today - last).num_days() - review::interval_days(solves),
     }
 }
 

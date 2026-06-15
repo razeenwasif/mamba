@@ -12,6 +12,7 @@ use std::time::Duration;
 use anyhow::Context;
 use chrono::NaiveDate;
 
+use crate::fsrs::{self, Grade, Memory};
 use crate::storage::problem::Problem;
 
 /// Renders and writes the solved-problem note, returning the path written.
@@ -38,13 +39,31 @@ pub fn export(
 
     let path = vault.join(format!("{}.md", slugify(&problem.title)));
 
-    // Preserve the existing history rows (if the note already exists), then
-    // append this solve as the newest row.
-    let mut rows = fs::read_to_string(&path)
-        .ok()
+    // Read the prior note (if any) for both the accumulated history and the
+    // card's FSRS memory + last-review date, which drive the next interval.
+    let prior = fs::read_to_string(&path).ok();
+    let mut rows = prior
         .as_deref()
         .map(extract_history_rows)
         .unwrap_or_default();
+    let prior_last = rows.last().and_then(|r| row_date(r));
+    let prior_memory = prior.as_deref().and_then(parse_memory);
+
+    // Grade the review from the outcome: a first-try solve is Good, a
+    // multi-attempt solve is Hard (a lapse — Again — is recorded elsewhere).
+    let grade = if attempts <= 1 {
+        Grade::Good
+    } else {
+        Grade::Hard
+    };
+    let memory = match prior_memory {
+        Some(m) => {
+            let elapsed = prior_last.map_or(0, |d| (solved_on - d).num_days().max(0)) as f64;
+            m.review(grade, elapsed)
+        }
+        None => Memory::init(grade),
+    };
+
     rows.push(format!(
         "| {} | {} | {} |",
         solved_on.format("%Y-%m-%d"),
@@ -53,20 +72,23 @@ pub fn export(
     ));
 
     let note = render_note(
-        problem, answer, attempts, time_spent, solved_on, &rows, tutor,
+        problem, answer, attempts, time_spent, solved_on, &rows, memory, tutor,
     );
     fs::write(&path, note).with_context(|| format!("failed to write {}", path.display()))?;
     Ok(path)
 }
 
 /// A peek at a problem's solve history, read back from its vault note for
-/// display in the TUI.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// display in the TUI and for scheduling.
+#[derive(Debug, Clone, PartialEq)]
 pub struct ProblemHistory {
     /// How many times the problem has been solved (history rows).
     pub solves: u32,
     /// The date of the most recent solve, if parseable.
     pub last_solved: Option<NaiveDate>,
+    /// The card's FSRS memory state, if the note records it (notes written
+    /// before FSRS have none — scheduling falls back to the Leitner ladder).
+    pub memory: Option<Memory>,
 }
 
 /// Reads the solve history for `problem` from its vault note, or `None` if it
@@ -78,13 +100,50 @@ pub fn history(vault: &Path, problem: &Problem) -> Option<ProblemHistory> {
     if rows.is_empty() {
         return None;
     }
-    let last_solved = rows
-        .last()
-        .and_then(|row| row.trim_start_matches("| ").split('|').next())
-        .and_then(|cell| NaiveDate::parse_from_str(cell.trim(), "%Y-%m-%d").ok());
+    let last_solved = rows.last().and_then(|row| row_date(row));
     Some(ProblemHistory {
         solves: rows.len() as u32,
         last_solved,
+        memory: parse_memory(&content),
+    })
+}
+
+/// The date in a history row's first cell, if parseable.
+fn row_date(row: &str) -> Option<NaiveDate> {
+    row.trim_start_matches("| ")
+        .split('|')
+        .next()
+        .and_then(|cell| NaiveDate::parse_from_str(cell.trim(), "%Y-%m-%d").ok())
+}
+
+/// Reads a `key: value` scalar from a note's leading YAML frontmatter.
+fn frontmatter_value<'a>(content: &'a str, key: &str) -> Option<&'a str> {
+    let mut lines = content.lines();
+    if lines.next()?.trim() != "---" {
+        return None;
+    }
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        if let Some(rest) = line.strip_prefix(key).and_then(|r| r.strip_prefix(':')) {
+            return Some(rest.trim());
+        }
+    }
+    None
+}
+
+/// Reconstructs the FSRS [`Memory`] from a note's `stability`/`difficulty`
+/// frontmatter, or `None` for a pre-FSRS note.
+fn parse_memory(content: &str) -> Option<Memory> {
+    let stability = frontmatter_value(content, "stability")?.parse().ok()?;
+    // `difficulty_fsrs` is distinct from the problem's `difficulty` (Easy/…).
+    let difficulty = frontmatter_value(content, "difficulty_fsrs")?
+        .parse()
+        .ok()?;
+    Some(Memory {
+        stability,
+        difficulty,
     })
 }
 
@@ -114,6 +173,7 @@ fn render_note(
     time_spent: Duration,
     solved_on: NaiveDate,
     history_rows: &[String],
+    memory: Memory,
     tutor: Option<&str>,
 ) -> String {
     let mut note = format!(
@@ -126,6 +186,9 @@ fn render_note(
          time_spent: {time_spent}\n\
          attempts: {attempts}\n\
          solves: {solves}\n\
+         stability: {stability:.4}\n\
+         difficulty_fsrs: {difficulty_fsrs:.4}\n\
+         due: {due}\n\
          tags: [mamba, math]\n\
          ---\n\
          \n\
@@ -154,6 +217,10 @@ fn render_note(
         time_spent = yaml_string(&format_duration(time_spent)),
         attempts = attempts,
         solves = history_rows.len(),
+        stability = memory.stability,
+        difficulty_fsrs = memory.difficulty,
+        due = (solved_on + chrono::Duration::days(memory.interval(fsrs::DEFAULT_RETENTION)))
+            .format("%Y-%m-%d"),
         raw_title = problem.title,
         prompt = problem.prompt.trim_end(),
         answer = answer.trim_end(),
@@ -254,6 +321,7 @@ mod tests {
             Duration::from_secs(125),
             date,
             &rows,
+            Memory::init(Grade::Good),
             Some("**you:** hint?\n\n**tutor:** factor it"),
         );
 
@@ -264,6 +332,9 @@ mod tests {
         assert!(note.contains("time_spent: \"2m 05s\""));
         assert!(note.contains("attempts: 2"));
         assert!(note.contains("solves: 1"));
+        assert!(note.contains("stability: "));
+        assert!(note.contains("difficulty_fsrs: "));
+        assert!(note.contains("due: "));
         assert!(note.contains("```text\nx^2 - x - 6\n```"));
         assert!(note.contains("## History"));
         assert!(note.contains("| 2026-06-14 | 2 | 2m 05s |"));
@@ -281,6 +352,7 @@ mod tests {
             Duration::from_secs(30),
             NaiveDate::from_ymd_opt(2026, 6, 14).unwrap(),
             &["| 2026-06-14 | 1 | 30s |".to_string()],
+            Memory::init(Grade::Good),
             None,
         );
         // Round-trips: the header and separator are dropped, the data row kept.
@@ -359,6 +431,34 @@ mod tests {
         let h = history(&dir, &fixture()).unwrap();
         assert_eq!(h.solves, 2);
         assert_eq!(h.last_solved, Some(day(16)));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn fsrs_state_persists_and_strengthens_across_solves() {
+        let dir = std::env::temp_dir().join(format!("mamba-vault-fsrs-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let day = |d: u32| NaiveDate::from_ymd_opt(2026, 6, d).unwrap();
+        let solve = |d: u32| {
+            export(
+                &dir,
+                &fixture(),
+                "x^2 - x - 6",
+                1,
+                Duration::from_secs(30),
+                day(d),
+                None,
+            )
+            .unwrap()
+        };
+
+        solve(1);
+        let first = history(&dir, &fixture()).unwrap().memory.expect("memory");
+        // A second on-time solve must read the prior state and grow stability.
+        solve(1 + first.interval(crate::fsrs::DEFAULT_RETENTION) as u32);
+        let second = history(&dir, &fixture()).unwrap().memory.expect("memory");
+        assert!(second.stability > first.stability);
 
         let _ = fs::remove_dir_all(&dir);
     }

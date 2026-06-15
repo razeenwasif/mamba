@@ -7,6 +7,16 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **FSRS spaced-repetition scheduling.** A new `fsrs` module implements the
+  Free Spaced Repetition Scheduler (v4.5): each card learns a *stability* and
+  *difficulty*, and the next interval follows a power forgetting curve — so
+  reviews are elapsed-time-aware and per-card, not a fixed Leitner ladder. The
+  grade is derived from the verified outcome (a first-try solve is *Good*, a
+  multi-attempt solve *Hard*). State persists in each note's frontmatter
+  (`stability`/`difficulty_fsrs`/`due`), keeping the Markdown vault the single
+  source of truth — no database. `r` review and `mamba next` use it; notes
+  written before FSRS fall back to the old ladder until their next solve.
+
 - **Dimensional analysis (units) for physics & engineering.** Problems now
   declare the physical `unit` their answer carries (a new optional `Problem`
   field; injected by the generator like recaps). When you append a unit, the
@@ -40,6 +50,8 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   chat-only tutor exercise — it produces a real, attemptable, cross-checked
   problem (see above). `Problem` and its enums gained `Serialize` so generated
   problems can be written back to the bank.
+- `vault::ProblemHistory` gained an optional `memory` (FSRS state), and `review`
+  exposes `interval_for` — the one place "how long until this resurfaces" lives.
 
 ## [0.5.0] — 2026-06-16
 
