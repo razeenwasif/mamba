@@ -223,6 +223,7 @@ mod tests {
             answer_kind: Default::default(),
             hint: None,
             recap: None,
+            unit: None,
         }
     }
 

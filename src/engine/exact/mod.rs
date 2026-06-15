@@ -63,10 +63,14 @@ fn diagnose_scalar(want: &BigInt, got: &BigInt) -> Option<String> {
     for k in [2i32, 3, 4, 5, 10] {
         let kk = BigInt::from(k);
         if want != &zero && got == &(want * &kk) {
-            return Some(format!("off by a factor of {k} — your answer is {k}× too large"));
+            return Some(format!(
+                "off by a factor of {k} — your answer is {k}× too large"
+            ));
         }
         if got != &zero && want == &(got * &kk) {
-            return Some(format!("off by a factor of {k} — your answer is {k}× too small"));
+            return Some(format!(
+                "off by a factor of {k} — your answer is {k}× too small"
+            ));
         }
     }
     None

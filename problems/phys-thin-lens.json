@@ -8,5 +8,6 @@
   "expected": "6/5",
   "answer_kind": "Scalar",
   "hint": "1/f = 1/2 + 1/3 = 5/6, so f = 6/5",
-  "recap": "The thin-lens equation 1/f = 1/u + 1/v links object distance u, image distance v, and focal length f. Add the reciprocals, then invert for f."
+  "recap": "The thin-lens equation 1/f = 1/u + 1/v links object distance u, image distance v, and focal length f. Add the reciprocals, then invert for f.",
+  "unit": "m"
 }

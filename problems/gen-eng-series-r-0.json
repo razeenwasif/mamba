@@ -8,5 +8,6 @@
   "expected": "115",
   "answer_kind": "Scalar",
   "hint": "series resistances add: R = R1 + R2 + R3",
-  "recap": "Resistors in series share the same current and their resistances add: R = R₁ + R₂ + R₃. The total always exceeds the largest one."
+  "recap": "Resistors in series share the same current and their resistances add: R = R₁ + R₂ + R₃. The total always exceeds the largest one.",
+  "unit": "ohm"
 }

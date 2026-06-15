@@ -8,5 +8,6 @@
   "expected": "18",
   "answer_kind": "Scalar",
   "hint": "σ = F/A",
-  "recap": "Axial stress is force per unit area: σ = F/A. In N/mm² it reads directly as MPa; it normalizes the load by cross-section, so it (not raw force) drives deformation."
+  "recap": "Axial stress is force per unit area: σ = F/A. In N/mm² it reads directly as MPa; it normalizes the load by cross-section, so it (not raw force) drives deformation.",
+  "unit": "MPa"
 }

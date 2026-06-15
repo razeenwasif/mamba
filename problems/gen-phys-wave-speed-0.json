@@ -8,5 +8,6 @@
   "expected": "660",
   "answer_kind": "Scalar",
   "hint": "v = f·λ",
-  "recap": "A wave's speed is frequency times wavelength: v = f·λ. It ties how often crests pass (f) to how far apart they are (λ)."
+  "recap": "A wave's speed is frequency times wavelength: v = f·λ. It ties how often crests pass (f) to how far apart they are (λ).",
+  "unit": "m/s"
 }

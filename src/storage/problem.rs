@@ -104,6 +104,11 @@ pub struct Problem {
     /// in the description pane (toggle with `g`). May use ASCII formula markers.
     #[serde(default)]
     pub recap: Option<String>,
+    /// Optional physical unit the answer carries, e.g. `"N"`, `"m/s^2"`. When
+    /// set, the router dimensionally checks any unit the user appends (see
+    /// [`crate::engine::units`]); the `expected` value itself stays a bare number.
+    #[serde(default)]
+    pub unit: Option<String>,
 }
 
 /// Loads every `*.json` problem in `dir`, sorted by (domain, difficulty,

@@ -8,5 +8,6 @@
   "expected": "15",
   "answer_kind": "Scalar",
   "hint": "v = u + a·t",
-  "recap": "For constant acceleration, velocity grows linearly: v = u + a·t — start speed plus acceleration times elapsed time. One of the SUVAT equations."
+  "recap": "For constant acceleration, velocity grows linearly: v = u + a·t — start speed plus acceleration times elapsed time. One of the SUVAT equations.",
+  "unit": "m/s"
 }

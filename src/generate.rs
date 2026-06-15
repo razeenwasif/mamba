@@ -190,6 +190,7 @@ fn build_problem(v: &Value, spec: &Spec) -> Option<Problem> {
             .unwrap_or_default(),
         hint: get_str(v, "hint"),
         recap: None,
+        unit: None,
     })
 }
 

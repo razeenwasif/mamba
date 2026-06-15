@@ -8,5 +8,6 @@
   "expected": "121",
   "answer_kind": "Scalar",
   "hint": "V = I·R",
-  "recap": "Ohm's law relates voltage, current, and resistance: V = I·R. It is the workhorse of circuit analysis — volts equal amps times ohms."
+  "recap": "Ohm's law relates voltage, current, and resistance: V = I·R. It is the workhorse of circuit analysis — volts equal amps times ohms.",
+  "unit": "V"
 }

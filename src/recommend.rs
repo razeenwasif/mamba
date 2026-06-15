@@ -165,6 +165,7 @@ mod tests {
             answer_kind: AnswerKind::Scalar,
             hint: None,
             recap: None,
+            unit: None,
         }
     }
 

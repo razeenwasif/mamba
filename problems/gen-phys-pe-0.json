@@ -8,5 +8,6 @@
   "expected": "220",
   "answer_kind": "Scalar",
   "hint": "PE = m·g·h",
-  "recap": "Gravitational potential energy near the surface is PE = m·g·h — the work to lift a mass m through a height h against gravity g (≈ 9.8, often 10, m/s²)."
+  "recap": "Gravitational potential energy near the surface is PE = m·g·h — the work to lift a mass m through a height h against gravity g (≈ 9.8, often 10, m/s²).",
+  "unit": "J"
 }

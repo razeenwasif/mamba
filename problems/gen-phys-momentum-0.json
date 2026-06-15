@@ -8,5 +8,6 @@
   "expected": "312",
   "answer_kind": "Scalar",
   "hint": "p = m·v",
-  "recap": "Linear momentum p = m·v measures 'quantity of motion'. It is conserved in collisions, which is why it matters more than speed alone."
+  "recap": "Linear momentum p = m·v measures 'quantity of motion'. It is conserved in collisions, which is why it matters more than speed alone.",
+  "unit": "kg*m/s"
 }

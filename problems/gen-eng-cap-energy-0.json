@@ -8,5 +8,6 @@
   "expected": "96",
   "answer_kind": "Scalar",
   "hint": "E = (1/2)·C·V²",
-  "recap": "A charged capacitor stores energy E = (1/2)·C·V², analogous to (1/2)·k·x² for a spring. It grows with the square of voltage."
+  "recap": "A charged capacitor stores energy E = (1/2)·C·V², analogous to (1/2)·k·x² for a spring. It grows with the square of voltage.",
+  "unit": "J"
 }

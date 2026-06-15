@@ -183,7 +183,10 @@ fn diagnose(want: &Array2<Cell>, got: &Array2<Cell>) -> Option<String> {
         }
     }
     if let Some(k) = constant_factor(&wv, &gv) {
-        return Some(format!("off by a factor of {} — rescale your answer", fmt_factor(k)));
+        return Some(format!(
+            "off by a factor of {} — rescale your answer",
+            fmt_factor(k)
+        ));
     }
     None
 }
@@ -392,16 +395,8 @@ mod tests {
 
     #[test]
     fn diagnoses_a_scalar_factor_and_reciprocal() {
-        assert!(
-            hint_of(verify("10", "20"))
-                .unwrap()
-                .contains("factor of 2")
-        );
-        assert!(
-            hint_of(verify("4", "1/4"))
-                .unwrap()
-                .contains("reciprocal")
-        );
+        assert!(hint_of(verify("10", "20")).unwrap().contains("factor of 2"));
+        assert!(hint_of(verify("4", "1/4")).unwrap().contains("reciprocal"));
     }
 
     #[test]

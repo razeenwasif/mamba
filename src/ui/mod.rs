@@ -733,9 +733,7 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
                 if let Some(h) = hint {
                     lines.push(Line::from(Span::styled(
                         format!("  💡 {h}"),
-                        Style::default()
-                            .fg(pal.yellow)
-                            .add_modifier(Modifier::BOLD),
+                        Style::default().fg(pal.yellow).add_modifier(Modifier::BOLD),
                     )));
                 }
             }

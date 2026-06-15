@@ -111,6 +111,11 @@ parametrized templates `--count` times each:
 The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
 materialized JSON in `problems/` is the committed, browseable data.
 
+Recaps and physical units are injected by concept key (the `RECAPS`/`RECAPS_HARD`
+and `UNITS` dicts), so templates stay free of both. A problem's `unit` (e.g. `N`,
+`m/s`, `ohm`) lets the engine dimensionally check any unit the user appends; the
+`expected` value itself stays a bare number.
+
 ## Why answers are trustworthy
 
 Two independent guarantees:

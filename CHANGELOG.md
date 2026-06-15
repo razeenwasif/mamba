@@ -7,6 +7,15 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Dimensional analysis (units) for physics & engineering.** Problems now
+  declare the physical `unit` their answer carries (a new optional `Problem`
+  field; injected by the generator like recaps). When you append a unit, the
+  router checks it is *dimensionally* consistent with the expected one before
+  comparing values — `30 N` and `30 kg*m/s^2` both pass, `30 kg` is rejected
+  (*"wrong units: expected N (force), but got kg (mass)"*). A new
+  `engine::units` module parses base/derived SI units, compound forms (`m/s^2`,
+  `N·m`), and SI prefixes. It's a dimensional check (not a unit conversion), so
+  an omitted or unrecognized unit is lenient and SI-prefix slips aren't policed.
 - **Near-miss diagnostics.** A wrong answer now carries an optional diagnosis of
   *how* it's wrong, shown as a `💡` line in the console (and `mamba solve`): off
   by a sign, off by a constant factor, the reciprocal, the transpose (or a

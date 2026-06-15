@@ -37,6 +37,10 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
   *how* it's wrong (off by a sign, a constant factor, the reciprocal, the
   transpose, swapped complex parts, off by one) and says so, turning the miss
   into a lesson.
+- **Dimensional analysis** for physics & engineering: answer `30 N` (or the
+  equivalent `30 kg*m/s^2`) and it's accepted; answer `30 kg` and it's rejected —
+  *"wrong units: expected N (force), but got kg (mass)"* — even though the number
+  matched. Units are optional; omit them and only the value is checked.
 - **A real study loop**: a `/` finder — fuzzy by character or, with `Tab`,
   **semantic by meaning** (local `nomic-embed-text` embeddings, so “rate of
   change of a curve” finds the derivative problems) — a `t` topic filter, `r`
@@ -130,6 +134,15 @@ lists all targets (`install`, `build`, `test`, `run`, `check`, `fmt`, `clean`).
 - **Exact** — arbitrary-precision integers; factorizations are checked by
   reconstructing the product *and* verifying each factor is prime
   (deterministic Miller–Rabin).
+- **Units** — physics & engineering problems declare the answer's unit. If you
+  append one (`9.8 m/s^2`), the engine checks it's *dimensionally* consistent
+  with the expected quantity before comparing the number, accepting any
+  equivalent form (`N` ≡ `kg*m/s^2`) and rejecting category errors (`kg` for a
+  force). It's a dimensional check, not a unit conversion: it catches wrong
+  *quantities*, not SI-prefix slips (`ms` vs `s`), and an omitted unit is fine.
+- **Near-miss diagnostics** — on any wrong answer, each pipeline additionally
+  reports a recognized relationship to the right one (sign, factor, reciprocal,
+  transpose, swapped parts, off-by-one) as a `💡` hint.
 
 ## Layout
 

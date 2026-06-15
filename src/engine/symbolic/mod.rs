@@ -146,7 +146,9 @@ pub fn verify(expected: &str, input: &str) -> Verdict {
 /// negative, simple rescalings, and the reciprocal of the expected one.
 fn diagnose(expected: &str, input: &str) -> Option<String> {
     if equiv(&format!("-({expected})"), input) {
-        return Some("you're off by a sign — your answer is the negative of the expected one".into());
+        return Some(
+            "you're off by a sign — your answer is the negative of the expected one".into(),
+        );
     }
     for (k, label) in [
         ("2", "a factor of 2"),

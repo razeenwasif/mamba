@@ -8,5 +8,6 @@
   "expected": "784",
   "answer_kind": "Scalar",
   "hint": "P = I²·R",
-  "recap": "Power dissipated in a resistor is P = I²·R (equivalently V²/R or V·I). It grows with the *square* of current — why thick wires carry heavy loads."
+  "recap": "Power dissipated in a resistor is P = I²·R (equivalently V²/R or V·I). It grows with the *square* of current — why thick wires carry heavy loads.",
+  "unit": "W"
 }

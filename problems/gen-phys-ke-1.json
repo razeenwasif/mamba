@@ -8,5 +8,6 @@
   "expected": "48",
   "answer_kind": "Scalar",
   "hint": "KE = (1/2)·m·v²",
-  "recap": "Kinetic energy is the work needed to reach a speed: KE = (1/2)·m·v². It scales with the *square* of speed, so doubling v quadruples the energy."
+  "recap": "Kinetic energy is the work needed to reach a speed: KE = (1/2)·m·v². It scales with the *square* of speed, so doubling v quadruples the energy.",
+  "unit": "J"
 }

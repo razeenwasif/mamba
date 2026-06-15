@@ -20,6 +20,7 @@
 pub mod exact;
 pub mod symbolic;
 pub mod tensor;
+pub mod units;
 
 use crate::storage::problem::{Domain, Problem};
 
@@ -94,6 +95,17 @@ pub fn verify(problem: &Problem, input: &str) -> Verdict {
         );
     }
 
+    // Optional dimensional gate: if the problem declares a unit and the user
+    // appended one, it must be dimensionally consistent; then we verify the
+    // numeric part (the unit stripped). A missing or unknown unit is lenient.
+    let input = match &problem.unit {
+        Some(unit) => match units::check(unit, input) {
+            Ok(value) => value,
+            Err(detail) => return Verdict::incorrect(detail),
+        },
+        None => input,
+    };
+
     match problem.domain {
         // Algebra / calculus → symbolic equivalence.
         Domain::Symbolic => symbolic::verify(&problem.expected, input),
@@ -124,6 +136,7 @@ mod tests {
             answer_kind,
             hint: None,
             recap: None,
+            unit: None,
         }
     }
 
@@ -146,5 +159,20 @@ mod tests {
     fn empty_input_is_a_parse_error_before_routing() {
         let sym = problem(Domain::Symbolic, "x", AnswerKind::Scalar);
         assert!(matches!(verify(&sym, "   "), Verdict::ParseError { .. }));
+    }
+
+    #[test]
+    fn unit_gate_accepts_consistent_and_rejects_inconsistent_units() {
+        let mut p = problem(Domain::Exact, "30", AnswerKind::Scalar);
+        p.unit = Some("N".into());
+        assert!(verify(&p, "30").is_correct()); // no unit → lenient
+        assert!(verify(&p, "30 N").is_correct()); // the declared unit
+        assert!(verify(&p, "30 kg*m/s^2").is_correct()); // dimensionally equal
+        match verify(&p, "30 kg") {
+            Verdict::Incorrect { detail, .. } => assert!(detail.contains("wrong units")),
+            other => panic!("expected a unit mismatch, got {other:?}"),
+        }
+        // The right units with the wrong number is still wrong.
+        assert!(matches!(verify(&p, "31 N"), Verdict::Incorrect { .. }));
     }
 }

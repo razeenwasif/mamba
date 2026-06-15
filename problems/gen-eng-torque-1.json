@@ -8,5 +8,6 @@
   "expected": "18",
   "answer_kind": "Scalar",
   "hint": "moment τ = F·d",
-  "recap": "The moment (torque) of a perpendicular force about a pivot is τ = F·d — force times lever arm. Longer levers multiply turning effect."
+  "recap": "The moment (torque) of a perpendicular force about a pivot is τ = F·d — force times lever arm. Longer levers multiply turning effect.",
+  "unit": "N*m"
 }

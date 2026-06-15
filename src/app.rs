@@ -1457,6 +1457,7 @@ mod tests {
             answer_kind: kind,
             hint: None,
             recap: None,
+            unit: None,
         }
     }
 

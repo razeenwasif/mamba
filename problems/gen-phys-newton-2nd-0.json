@@ -8,5 +8,6 @@
   "expected": "190",
   "answer_kind": "Scalar",
   "hint": "F = m·a",
-  "recap": "Newton's second law: the net force equals mass times acceleration, F = m·a. Force is in newtons (N) when m is in kg and a in m/s²."
+  "recap": "Newton's second law: the net force equals mass times acceleration, F = m·a. Force is in newtons (N) when m is in kg and a in m/s².",
+  "unit": "N"
 }

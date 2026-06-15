@@ -2016,6 +2016,39 @@ def recap_for(problem_id: str, difficulty: str = "") -> str | None:
     return RECAPS.get(key)
 
 
+# Physical unit each scalar physics/engineering answer carries. Injected by the
+# same concept key as recaps, so the templates stay unit-free. The engine
+# dimensionally checks any unit the user appends (see src/engine/units.rs); the
+# `expected` value itself remains a bare number. Symbolic-expression and
+# dimensionless answers (projectile v(t), half-life, decibels) carry no unit.
+UNITS = {
+    "phys-newton-2nd": "N",
+    "phys-velocity": "m/s",
+    "phys-displacement": "m",
+    "phys-ke": "J",
+    "phys-pe": "J",
+    "phys-wave-speed": "m/s",
+    "phys-momentum": "kg*m/s",
+    "phys-thin-lens": "m",
+    "eng-ohms-law": "V",
+    "eng-power": "W",
+    "eng-series-r": "ohm",
+    "eng-parallel-r": "ohm",
+    "eng-rc-tau": "ms",
+    "eng-cap-energy": "J",
+    "eng-torque": "N*m",
+    "eng-stress": "MPa",
+    "eng-hooke": "N",
+    "eng-voltage-divider": "V",
+}
+
+
+def unit_for(problem_id: str) -> str | None:
+    """The physical unit for a problem, by the same concept key as `recap_for`."""
+    key = problem_id[4:].rsplit("-", 1)[0] if problem_id.startswith("gen-") else problem_id
+    return UNITS.get(key)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Mamba problem JSON files.")
     parser.add_argument("--count", type=int, default=3, help="problems per template")
@@ -2040,6 +2073,10 @@ def main() -> None:
                 problem["recap"] = recap
             else:
                 missing_recaps.add(problem["id"])
+        if not problem.get("unit"):
+            unit = unit_for(problem["id"])
+            if unit:
+                problem["unit"] = unit
         path = args.out / f"{problem['id']}.json"
         path.write_text(json.dumps(problem, indent=2, ensure_ascii=False) + "\n")
 

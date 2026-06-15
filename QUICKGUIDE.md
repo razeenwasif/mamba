@@ -88,6 +88,10 @@ practice it, but don't trust the answer). `Ctrl-S` saves it into the bank;
 - **Tensor**: rows separated by `;`, elements by spaces/commas; exact fractions
   allowed (`3/5 -7/10; -1/5 2/5`). A scalar is just a number.
 - **Exact**: a whole integer; factorizations as prime powers (`2^3 * 3^2 * 5`).
+- **Units** (physics/engineering): optional. Append one and it's dimensionally
+  checked — `30 N` or `30 kg*m/s^2` pass, `30 kg` is rejected. Omit it and only
+  the number is checked. A wrong answer also shows a `💡` near-miss hint (off by
+  a sign, a factor, the transpose, …).
 
 ## CLI
 

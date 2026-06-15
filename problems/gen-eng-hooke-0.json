@@ -8,5 +8,6 @@
   "expected": "170",
   "answer_kind": "Scalar",
   "hint": "F = k·x",
-  "recap": "Hooke's law: a spring's restoring force is proportional to its extension, F = k·x, with stiffness k. Valid in the elastic (small-x) regime."
+  "recap": "Hooke's law: a spring's restoring force is proportional to its extension, F = k·x, with stiffness k. Valid in the elastic (small-x) regime.",
+  "unit": "N"
 }
