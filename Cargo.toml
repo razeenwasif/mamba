@@ -1,6 +1,6 @@
 [package]
 name = "mamba"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "A local, terminal-based mathematics practice engine that verifies answers with a universal multi-domain routing engine (symbolic, tensor, exact)."
 license = "MIT"

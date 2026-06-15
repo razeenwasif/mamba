@@ -4,7 +4,11 @@ All notable changes to Mamba are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims
 to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] — 2026-06-15
+
+Bigger bank, sharper study tools: a `mamba review` shell command, a per-topic
+mastery view, and five new subject areas push the bank to 199 problems across 18
+topics.
 
 ### Added
 - **Decompositions, Graph Theory, Complex Numbers, and ODEs topics** (bank
