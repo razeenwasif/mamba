@@ -469,8 +469,12 @@ fn draw_navigator(frame: &mut Frame, app: &mut App, area: Rect) {
         })
         .collect();
 
+    let title = match &app.topic_filter {
+        Some(topic) => format!("Topic · {topic}"),
+        None => "Domains".to_string(),
+    };
     let list = List::new(items)
-        .block(theme::pane_block("Domains", app.focus == Focus::Navigator))
+        .block(theme::pane_block(title, app.focus == Focus::Navigator))
         .highlight_style(theme::selection());
     frame.render_stateful_widget(list, area, &mut app.nav_state);
 }
@@ -650,6 +654,7 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let mut spans: Vec<Span> = vec![Span::raw(" ")];
     for (key, action) in [
         ("/", "find"),
+        ("t", "topic"),
         ("⇥", "focus"),
         ("↵", "submit"),
         ("^P", "stats"),

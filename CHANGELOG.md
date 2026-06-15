@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Navigator topic filter (`t`).** Pressing `t` cycles the navigator through
+  `all → topic₁ → … → topicₙ → all`, showing only the selected topic's problems
+  (the pane title becomes `Topic · <name>`). Handy with 100+ problems for
+  drilling into e.g. just Deep Learning or Convex Optimization.
 - **In-TUI attempt-history peek.** When a problem opens (and after each solve),
   the verification console shows a `📒 solved N× · last YYYY-MM-DD` line read
   from the problem's vault note — at-a-glance recall of how often and how

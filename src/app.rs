@@ -90,6 +90,10 @@ pub struct App {
     /// Selection state for the navigator `List` widget. Always points at a
     /// [`NavRow::Problem`] row (never a header).
     pub nav_state: ListState,
+    /// Active topic filter (`t` cycles it); `None` shows every topic.
+    pub topic_filter: Option<String>,
+    /// Distinct topics in the bank, sorted — the cycle order for the filter.
+    pub topics: Vec<String>,
     /// The pane that currently receives keyboard input.
     pub focus: Focus,
     /// Whether the fuzzy problem finder (`/`) overlay is active. While `true`
@@ -147,11 +151,16 @@ impl App {
     /// Builds the initial state from a loaded problem bank and a vault path,
     /// opening the first problem (if any).
     pub fn new(problems: Vec<Problem>, vault_path: PathBuf) -> Self {
-        let nav_rows = build_nav_rows(&problems);
+        let nav_rows = build_nav_rows(&problems, None);
+        let mut topics: Vec<String> = problems.iter().map(|p| p.topic.clone()).collect();
+        topics.sort();
+        topics.dedup();
         let mut app = Self {
             problems,
             nav_rows,
             nav_state: ListState::default(),
+            topic_filter: None,
+            topics,
             focus: Focus::Navigator,
             search_active: false,
             search_query: String::new(),
@@ -254,6 +263,12 @@ impl App {
             return;
         }
 
+        // `t` cycles the navigator's topic filter (also non-input only).
+        if key.code == KeyCode::Char('t') && !ctrl {
+            self.cycle_topic_filter();
+            return;
+        }
+
         match key.code {
             KeyCode::Tab => {
                 self.focus = self.focus.next();
@@ -277,6 +292,36 @@ impl App {
             Focus::Description => self.scroll_pane(key, true),
             Focus::Console => self.scroll_pane(key, false),
             Focus::Input => {} // routed earlier; never reached
+        }
+    }
+
+    /// Cycles the navigator's topic filter: `None` → first topic → … → last →
+    /// `None`, rebuilding the visible rows each step.
+    fn cycle_topic_filter(&mut self) {
+        self.topic_filter = match &self.topic_filter {
+            None => self.topics.first().cloned(),
+            Some(current) => {
+                let i = self.topics.iter().position(|t| t == current).unwrap_or(0);
+                self.topics.get(i + 1).cloned() // past the end → back to "all"
+            }
+        };
+        self.rebuild_nav();
+    }
+
+    /// Rebuilds the navigator rows for the current topic filter and opens the
+    /// first still-visible problem.
+    fn rebuild_nav(&mut self) {
+        self.nav_rows = build_nav_rows(&self.problems, self.topic_filter.as_deref());
+        match self
+            .nav_rows
+            .iter()
+            .position(|r| matches!(r, NavRow::Problem(_)))
+        {
+            Some(first) => {
+                self.nav_state.select(Some(first));
+                self.open_selected();
+            }
+            None => self.nav_state.select(None),
         }
     }
 
@@ -603,11 +648,14 @@ impl App {
 /// when the domain changes and a topic sub-header when the topic changes within
 /// a domain. Assumes `problems` is sorted by (domain, topic, …) —
 /// [`crate::storage::problem::load_all`] guarantees this.
-fn build_nav_rows(problems: &[Problem]) -> Vec<NavRow> {
+fn build_nav_rows(problems: &[Problem], filter: Option<&str>) -> Vec<NavRow> {
     let mut rows = Vec::with_capacity(problems.len() + 16);
     let mut last_domain: Option<String> = None;
     let mut last_topic: Option<String> = None;
     for (i, p) in problems.iter().enumerate() {
+        if filter.is_some_and(|f| p.topic != f) {
+            continue; // hidden by the active topic filter
+        }
         let domain = p.domain.to_string();
         if last_domain.as_deref() != Some(domain.as_str()) {
             rows.push(NavRow::DomainHeader(domain.clone()));
@@ -722,7 +770,12 @@ mod tests {
     #[test]
     fn open_history_peek_reflects_solves() {
         // A fresh, unique vault so the solve count is deterministic.
-        let problems = vec![problem("Expand", Domain::Symbolic, "x^2 - x - 6", AnswerKind::Scalar)];
+        let problems = vec![problem(
+            "Expand",
+            Domain::Symbolic,
+            "x^2 - x - 6",
+            AnswerKind::Scalar,
+        )];
         let vault = std::env::temp_dir().join(format!("mamba-app-hist-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&vault);
 
@@ -766,6 +819,40 @@ mod tests {
 
     fn key(code: KeyCode) -> KeyEvent {
         KeyEvent::new(code, KeyModifiers::NONE)
+    }
+
+    #[test]
+    fn topic_filter_cycles_and_filters_the_navigator() {
+        let mut p1 = problem("A", Domain::Symbolic, "x", AnswerKind::Scalar);
+        p1.topic = "Algebra".into();
+        let mut p2 = problem("B", Domain::Symbolic, "x", AnswerKind::Scalar);
+        p2.topic = "Calculus".into();
+        let mut a = App::new(vec![p1, p2], std::env::temp_dir().join("mamba-topic-test"));
+
+        let visible = |a: &App| {
+            a.nav_rows
+                .iter()
+                .filter(|r| matches!(r, NavRow::Problem(_)))
+                .count()
+        };
+        assert_eq!(
+            a.topics,
+            vec!["Algebra".to_string(), "Calculus".to_string()]
+        );
+        assert!(a.topic_filter.is_none());
+        assert_eq!(visible(&a), 2);
+
+        a.cycle_topic_filter(); // → Algebra
+        assert_eq!(a.topic_filter.as_deref(), Some("Algebra"));
+        assert_eq!(visible(&a), 1);
+
+        a.cycle_topic_filter(); // → Calculus
+        assert_eq!(a.topic_filter.as_deref(), Some("Calculus"));
+        assert_eq!(visible(&a), 1);
+
+        a.cycle_topic_filter(); // → all
+        assert!(a.topic_filter.is_none());
+        assert_eq!(visible(&a), 2);
     }
 
     #[test]

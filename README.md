@@ -40,9 +40,10 @@ mamba --check       # load the problem bank and report (no TUI) — a health che
 mamba --verify      # run every problem's canonical answer through the engine
 ```
 
-Keys: `/` fuzzy-find a problem · `⇥` cycle focus · `↵` open/submit · `j`/`k`
-navigate & scroll · `^P` progress/stats overlay · `esc` return to navigator ·
-`^Q` quit. The sidebar groups problems by topic within each domain.
+Keys: `/` fuzzy-find a problem · `t` cycle the topic filter · `⇥` cycle focus ·
+`↵` open/submit · `j`/`k` navigate & scroll · `^P` progress/stats overlay ·
+`esc` return to navigator · `^Q` quit. The sidebar groups problems by topic
+within each domain.
 
 ### From a checkout, without installing
 
