@@ -50,11 +50,16 @@ parametrized templates `--count` times each:
 | `gd-step` | Tensor | gradient-descent update `x(1−2α)` (ML) |
 | `lagrangian` | Symbolic | `∂L/∂x = 2a·x + λ` (convex opt) |
 | `psd-check` | Exact | 2×2 PSD test → `1`/`0` (convex opt) |
+| `layernorm-mean` | Tensor | activation mean (DL) |
+| `layernorm-variance` | Tensor | biased activation variance (DL) |
 | `factorization` | Exact | trial division → `2^3 * 3^2 * 5` |
 | `modexp` | Exact | `pow(base, exp, mod)` |
 | `gcd` | Exact | Euclid (`math.gcd`) |
 | `lcm` | Exact | `a*b / gcd(a, b)` |
 | `modular-inverse` | Exact | `pow(a, -1, m)` |
+| `conv-output` | Exact | `floor((L−K+2P)/S)+1` (DL) |
+| `linear-params` | Exact | `a·b + b` (DL) |
+| `conv-params` | Exact | `C_out·(C_in·K² + 1)` (DL) |
 
 The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
 materialized JSON in `problems/` is the committed, browseable data.

@@ -7,6 +7,11 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Deep Learning problem topic** (bank 86 → 103): conv output length, linear/conv
+  layer parameter counts, activation mean & (biased) variance for LayerNorm, plus
+  cross-entropy derivative and BatchNorm normalization. Five new generator
+  templates and two curated problems under a new `Deep Learning` topic spanning
+  all three pipelines; all pass `mamba --verify`.
 - **Richer ML/AI & convex-optimization problems** (bank 68 → 86, 41 ML/Convex):
   softmax Jacobian and softmax cross-entropy gradient (`p − y`), KKT optimum,
   positive-semidefinite checks (1/0), Lagrangian stationarity, gradient-descent

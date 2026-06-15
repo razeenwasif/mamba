@@ -1,0 +1,11 @@
+{
+  "id": "gen-conv-output-0",
+  "title": "Conv Output Length",
+  "domain": "Exact",
+  "topic": "Deep Learning",
+  "difficulty": "Medium",
+  "prompt": "A 1-D convolution has input length L = 46, kernel K = 4, padding P = 1, stride S = 1.\n\nOutput length = floor((L − K + 2P) / S) + 1. Compute it.",
+  "expected": "45",
+  "answer_kind": "Scalar",
+  "hint": "floor division; enter one integer"
+}

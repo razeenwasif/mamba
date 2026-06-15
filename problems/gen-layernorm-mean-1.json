@@ -1,0 +1,11 @@
+{
+  "id": "gen-layernorm-mean-1",
+  "title": "Activation Mean",
+  "domain": "Tensor",
+  "topic": "Deep Learning",
+  "difficulty": "Easy",
+  "prompt": "Compute the mean μ of the activations\n\n    x = [5, -5, -1, 5]",
+  "expected": "1",
+  "answer_kind": "Scalar",
+  "hint": "μ = (Σ xᵢ) / n; an exact fraction or a decimal is accepted"
+}

@@ -478,6 +478,104 @@ def t_gradient_descent_step(rng: random.Random, i: int) -> dict:
     }
 
 
+def t_conv_output_length(rng: random.Random, i: int) -> dict:
+    length = rng.randint(8, 64)
+    kernel = rng.randint(1, 7)
+    padding = rng.randint(0, 3)
+    stride = rng.randint(1, 4)
+    out = (length - kernel + 2 * padding) // stride + 1
+    return {
+        "id": f"gen-conv-output-{i}",
+        "title": "Conv Output Length",
+        "domain": "Exact",
+        "topic": "Deep Learning",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A 1-D convolution has input length L = {length}, kernel K = {kernel}, "
+            f"padding P = {padding}, stride S = {stride}.\n\n"
+            "Output length = floor((L − K + 2P) / S) + 1. Compute it."
+        ),
+        "expected": str(out),
+        "answer_kind": "Scalar",
+        "hint": "floor division; enter one integer",
+    }
+
+
+def t_layernorm_mean(rng: random.Random, i: int) -> dict:
+    xs = [rng.randint(-6, 6) for _ in range(rng.randint(3, 4))]
+    mean = Fraction(sum(xs), len(xs))
+    return {
+        "id": f"gen-layernorm-mean-{i}",
+        "title": "Activation Mean",
+        "domain": "Tensor",
+        "topic": "Deep Learning",
+        "difficulty": "Easy",
+        "prompt": f"Compute the mean μ of the activations\n\n    x = {xs}",
+        "expected": frac(mean),
+        "answer_kind": "Scalar",
+        "hint": "μ = (Σ xᵢ) / n; an exact fraction or a decimal is accepted",
+    }
+
+
+def t_layernorm_variance(rng: random.Random, i: int) -> dict:
+    xs = [rng.randint(-6, 6) for _ in range(rng.randint(3, 4))]
+    n = len(xs)
+    s = sum(xs)
+    sumsq = sum(x * x for x in xs)
+    var = Fraction(n * sumsq - s * s, n * n)  # biased (1/n) variance
+    return {
+        "id": f"gen-layernorm-var-{i}",
+        "title": "Activation Variance",
+        "domain": "Tensor",
+        "topic": "Deep Learning",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Compute the biased (1/n) variance σ² of the activations\n\n    x = {xs}\n\n"
+            "(σ² = (1/n)·Σ (xᵢ − μ)²)"
+        ),
+        "expected": frac(var),
+        "answer_kind": "Scalar",
+        "hint": "σ² = (Σ xᵢ²)/n − μ²; an exact fraction or a decimal is accepted",
+    }
+
+
+def t_linear_param_count(rng: random.Random, i: int) -> dict:
+    a, b = rng.randint(2, 256), rng.randint(2, 256)
+    return {
+        "id": f"gen-linear-params-{i}",
+        "title": "Linear Layer Parameters",
+        "domain": "Exact",
+        "topic": "Deep Learning",
+        "difficulty": "Easy",
+        "prompt": (
+            f"A linear layer maps ℝ^{a} → ℝ^{b} (with a bias).\n\n"
+            "How many learnable parameters does it have?"
+        ),
+        "expected": str(a * b + b),
+        "answer_kind": "Scalar",
+        "hint": "weights a·b plus b biases",
+    }
+
+
+def t_conv_param_count(rng: random.Random, i: int) -> dict:
+    cin, cout = rng.randint(1, 16), rng.randint(1, 16)
+    k = rng.choice([1, 3, 5, 7])
+    return {
+        "id": f"gen-conv-params-{i}",
+        "title": "Conv Layer Parameters",
+        "domain": "Exact",
+        "topic": "Deep Learning",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A Conv2D has {cin} input channels, {cout} filters, and a {k}×{k} kernel "
+            "(with a bias per filter).\n\nHow many learnable parameters does it have?"
+        ),
+        "expected": str(cout * (cin * k * k + 1)),
+        "answer_kind": "Scalar",
+        "hint": "each filter: C_in·K·K weights + 1 bias; times C_out filters",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -499,6 +597,11 @@ TEMPLATES = [
     t_matmul_grad_shape,
     t_attention_shape,
     t_gradient_descent_step,
+    t_conv_output_length,
+    t_layernorm_mean,
+    t_layernorm_variance,
+    t_linear_param_count,
+    t_conv_param_count,
 ]
 
 
@@ -579,6 +682,13 @@ FIXED = [
     _p("convex-kkt-optimum", "KKT Optimum", "Exact", "Convex Optimization", "Medium",
        "Minimize (1/2)*x^2 subject to x ≥ 1. By the KKT conditions, what is the optimal x?",
        "1", "the constraint is active at the optimum"),
+    # ---- Deep Learning ----
+    _p("dl-cross-entropy-derivative", "Cross-Entropy Derivative", "Symbolic", "Deep Learning", "Easy",
+       "For a target y = 1, the cross-entropy loss is L = -ln(p) in the prediction p. Find dL/dp.",
+       "-1/p", "for 0 < p < 1"),
+    _p("dl-batchnorm-normalize", "BatchNorm Normalize", "Tensor", "Deep Learning", "Easy",
+       "BatchNorm normalizes with (x − μ)/√(σ² + ε). For x = 2, μ = 1, σ² = 4, ε = 0, compute it.",
+       "1/2", "√4 = 2, so (2 − 1)/2"),
 ]
 
 

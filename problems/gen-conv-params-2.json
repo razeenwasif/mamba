@@ -1,0 +1,11 @@
+{
+  "id": "gen-conv-params-2",
+  "title": "Conv Layer Parameters",
+  "domain": "Exact",
+  "topic": "Deep Learning",
+  "difficulty": "Medium",
+  "prompt": "A Conv2D has 13 input channels, 14 filters, and a 1×1 kernel (with a bias per filter).\n\nHow many learnable parameters does it have?",
+  "expected": "196",
+  "answer_kind": "Scalar",
+  "hint": "each filter: C_in·K·K weights + 1 bias; times C_out filters"
+}

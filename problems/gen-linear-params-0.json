@@ -1,0 +1,11 @@
+{
+  "id": "gen-linear-params-0",
+  "title": "Linear Layer Parameters",
+  "domain": "Exact",
+  "topic": "Deep Learning",
+  "difficulty": "Easy",
+  "prompt": "A linear layer maps ℝ^193 → ℝ^108 (with a bias).\n\nHow many learnable parameters does it have?",
+  "expected": "20952",
+  "answer_kind": "Scalar",
+  "hint": "weights a·b plus b biases"
+}
