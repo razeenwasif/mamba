@@ -18,7 +18,7 @@ use crossterm::event::{self, Event, KeyEventKind};
 
 use mamba::app::App;
 use mamba::engine::{self, Verdict};
-use mamba::{storage, ui};
+use mamba::{review, storage, ui};
 
 /// How long the event loop blocks waiting for input before redrawing.
 ///
@@ -79,6 +79,9 @@ fn main() -> anyhow::Result<()> {
             let answer = args.get(2..).map(|a| a.join(" ")).unwrap_or_default();
             return solve_one(id, &answer);
         }
+        // `mamba review` — list the problems due for review (no TUI), using the
+        // same spaced-repetition schedule and vault history as the `r` mode.
+        Some("review") => return review_due(),
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
             print_help();
@@ -177,13 +180,71 @@ fn solve_one(id: &str, answer: &str) -> anyhow::Result<()> {
     }
 }
 
+/// Lists the problems due for review (most overdue first), reading the vault
+/// history and applying the same Leitner schedule as the TUI's `r` mode.
+fn review_due() -> anyhow::Result<()> {
+    let dir = storage::default_problems_path()?;
+    let problems = storage::problem::load_all(&dir)
+        .with_context(|| format!("loading problem bank from {}", dir.display()))?;
+    let vault = storage::default_vault_path()?;
+    let today = chrono::Local::now().date_naive();
+
+    let mut due: Vec<_> = problems
+        .iter()
+        .filter_map(|p| {
+            let history = storage::vault::history(&vault, p);
+            review::is_due(history.as_ref(), today).then_some((p, history))
+        })
+        .collect();
+    // Most overdue first: never-solved before solved, then oldest last-solve.
+    due.sort_by(|(pa, ha), (pb, hb)| {
+        let last =
+            |h: &Option<storage::vault::ProblemHistory>| h.as_ref().and_then(|x| x.last_solved);
+        match (last(ha), last(hb)) {
+            (None, None) => pa.title.cmp(&pb.title),
+            (None, Some(_)) => std::cmp::Ordering::Less,
+            (Some(_), None) => std::cmp::Ordering::Greater,
+            (Some(a), Some(b)) => a.cmp(&b).then(pa.title.cmp(&pb.title)),
+        }
+    });
+
+    if due.is_empty() {
+        println!(
+            "✓ Nothing due — all caught up! ({} problems)",
+            problems.len()
+        );
+        return Ok(());
+    }
+    println!(
+        "{} of {} problems due for review:\n",
+        due.len(),
+        problems.len()
+    );
+    for (p, history) in &due {
+        let status = match history {
+            Some(h) if h.last_solved.is_some() => {
+                let plural = if h.solves == 1 { "" } else { "s" };
+                format!(
+                    "last {} ({} solve{plural})",
+                    h.last_solved.unwrap(),
+                    h.solves
+                )
+            }
+            _ => "new".to_string(),
+        };
+        println!("  {:<34} {:<20} {status}", p.id, p.topic);
+    }
+    Ok(())
+}
+
 /// Prints CLI usage, in-TUI key bindings, and the environment overrides.
 fn print_help() {
     println!(
         "mamba {} — a terminal mathematics practice engine\n\n\
          USAGE:\n    \
          mamba [OPTIONS]\n    \
-         mamba solve <problem-id> <answer>   Verify one answer (exit 0 iff correct)\n\n\
+         mamba solve <problem-id> <answer>   Verify one answer (exit 0 iff correct)\n    \
+         mamba review                        List the problems due for review\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \

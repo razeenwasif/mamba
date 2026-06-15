@@ -4,6 +4,15 @@ All notable changes to Mamba are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims
 to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`mamba review` subcommand.** Lists the problems due for review from the
+  shell — most-overdue first, each with its topic and `new` / `last DATE (N
+  solves)` status — using the same spaced-repetition schedule and vault history
+  as the TUI's `r` mode. Handy for a quick "what should I study?" without opening
+  the TUI.
+
 ## [0.2.0] — 2026-06-15
 
 The study-loop release: a local AI tutor, spaced-repetition review, a per-page

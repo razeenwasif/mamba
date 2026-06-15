@@ -35,3 +35,27 @@ fn solve_accepts_correct_rejects_wrong_and_unknown() {
     let missing = mamba(&["solve", "no-such-problem", "1"]);
     assert!(!missing.status.success());
 }
+
+#[test]
+fn review_lists_due_problems() {
+    // A fresh, empty vault → every problem is "new" and due.
+    let vault = std::env::temp_dir().join(format!("mamba-review-cli-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&vault);
+
+    let out = Command::new(env!("CARGO_BIN_EXE_mamba"))
+        .args(["review"])
+        .env("MAMBA_PROBLEMS", "problems")
+        .env("MAMBA_VAULT", &vault)
+        .output()
+        .expect("failed to run mamba review");
+
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("due for review"), "stdout: {stdout}");
+    assert!(
+        stdout.contains("new"),
+        "expected never-solved problems marked new"
+    );
+
+    let _ = std::fs::remove_dir_all(&vault);
+}

@@ -77,6 +77,7 @@ mamba --help | -h
 mamba --check                  # load the bank and report (no TUI)
 mamba --verify [DIR]           # verify every problem's canonical answer
 mamba solve <id> "<answer>"    # verify one answer (exit 0 iff correct)
+mamba review                   # list the problems due for review
 ```
 
 ## Environment

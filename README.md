@@ -61,6 +61,7 @@ mamba --help
 mamba --check       # load the problem bank and report (no TUI) — a health check
 mamba --verify      # run every problem's canonical answer through the engine
 mamba solve <id> "<answer>"   # verify one answer from the shell (exit 0 iff correct)
+mamba review        # list the problems due for review (spaced repetition)
 ```
 
 Keys: `/` fuzzy-find · `t` cycle topic filter · `r` spaced-repetition review ·
