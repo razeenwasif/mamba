@@ -6,6 +6,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-16
+
+A full study loop and a sharper tutor: a study-session mode, an adaptive "next
+problem", a tutor that generates fresh practice problems, semantic search by
+meaning, a `mamba stats` dashboard, and an optional config file.
+
 ### Added
 - **`mamba stats` shell command.** Prints the progress dashboard the `Ctrl-P`
   overlay shows — total solved out of the bank, current/longest day streak,
