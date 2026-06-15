@@ -6,6 +6,11 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-06-16
+
+Two new subject areas across all difficulties: Physics and Engineering Math push
+the bank to 262 problems.
+
 ### Added
 - **Physics and Engineering Math topics** (bank 199 → 262). Two new subject
   areas spanning all difficulties: mechanics, energy, waves, kinematics, and SHM
