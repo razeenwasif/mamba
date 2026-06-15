@@ -2,6 +2,7 @@
 //! the local Markdown vault.
 
 pub mod problem;
+pub mod progress;
 pub mod vault;
 
 use std::path::PathBuf;

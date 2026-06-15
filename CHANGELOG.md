@@ -7,6 +7,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Rolling progress dashboard.** On every correct answer, after the per-problem
+  note is written, Mamba (re)renders `_progress.md` in the vault: total solved, a
+  breakdown by domain and by difficulty, current and longest day streaks, and the
+  most recent solves. The vault stays the single source of truth — the dashboard
+  is aggregated by scanning the per-problem notes' frontmatter (`storage/progress.rs`),
+  with no separate ledger. Best-effort: a dashboard write failure never sinks an
+  already-saved solve.
 - **Richer formula rendering.** A new `src/ui/formula.rs` turns plain-ASCII math
   markers in prompts into typeset terminal math: `^…` → superscripts
   (`x^2` → `x²`, `x^(n-1)` → `xⁿ⁻¹`, `A^T` → `Aᵀ`), `_…` → subscripts

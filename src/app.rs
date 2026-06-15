@@ -18,7 +18,7 @@ use ratatui::widgets::ListState;
 
 use crate::engine::{self, Verdict};
 use crate::storage::problem::Problem;
-use crate::storage::vault;
+use crate::storage::{progress, vault};
 
 /// An in-flight verification running on a worker thread. It carries everything
 /// the main thread needs to finalize the result once the worker replies — the
@@ -523,14 +523,20 @@ impl App {
     /// verified problem, so `time_spent` is correct even if the user has since
     /// navigated elsewhere.
     fn export_solution(&mut self, problem: &Problem, answer: &str, opened_at: Instant) {
+        let today = Local::now().date_naive();
         match vault::export(
             &self.vault_path,
             problem,
             answer,
             opened_at.elapsed(),
-            Local::now().date_naive(),
+            today,
         ) {
-            Ok(path) => self.exported_to = Some(path),
+            Ok(path) => {
+                self.exported_to = Some(path);
+                // Best-effort: refresh the rolling progress dashboard. A failure
+                // here must not sink an otherwise-correct, already-saved solve.
+                let _ = progress::update(&self.vault_path, today);
+            }
             Err(err) => {
                 self.verdict = Some(Verdict::incorrect(format!("export failed: {err:#}")));
             }

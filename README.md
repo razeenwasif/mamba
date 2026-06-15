@@ -90,7 +90,8 @@ src/
 │   └── exact/           # num-bigint — exact arithmetic + primality
 ├── storage/
 │   ├── problem.rs       # Domain/Problem model + JSON loader
-│   └── vault.rs         # Markdown + YAML vault exporter
+│   ├── vault.rs         # Markdown + YAML vault exporter (per-problem notes)
+│   └── progress.rs      # rolling _progress.md dashboard (streaks, breakdowns)
 └── ui/
     ├── mod.rs           # pure render: navigator · problem · console · answer bar
     ├── formula.rs       # ASCII → typeset math (^/_ scripts, [[…]] matrices)
