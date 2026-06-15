@@ -56,3 +56,11 @@ pub fn default_vault_path() -> anyhow::Result<PathBuf> {
     let home = dirs::home_dir().context("could not determine the home directory")?;
     Ok(home.join("OnyxVault").join("Mamba"))
 }
+
+/// Resolves the on-disk cache of problem embeddings for semantic search, e.g.
+/// `~/.local/share/mamba/embeddings.json` on Linux. The cache is recomputed
+/// lazily when the bank text or embedding model changes; deleting it is safe.
+pub fn default_embeddings_path() -> anyhow::Result<PathBuf> {
+    let data = dirs::data_dir().context("could not determine the platform data directory")?;
+    Ok(data.join("mamba").join("embeddings.json"))
+}

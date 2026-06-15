@@ -31,7 +31,9 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
 - **Mathematical verification, not string matching**: multivariate algebraic
   equivalence (incl. `exp`/`ln`/trig), exact `BigRational` matrices, and
   arbitrary-precision number theory with Miller–Rabin primality.
-- **A real study loop**: a `/` fuzzy finder, `t` topic filter, `r`
+- **A real study loop**: a `/` finder — fuzzy by character or, with `Tab`,
+  **semantic by meaning** (local `nomic-embed-text` embeddings, so “rate of
+  change of a curve” finds the derivative problems) — a `t` topic filter, `r`
   spaced-repetition review, an `s` **study session** over the due queue (with a
   live progress HUD and an end-of-session summary), an `n` **adaptive “next
   problem”** (`mamba next`) that blends due-ness, topic mastery, and difficulty,
@@ -68,7 +70,8 @@ mamba review        # list the problems due for review (spaced repetition)
 mamba next          # recommend the single best problem to attempt next
 ```
 
-Keys: `/` fuzzy-find · `n` next recommended problem · `t` cycle topic filter ·
+Keys: `/` find (`Tab` toggles fuzzy ↔ semantic) · `n` next recommended problem ·
+`t` cycle topic filter ·
 `r` spaced-repetition review · `s` study session (work the due queue) · `g`
 toggle the recap · `^A` AI tutor · `⇥` cycle focus · `↵` open/submit · `j`/`k`
 navigate & scroll · `^P` progress/stats overlay · `esc` return to navigator ·
@@ -160,6 +163,8 @@ exact arithmetic (correct by construction) and emits it in Mamba syntax;
 - `MAMBA_THEME` — `venom` (default), `midnight`, or `slate`.
 - `MAMBA_OLLAMA_MODEL` — tutor model tag (default `gemma4:e2b-it-qat`).
 - `MAMBA_OLLAMA_URL` — Ollama server URL (default `http://localhost:11434`).
+- `MAMBA_EMBED_MODEL` — semantic-search embedding model (default
+  `nomic-embed-text`); vectors are cached in the data dir (`embeddings.json`).
 
 ## Tests
 

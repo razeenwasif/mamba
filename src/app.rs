@@ -21,6 +21,7 @@ use crate::agent::{self, AgentEvent, ChatMessage};
 use crate::engine::{self, Verdict};
 use crate::recommend;
 use crate::review;
+use crate::semantic;
 use crate::storage::problem::Problem;
 use crate::storage::{progress, vault};
 
@@ -205,6 +206,22 @@ pub struct App {
     /// Ollama model tag and server URL (from `MAMBA_OLLAMA_*` or defaults).
     pub agent_model: String,
     pub agent_url: String,
+    /// Whether the finder is in semantic mode (`Tab` toggles it): the query is
+    /// ranked by meaning via embeddings instead of fuzzy character matching.
+    pub search_semantic: bool,
+    /// The embedding model tag for semantic search (`MAMBA_EMBED_MODEL`).
+    pub embed_model: String,
+    /// In-memory bank embeddings, built on the first semantic search and kept
+    /// for the rest of the session so repeat queries only embed the query.
+    embed_store: Option<semantic::Store>,
+    /// Receiver for an in-flight semantic search worker, if any.
+    search_rx: Option<Receiver<semantic::SearchEvent>>,
+    /// The query a running/just-finished semantic search was launched for, so
+    /// `filtered` is known to correspond to it (and Enter can open vs re-search).
+    semantic_done_query: Option<String>,
+    /// A transient status line for the finder (indexing progress, an error, or a
+    /// "press ↵ to search" hint in semantic mode).
+    pub search_status: Option<String>,
     /// When `true`, the main loop tears down the terminal and exits.
     pub should_quit: bool,
 }
@@ -252,6 +269,12 @@ impl App {
             agent_rx: None,
             agent_model: agent::default_model(),
             agent_url: agent::default_url(),
+            search_semantic: false,
+            embed_model: semantic::default_model(),
+            embed_store: None,
+            search_rx: None,
+            semantic_done_query: None,
+            search_status: None,
             should_quit: false,
         };
         if let Some(first) = app
@@ -562,6 +585,9 @@ impl App {
         self.search_active = true;
         self.stats_visible = false; // the two modals are mutually exclusive
         self.search_query.clear();
+        self.search_semantic = false;
+        self.semantic_done_query = None;
+        self.search_status = None;
         self.focus = Focus::Navigator;
         self.recompute_filter();
     }
@@ -571,6 +597,8 @@ impl App {
     fn exit_search(&mut self) {
         self.search_active = false;
         self.search_query.clear();
+        self.search_status = None;
+        self.semantic_done_query = None;
         match self.open_problem {
             Some(idx) => self.select_problem_row(idx),
             None => {
@@ -591,6 +619,17 @@ impl App {
     fn on_search_key(&mut self, key: KeyEvent, ctrl: bool) {
         match key.code {
             KeyCode::Esc => self.exit_search(),
+            // `Tab` flips between fuzzy (character) and semantic (meaning) modes.
+            KeyCode::Tab | KeyCode::BackTab => self.toggle_search_mode(),
+            // In semantic mode, the first Enter runs the search (the results
+            // aren't live); once they match the query, Enter opens the highlight.
+            KeyCode::Enter
+                if self.search_semantic
+                    && self.semantic_done_query.as_deref() != Some(self.search_query.trim())
+                    && !self.search_query.trim().is_empty() =>
+            {
+                self.run_semantic_search();
+            }
             KeyCode::Enter if self.selected_index().is_some() => {
                 // `open_selected` is search-aware while the finder is still
                 // active, so it opens the highlighted result.
@@ -602,13 +641,131 @@ impl App {
             KeyCode::Down => self.search_move(1),
             KeyCode::Backspace => {
                 self.search_query.pop();
-                self.recompute_filter();
+                self.on_query_edited();
             }
             KeyCode::Char(c) if !ctrl => {
                 self.search_query.push(c);
-                self.recompute_filter();
+                self.on_query_edited();
             }
             _ => {}
+        }
+    }
+
+    /// Reacts to a query edit: fuzzy mode filters live; semantic mode defers the
+    /// (network) search to Enter, so it just invalidates the stale results and
+    /// shows a hint.
+    fn on_query_edited(&mut self) {
+        if self.search_semantic {
+            self.filtered.clear();
+            self.search_state.select(None);
+            self.semantic_done_query = None;
+            self.search_status = (!self.search_query.trim().is_empty())
+                .then(|| "press ↵ to search by meaning".to_string());
+        } else {
+            self.recompute_filter();
+        }
+    }
+
+    /// Flips the finder between fuzzy and semantic ranking, keeping the query.
+    fn toggle_search_mode(&mut self) {
+        self.search_semantic = !self.search_semantic;
+        if self.search_semantic {
+            self.filtered.clear();
+            self.search_state.select(None);
+            self.semantic_done_query = None;
+            self.search_status = if self.search_query.trim().is_empty() {
+                Some("type a description, then ↵ to search by meaning".into())
+            } else {
+                Some("press ↵ to search by meaning".into())
+            };
+        } else {
+            self.search_status = None;
+            self.semantic_done_query = None;
+            self.recompute_filter();
+        }
+    }
+
+    /// Launches a semantic search worker for the current query (a no-op if one
+    /// is already running or the query is blank). The first run also indexes the
+    /// bank; later runs reuse the in-memory [`embed_store`](App::embed_store).
+    fn run_semantic_search(&mut self) {
+        let query = self.search_query.trim().to_string();
+        if query.is_empty() || self.search_rx.is_some() {
+            return;
+        }
+        let docs: Vec<semantic::Doc> = self
+            .problems
+            .iter()
+            .map(|p| semantic::Doc {
+                id: p.id.clone(),
+                text: format!("{} — {} · {}\n{}", p.title, p.topic, p.domain, p.prompt),
+            })
+            .collect();
+        let cache = crate::storage::default_embeddings_path()
+            .unwrap_or_else(|_| std::path::PathBuf::from("mamba-embeddings.json"));
+        self.search_status = Some(if self.embed_store.is_none() {
+            "indexing the bank… (first run only)".into()
+        } else {
+            "searching…".into()
+        });
+        self.semantic_done_query = Some(query.clone());
+        self.search_rx = Some(semantic::search(
+            self.agent_url.clone(),
+            self.embed_model.clone(),
+            cache,
+            docs,
+            self.embed_store.clone(),
+            query,
+        ));
+    }
+
+    /// `true` while a semantic search worker is in flight (drives the faster
+    /// main-loop poll so results land promptly).
+    pub fn search_pending(&self) -> bool {
+        self.search_rx.is_some()
+    }
+
+    /// Drains a finished semantic search into [`filtered`](App::filtered).
+    /// Called once per main-loop tick, like the verification and tutor pollers.
+    pub fn poll_search(&mut self) {
+        let Some(rx) = &self.search_rx else {
+            return;
+        };
+        // Drain everything available this tick; keep the latest indexing count.
+        loop {
+            match rx.try_recv() {
+                Ok(semantic::SearchEvent::Indexing { done, total }) => {
+                    self.search_status = Some(format!("indexing the bank… {done}/{total}"));
+                }
+                Ok(semantic::SearchEvent::Ranked { store, results }) => {
+                    if let Some(s) = store {
+                        self.embed_store = Some(s);
+                    }
+                    self.filtered = results
+                        .into_iter()
+                        // Cosine [-1, 1] → permille, reusing the i64 score slot.
+                        .map(|(i, sim)| (i, (sim * 1000.0) as i64))
+                        .collect();
+                    self.search_state
+                        .select((!self.filtered.is_empty()).then_some(0));
+                    self.search_status = self.filtered.is_empty().then(|| "no matches".to_string());
+                    self.search_rx = None;
+                    return;
+                }
+                Ok(semantic::SearchEvent::Error(e)) => {
+                    self.search_status = Some(format!("⚠ {e}"));
+                    self.semantic_done_query = None;
+                    self.search_rx = None;
+                    return;
+                }
+                Err(TryRecvError::Empty) => return, // still working — next tick
+                Err(TryRecvError::Disconnected) => {
+                    self.search_status = Some("⚠ semantic search worker stopped".into());
+                    self.semantic_done_query = None;
+                    self.search_rx = None;
+                    return;
+                }
+            }
         }
     }
 
@@ -1519,6 +1676,31 @@ mod tests {
         assert!(!a.search_active);
         assert_eq!(a.focus, Focus::Input);
         assert_eq!(a.open_problem_ref().unwrap().title, "Factorize");
+    }
+
+    #[test]
+    fn finder_tab_toggles_fuzzy_and_semantic_modes() {
+        let mut a = app();
+        a.on_key(key(KeyCode::Char('/')));
+        assert!(a.search_active && !a.search_semantic);
+
+        // Tab → semantic: results are dropped (they're not live) and a hint shows.
+        a.on_key(key(KeyCode::Tab));
+        assert!(a.search_semantic);
+        assert!(a.filtered.is_empty());
+        assert!(a.search_status.is_some());
+
+        // Typing in semantic mode does NOT fuzzy-filter — the search is deferred
+        // to Enter, so the result list stays empty until then.
+        a.on_key(key(KeyCode::Char('d')));
+        assert_eq!(a.search_query, "d");
+        assert!(a.filtered.is_empty());
+
+        // Tab back → fuzzy mode re-filters live against the same query.
+        a.on_key(key(KeyCode::Tab));
+        assert!(!a.search_semantic);
+        assert!(a.search_status.is_none());
+        assert!(!a.filtered.is_empty());
     }
 
     #[test]

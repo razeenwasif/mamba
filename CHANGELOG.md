@@ -7,6 +7,15 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Semantic problem search (`/` then `Tab`).** The finder now has two modes:
+  the existing fuzzy character match, and a new *semantic* mode that ranks
+  problems by **meaning** using local `nomic-embed-text` embeddings — so “rate of
+  change of a curve” surfaces the derivative problems even with no shared words.
+  A new `semantic` module embeds each problem once (via the same local Ollama
+  server as the tutor), caches the vectors to `embeddings.json` in the data dir
+  (re-indexing automatically when a problem's text or the model changes), and
+  ranks the query by cosine similarity on a worker thread so indexing never
+  blocks the UI. New `MAMBA_EMBED_MODEL` env var; nothing leaves the machine.
 - **“Generate a similar problem” tutor action (`Ctrl-G`).** One keystroke asks
   the local tutor to pose a fresh practice problem in the same vein as the open
   one — same type, topic, and difficulty, different numbers — for you to attempt

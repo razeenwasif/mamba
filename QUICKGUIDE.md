@@ -42,13 +42,19 @@ A one-page reference for keybindings, the CLI, and configuration.
 |-----|--------|
 | `j` / `k` or `↓` / `↑` | Scroll the focused pane |
 
-### Fuzzy finder (`/`)
+### Finder (`/`) — fuzzy or semantic
 | Key | Action |
 |-----|--------|
 | *(type)* | Filter problems (title, topic, difficulty, domain) |
+| `Tab` | Toggle fuzzy (by characters) ↔ semantic (by meaning) |
 | `↑` / `↓` | Move the highlight |
-| `Enter` | Open the highlighted problem |
+| `Enter` | Open the highlight — in semantic mode, the first `Enter` runs the search |
 | `Esc` | Cancel |
+
+Semantic mode ranks problems by *meaning* using local `nomic-embed-text`
+embeddings (so "rate of change of a curve" finds the derivative problems). The
+bank is embedded once on first use and cached; switching the embedding model or
+editing a problem re-indexes automatically.
 
 ### Stats overlay (`Ctrl-P`)
 | Key | Action |
@@ -100,3 +106,4 @@ mamba next                     # recommend the next problem to attempt
 | `MAMBA_THEME` | `venom` | `venom` · `midnight` · `slate` |
 | `MAMBA_OLLAMA_MODEL` | `gemma4:e2b-it-qat` | tutor model tag |
 | `MAMBA_OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
+| `MAMBA_EMBED_MODEL` | `nomic-embed-text` | semantic-search embedding model |

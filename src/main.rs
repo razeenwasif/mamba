@@ -303,12 +303,13 @@ fn run(terminal: &mut ratatui::DefaultTerminal, app: &mut App) -> anyhow::Result
         // so it lands in state before we draw — the UI never blocks on either.
         app.poll_verify();
         app.poll_agent();
+        app.poll_search();
 
         terminal.draw(|frame| ui::draw(frame, app))?;
 
-        // Poll faster while verifying or while the tutor is streaming so output
-        // appears promptly; idle at the normal tick otherwise.
-        let timeout = if app.is_verifying() || app.agent_streaming {
+        // Poll faster while a worker is in flight (verification, tutor stream, or
+        // a semantic search) so output appears promptly; idle otherwise.
+        let timeout = if app.is_verifying() || app.agent_streaming || app.search_pending() {
             POLL_BUSY
         } else {
             TICK_RATE

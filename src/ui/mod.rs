@@ -344,17 +344,24 @@ fn draw_search_overlay(frame: &mut Frame, app: &mut App, area: Rect) {
 
     // Blank the area, then frame it.
     frame.render_widget(Clear, popup);
+    let title = if app.search_semantic {
+        "  ✦  Semantic search  "
+    } else {
+        "  ⌕  Find a problem  "
+    };
+    let hint = if app.search_semantic {
+        "  ↵ search · ↑↓ move · ⇥ fuzzy · esc cancel  "
+    } else {
+        "  ↑↓ move · ↵ open · ⇥ semantic · esc cancel  "
+    };
     let block = Block::default()
         .title(Span::styled(
-            "  ⌕  Find a problem  ",
+            title,
             Style::default()
                 .fg(pal.accent_deep)
                 .add_modifier(Modifier::BOLD),
         ))
-        .title_bottom(Span::styled(
-            "  ↑↓ move · ↵ open · esc cancel  ",
-            Style::default().fg(pal.overlay),
-        ))
+        .title_bottom(Span::styled(hint, Style::default().fg(pal.overlay)))
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
         .border_style(Style::default().fg(pal.accent))
@@ -362,9 +369,13 @@ fn draw_search_overlay(frame: &mut Frame, app: &mut App, area: Rect) {
     let inner = block.inner(popup);
     frame.render_widget(block, popup);
 
-    let [query_area, list_area] = Layout::default()
+    let [query_area, status_area, list_area] = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(1), Constraint::Min(0)])
+        .constraints([
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ])
         .areas(inner);
 
     // Query line: a prompt + the live query + cursor, with a match count.
@@ -389,6 +400,23 @@ fn draw_search_overlay(frame: &mut Frame, app: &mut App, area: Rect) {
         .alignment(Alignment::Right)
         .style(Style::default().bg(pal.base)),
         count_area,
+    );
+
+    // Status line: indexing progress, an error, or a "press ↵" hint (semantic).
+    let status_line = match &app.search_status {
+        Some(s) => {
+            let color = if s.starts_with('⚠') {
+                pal.red
+            } else {
+                pal.subtext
+            };
+            Line::from(Span::styled(format!(" {s}"), Style::default().fg(color)))
+        }
+        None => Line::default(),
+    };
+    frame.render_widget(
+        Paragraph::new(status_line).style(Style::default().bg(pal.base)),
+        status_area,
     );
 
     // Full-width result rows: dot · title · topic · domain · difficulty · score.
