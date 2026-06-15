@@ -32,9 +32,10 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
   equivalence (incl. `exp`/`ln`/trig), exact `BigRational` matrices, and
   arbitrary-precision number theory with Miller–Rabin primality.
 - **A real study loop**: a `/` fuzzy finder, `t` topic filter, `r`
-  spaced-repetition review, a `^P` progress overlay (streaks, per-domain /
-  per-difficulty bars, and a `solved/total` **topic-mastery** view), and a
-  per-problem attempt-history peek.
+  spaced-repetition review, an `s` **study session** over the due queue (with a
+  live progress HUD and an end-of-session summary), a `^P` progress overlay
+  (streaks, per-domain / per-difficulty bars, and a `solved/total`
+  **topic-mastery** view), and a per-problem attempt-history peek.
 - **A local AI tutor** (`^A`): a streaming chat with a local
   [Ollama](https://ollama.com) model, scoped to the open problem — private,
   offline, no API keys.
@@ -66,9 +67,10 @@ mamba review        # list the problems due for review (spaced repetition)
 ```
 
 Keys: `/` fuzzy-find · `t` cycle topic filter · `r` spaced-repetition review ·
-`g` toggle the recap · `^A` AI tutor · `⇥` cycle focus · `↵` open/submit ·
-`j`/`k` navigate & scroll · `^P` progress/stats overlay · `esc` return to
-navigator · `^Q` quit. The sidebar groups problems by topic within each domain.
+`s` study session (work the due queue) · `g` toggle the recap · `^A` AI tutor ·
+`⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll · `^P`
+progress/stats overlay · `esc` return to navigator · `^Q` quit. The sidebar
+groups problems by topic within each domain.
 
 Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; and an
 answer that starts with `?` is sent to the tutor as a question (a bare `?` asks

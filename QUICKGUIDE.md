@@ -14,6 +14,7 @@ A one-page reference for keybindings, the CLI, and configuration.
 | `/` | Open the fuzzy problem finder |
 | `t` | Cycle the topic filter (`all → topic → … → all`) |
 | `r` | Toggle spaced-repetition review mode (only due problems) |
+| `s` | Start/stop a study session over the due queue (progress HUD + summary) |
 | `g` | Toggle the recap (preliminary reading) in the problem pane |
 | `Tab` / `Shift-Tab` | Cycle focus between panes |
 | `Esc` | Return to the navigator (or close a modal) |

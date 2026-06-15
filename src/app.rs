@@ -73,6 +73,37 @@ impl Focus {
     }
 }
 
+/// A focused study session: a fixed set of due problems worked through with a
+/// live progress counter and an end-of-session summary.
+#[derive(Debug, Clone)]
+pub struct Session {
+    /// Problem indices in this session (the due set when it started).
+    due: HashSet<usize>,
+    /// Those solved so far this session.
+    solved: HashSet<usize>,
+    /// When the session began (for the elapsed-time readout).
+    started: Instant,
+}
+
+impl Session {
+    /// Total problems in the session.
+    pub fn total(&self) -> usize {
+        self.due.len()
+    }
+    /// How many have been solved so far.
+    pub fn solved_count(&self) -> usize {
+        self.solved.len()
+    }
+    /// Whole minutes elapsed since the session started.
+    pub fn minutes(&self) -> u64 {
+        self.started.elapsed().as_secs() / 60
+    }
+    /// Whether every problem in the session has been solved.
+    pub fn is_complete(&self) -> bool {
+        !self.due.is_empty() && self.solved.len() == self.due.len()
+    }
+}
+
 /// One row of the navigation tree: a non-selectable domain header, a
 /// non-selectable topic sub-header, or a selectable problem (an index into
 /// [`App::problems`]). Selection skips both header kinds.
@@ -102,6 +133,12 @@ pub struct App {
     /// When `Some`, review mode (`r`) is on and this holds the indices of the
     /// problems due for review; the navigator shows only those.
     pub review_due: Option<HashSet<usize>>,
+    /// The active study session (`s`), if any: the navigator is filtered to its
+    /// queue and progress is tracked.
+    pub session: Option<Session>,
+    /// A transient summary line (e.g. an ended session's result) shown in the
+    /// console until the next submission or session.
+    pub session_summary: Option<String>,
     /// The pane that currently receives keyboard input.
     pub focus: Focus,
     /// Whether the fuzzy problem finder (`/`) overlay is active. While `true`
@@ -186,6 +223,8 @@ impl App {
             topic_filter: None,
             topics,
             review_due: None,
+            session: None,
+            session_summary: None,
             focus: Focus::Navigator,
             search_active: false,
             search_query: String::new(),
@@ -332,6 +371,12 @@ impl App {
             return;
         }
 
+        // `s` starts or ends a focused study session over the due problems.
+        if key.code == KeyCode::Char('s') && !ctrl {
+            self.toggle_session();
+            return;
+        }
+
         match key.code {
             KeyCode::Tab => {
                 self.focus = self.focus.next();
@@ -375,20 +420,71 @@ impl App {
     /// find every problem due for review (see [`crate::review`]); the navigator
     /// then shows only those.
     fn toggle_review(&mut self) {
-        if self.review_due.is_some() {
-            self.review_due = None;
-        } else {
-            let today = Local::now().date_naive();
-            let due: HashSet<usize> = self
-                .problems
-                .iter()
-                .enumerate()
-                .filter(|(_, p)| {
-                    review::is_due(vault::history(&self.vault_path, p).as_ref(), today)
-                })
-                .map(|(i, _)| i)
-                .collect();
-            self.review_due = Some(due);
+        self.review_due = match self.review_due {
+            Some(_) => None,
+            None => Some(self.due_problems()),
+        };
+        self.rebuild_nav();
+    }
+
+    /// The set of problem indices due for review as of today (scans the vault).
+    fn due_problems(&self) -> HashSet<usize> {
+        let today = Local::now().date_naive();
+        self.problems
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| review::is_due(vault::history(&self.vault_path, p).as_ref(), today))
+            .map(|(i, _)| i)
+            .collect()
+    }
+
+    /// Starts a study session over today's due problems, or ends the running
+    /// one with a summary. An empty due set just reports "all caught up".
+    fn toggle_session(&mut self) {
+        if self.session.is_some() {
+            self.end_session();
+            return;
+        }
+        let due = self.due_problems();
+        if due.is_empty() {
+            self.session_summary = Some("✓ Nothing due — all caught up!".into());
+            return;
+        }
+        self.session = Some(Session {
+            due,
+            solved: HashSet::new(),
+            started: std::time::Instant::now(),
+        });
+        self.session_summary = None;
+        self.rebuild_nav();
+    }
+
+    /// Records the just-solved open problem against the active session, and
+    /// auto-ends the session (with its summary) once everything is solved.
+    fn mark_session_solved(&mut self) {
+        let idx = self.open_problem;
+        if let (Some(session), Some(i)) = (self.session.as_mut(), idx)
+            && session.due.contains(&i)
+        {
+            session.solved.insert(i);
+        }
+        if self.session.as_ref().is_some_and(Session::is_complete) {
+            self.end_session();
+        }
+    }
+
+    /// Ends the running session, recording a one-line summary.
+    fn end_session(&mut self) {
+        if let Some(s) = self.session.take() {
+            let (done, total, mins) = (s.solved.len(), s.due.len(), s.minutes());
+            let tail = if done == total {
+                "🎉 all done!"
+            } else {
+                "keep going"
+            };
+            self.session_summary = Some(format!(
+                "📚 Session ended — {done}/{total} solved in {mins}m · {tail}"
+            ));
         }
         self.rebuild_nav();
     }
@@ -398,9 +494,11 @@ impl App {
     fn rebuild_nav(&mut self) {
         let topic = self.topic_filter.clone();
         let due = self.review_due.clone();
+        let session = self.session.as_ref().map(|s| s.due.clone());
         self.nav_rows = build_nav_rows(&self.problems, |i, p| {
             topic.as_deref().is_none_or(|t| p.topic == t)
                 && due.as_ref().is_none_or(|set| set.contains(&i))
+                && session.as_ref().is_none_or(|set| set.contains(&i))
         });
         match self
             .nav_rows
@@ -679,6 +777,7 @@ impl App {
 
         self.attempts += 1;
         self.console_scroll = 0;
+        self.session_summary = None; // a fresh attempt supersedes any old summary
         self.verdict = None; // clear the previous result while we recompute
 
         // Owned copies move into the worker; it returns only the `Verdict`, so
@@ -714,6 +813,7 @@ impl App {
                 let job = self.verify_job.take().expect("just matched Some");
                 if verdict.is_correct() {
                     self.export_solution(&job.problem, &job.answer, job.opened_at);
+                    self.mark_session_solved();
                 }
                 self.verdict = Some(verdict);
                 self.console_scroll = 0;
@@ -1196,6 +1296,67 @@ mod tests {
 
         a.toggle_review();
         assert!(a.review_due.is_none());
+        let _ = std::fs::remove_dir_all(&vault);
+    }
+
+    #[test]
+    fn study_session_serves_the_due_queue_and_tracks_solves() {
+        // Two never-solved problems → both due, so both join the session.
+        let p1 = problem("Alpha", Domain::Symbolic, "x^2 - x - 6", AnswerKind::Scalar);
+        let p2 = problem("Beta", Domain::Symbolic, "x^2 - x - 6", AnswerKind::Scalar);
+        let vault = std::env::temp_dir().join(format!("mamba-session-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&vault);
+
+        let mut a = App::new(vec![p1, p2], vault.clone());
+        assert!(a.session.is_none());
+
+        a.toggle_session();
+        let s = a.session.as_ref().expect("session started");
+        assert_eq!(s.total(), 2);
+        assert_eq!(s.solved_count(), 0);
+
+        // Solving the open problem advances the session (1/2 → not yet complete).
+        submit_blocking(&mut a, "(x-3)(x+2)");
+        assert_eq!(a.session.as_ref().map(Session::solved_count), Some(1));
+        assert!(a.session.is_some());
+
+        // Ending the session yields a summary and clears the filter.
+        a.toggle_session();
+        assert!(a.session.is_none());
+        assert!(
+            a.session_summary
+                .as_deref()
+                .is_some_and(|s| s.contains("Session ended") && s.contains("1/2"))
+        );
+        let _ = std::fs::remove_dir_all(&vault);
+    }
+
+    #[test]
+    fn study_session_with_nothing_due_reports_caught_up() {
+        let p = problem("Solved", Domain::Symbolic, "x", AnswerKind::Scalar);
+        let vault =
+            std::env::temp_dir().join(format!("mamba-session-caught-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&vault);
+        // Solve it today → not due (interval is 1 day), so the queue is empty.
+        vault::export(
+            &vault,
+            &p,
+            "x",
+            1,
+            std::time::Duration::from_secs(1),
+            Local::now().date_naive(),
+            None,
+        )
+        .unwrap();
+
+        let mut a = App::new(vec![p], vault.clone());
+        a.toggle_session();
+        assert!(a.session.is_none()); // nothing to serve
+        assert!(
+            a.session_summary
+                .as_deref()
+                .is_some_and(|s| s.contains("caught up"))
+        );
         let _ = std::fs::remove_dir_all(&vault);
     }
 

@@ -469,7 +469,12 @@ fn draw_topbar(frame: &mut Frame, app: &App, area: Rect) {
 
     // While the finder is open the right side becomes a live match-count
     // badge; otherwise it shows the total and a difficulty legend.
-    let legend = if app.search_active {
+    let legend = if let Some(s) = &app.session {
+        Line::from(Span::styled(
+            format!(" 📚 {}/{} · {}m ", s.solved_count(), s.total(), s.minutes()),
+            theme::badge(p.accent),
+        ))
+    } else if app.search_active {
         Line::from(Span::styled(
             format!(" ⌕ {} / {} ", app.filtered.len(), app.problems.len()),
             theme::badge(p.accent),
@@ -533,10 +538,14 @@ fn draw_navigator(frame: &mut Frame, app: &mut App, area: Rect) {
         items
     };
 
-    let title = match (&app.review_due, &app.topic_filter) {
-        (Some(due), _) => format!("Review · {} due", due.len()),
-        (None, Some(topic)) => format!("Topic · {topic}"),
-        (None, None) => "Domains".to_string(),
+    let title = if let Some(s) = &app.session {
+        format!("Session · {}/{}", s.solved_count(), s.total())
+    } else {
+        match (&app.review_due, &app.topic_filter) {
+            (Some(due), _) => format!("Review · {} due", due.len()),
+            (None, Some(topic)) => format!("Topic · {topic}"),
+            (None, None) => "Domains".to_string(),
+        }
     };
     let list = List::new(items)
         .block(theme::pane_block(title, app.focus == Focus::Navigator))
@@ -604,6 +613,17 @@ fn draw_description(frame: &mut Frame, app: &App, area: Rect) {
 fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
     let pal = theme::palette();
     let mut lines: Vec<Line> = Vec::new();
+
+    // A session result (or "nothing due") takes the top line until superseded.
+    if let Some(summary) = &app.session_summary {
+        lines.push(Line::from(Span::styled(
+            summary.clone(),
+            Style::default()
+                .fg(pal.accent_deep)
+                .add_modifier(Modifier::BOLD),
+        )));
+        lines.push(Line::default());
+    }
 
     // A verification in flight pre-empts the last verdict — the worker runs off
     // the UI thread, so this frame (and input) stay responsive while it does.
@@ -847,7 +867,7 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let mut spans: Vec<Span> = vec![Span::raw(" ")];
     for (key, action) in [
         ("/", "find"),
-        ("t", "topic"),
+        ("s", "session"),
         ("r", "review"),
         ("g", "recap"),
         ("^A", "tutor"),

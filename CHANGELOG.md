@@ -7,6 +7,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Study-session mode (`s`).** Press `s` to start a focused session over
+  everything currently due for review: the navigator is filtered to that queue,
+  a live `📚 solved/total · Nm` HUD shows progress, and each correct answer
+  advances the counter. The session ends automatically when the queue is cleared
+  (or with another `s`), printing a summary line to the console — e.g.
+  `📚 Session ended — 4/6 solved in 12m`. If nothing is due, it says so instead
+  of starting an empty session.
 - **Per-problem recap (preliminary reading).** Every problem now carries a short
   recap of its subject matter — the key formula and idea — shown in the
   description pane under `📖 Recap` and toggled with `g` (on by default). Recaps
