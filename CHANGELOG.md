@@ -7,6 +7,14 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Near-miss diagnostics.** A wrong answer now carries an optional diagnosis of
+  *how* it's wrong, shown as a `💡` line in the console (and `mamba solve`): off
+  by a sign, off by a constant factor, the reciprocal, the transpose (or a
+  row/column vector entered the wrong way), swapped real/imaginary parts, or off
+  by one. Each pipeline grew a `diagnose` step that runs only on the Incorrect
+  path — the symbolic one reuses the probe core to test the answer against the
+  negative/rescaled/reciprocal of the expected expression, so it works for whole
+  expressions, not just numbers. `Verdict::Incorrect` gained a `hint` field.
 - **Verified problem generation (`Ctrl-G`).** A new `generate` module turns the
   tutor into a trustworthy problem factory — the one move only a tool with *both*
   an LLM and a verifier can make. The pipeline (off-thread, like the other

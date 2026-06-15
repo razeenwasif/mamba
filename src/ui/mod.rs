@@ -719,7 +719,7 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
                     )));
                 }
             }
-            Some(Verdict::Incorrect { detail }) => {
+            Some(Verdict::Incorrect { detail, hint }) => {
                 lines.push(Line::from(Span::styled(
                     "✘ Not quite.",
                     Style::default().fg(pal.red).add_modifier(Modifier::BOLD),
@@ -728,6 +728,16 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
                     format!("  {detail}"),
                     Style::default().fg(pal.subtext),
                 )));
+                // A recognized near-miss (off by a sign, a factor, the
+                // transpose, …) — the most actionable line, so accent it.
+                if let Some(h) = hint {
+                    lines.push(Line::from(Span::styled(
+                        format!("  💡 {h}"),
+                        Style::default()
+                            .fg(pal.yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )));
+                }
             }
             Some(Verdict::ParseError { message, hint }) => {
                 lines.push(Line::from(Span::styled(

@@ -38,12 +38,38 @@ fn verify_scalar(expected: &str, input: &str) -> Verdict {
     };
     match input.trim().parse::<BigInt>() {
         Ok(got) if got == want => Verdict::Correct,
-        Ok(got) => Verdict::incorrect(format!("got {got}, expected {want}")),
+        Ok(got) => {
+            let detail = format!("got {got}, expected {want}");
+            Verdict::incorrect_maybe(detail, diagnose_scalar(&want, &got))
+        }
         Err(_) => Verdict::parse_error(
             format!("'{input}' is not an integer"),
             Some("enter a whole number, e.g. 42 (no commas, no spaces)".into()),
         ),
     }
+}
+
+/// Near-miss diagnosis for a wrong integer answer: a sign flip, off by one, or a
+/// small constant factor either way.
+fn diagnose_scalar(want: &BigInt, got: &BigInt) -> Option<String> {
+    let zero = BigInt::zero();
+    if got != &zero && got == &(-want) {
+        return Some("off by a sign".into());
+    }
+    let diff = got - want;
+    if diff == BigInt::one() || diff == -BigInt::one() {
+        return Some("off by one".into());
+    }
+    for k in [2i32, 3, 4, 5, 10] {
+        let kk = BigInt::from(k);
+        if want != &zero && got == &(want * &kk) {
+            return Some(format!("off by a factor of {k} — your answer is {k}× too large"));
+        }
+        if got != &zero && want == &(got * &kk) {
+            return Some(format!("off by a factor of {k} — your answer is {k}× too small"));
+        }
+    }
+    None
 }
 
 /// Verifies that `input` is a valid prime factorization of the same integer the
@@ -241,6 +267,20 @@ mod tests {
             verify(f, "8 * 9 * 5", AnswerKind::Factorization),
             Verdict::Incorrect { .. }
         ));
+    }
+
+    #[test]
+    fn scalar_diagnostics_spot_near_misses() {
+        let hint = |expected: &str, input: &str| match verify(expected, input, AnswerKind::Scalar) {
+            Verdict::Incorrect { hint, .. } => hint,
+            other => panic!("expected Incorrect, got {other:?}"),
+        };
+        assert!(hint("12", "-12").unwrap().contains("sign"));
+        assert!(hint("12", "13").unwrap().contains("off by one"));
+        assert!(hint("12", "24").unwrap().contains("factor of 2"));
+        assert!(hint("24", "12").unwrap().contains("factor of 2"));
+        // A genuinely-unrelated wrong answer gets no hint.
+        assert_eq!(hint("12", "7"), None);
     }
 
     #[test]

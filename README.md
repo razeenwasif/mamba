@@ -33,6 +33,10 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
 - **Mathematical verification, not string matching**: multivariate algebraic
   equivalence (incl. `exp`/`ln`/trig), exact `BigRational` matrices, and
   arbitrary-precision number theory with Miller–Rabin primality.
+- **Near-miss diagnostics**: a wrong answer isn't just ✗ — the engine recognizes
+  *how* it's wrong (off by a sign, a constant factor, the reciprocal, the
+  transpose, swapped complex parts, off by one) and says so, turning the miss
+  into a lesson.
 - **A real study loop**: a `/` finder — fuzzy by character or, with `Tab`,
   **semantic by meaning** (local `nomic-embed-text` embeddings, so “rate of
   change of a curve” finds the derivative problems) — a `t` topic filter, `r`

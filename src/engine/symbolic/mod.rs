@@ -121,10 +121,11 @@ pub fn verify(expected: &str, input: &str) -> Verdict {
         }
         compared += 1;
         if (a - b).abs() > EPSILON * (1.0 + a.abs()) {
-            return Verdict::incorrect(format!(
+            let detail = format!(
                 "not equivalent: at {} your answer gives {b:.4}, expected {a:.4}",
                 format_point(&vars, round)
-            ));
+            );
+            return Verdict::incorrect_maybe(detail, diagnose(expected, input));
         }
     }
 
@@ -137,6 +138,66 @@ pub fn verify(expected: &str, input: &str) -> Verdict {
     }
 
     Verdict::Correct
+}
+
+/// Near-miss diagnosis for a wrong symbolic answer: is the input a *recognized
+/// transform* of the expected expression? Reuses [`equiv`] (the probe core,
+/// without diagnostics, so there's no recursion) to test the answer against the
+/// negative, simple rescalings, and the reciprocal of the expected one.
+fn diagnose(expected: &str, input: &str) -> Option<String> {
+    if equiv(&format!("-({expected})"), input) {
+        return Some("you're off by a sign — your answer is the negative of the expected one".into());
+    }
+    for (k, label) in [
+        ("2", "a factor of 2"),
+        ("1/2", "a factor of 1/2"),
+        ("3", "a factor of 3"),
+        ("1/3", "a factor of 1/3"),
+        ("10", "a factor of 10"),
+        ("1/10", "a factor of 1/10"),
+    ] {
+        if equiv(&format!("({k})*({expected})"), input) {
+            return Some(format!("off by {label} — rescale your answer"));
+        }
+    }
+    if equiv(&format!("1/({expected})"), input) {
+        return Some("that's the reciprocal of the expected answer".into());
+    }
+    None
+}
+
+/// Probe-based equivalence as a plain boolean — the diagnostic core. Unlike
+/// [`verify`] it produces no witness and runs no diagnostics, so it is safe to
+/// call from [`diagnose`] without recursing.
+fn equiv(expected: &str, input: &str) -> bool {
+    let e = normalize_implicit_mul(expected);
+    let i = normalize_implicit_mul(input);
+    let (Ok(ee), Ok(ie)) = (e.parse::<Expr>(), i.parse::<Expr>()) else {
+        return false;
+    };
+    let mut vars = BTreeSet::new();
+    collect_variables(&e, &mut vars);
+    collect_variables(&i, &mut vars);
+    let vars: Vec<String> = vars.into_iter().collect();
+
+    let mut compared = 0usize;
+    for round in 0..ROUNDS {
+        let mut ctx = Context::new();
+        for (vi, name) in vars.iter().enumerate() {
+            ctx.var(name.as_str(), probe_value(vi, round));
+        }
+        let (Ok(a), Ok(b)) = (ee.eval_with_context(&ctx), ie.eval_with_context(&ctx)) else {
+            return false;
+        };
+        if !a.is_finite() || !b.is_finite() {
+            continue;
+        }
+        compared += 1;
+        if (a - b).abs() > EPSILON * (1.0 + a.abs()) {
+            return false;
+        }
+    }
+    compared > 0
 }
 
 /// The deterministic probe value for variable `var_index` in round `round`.
@@ -303,5 +364,38 @@ mod tests {
     #[test]
     fn surfaces_user_syntax_errors_as_parse_errors() {
         assert!(matches!(verify("x^2", "x^^2"), Verdict::ParseError { .. }));
+    }
+
+    /// Pulls the near-miss hint out of an Incorrect verdict (panics otherwise).
+    fn hint_of(v: Verdict) -> Option<String> {
+        match v {
+            Verdict::Incorrect { hint, .. } => hint,
+            other => panic!("expected Incorrect, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn diagnoses_a_sign_error() {
+        // Forgot to negate the derivative.
+        let h = hint_of(verify("u - 10*t", "10*t - u")).expect("a hint");
+        assert!(h.contains("sign"), "{h}");
+    }
+
+    #[test]
+    fn diagnoses_a_constant_factor() {
+        // Dropped the ½ in (1/2)·a·t² style answers → off by a factor of 2.
+        let h = hint_of(verify("3*x^2", "6*x^2")).expect("a hint");
+        assert!(h.contains("factor of 2"), "{h}");
+    }
+
+    #[test]
+    fn diagnoses_a_reciprocal() {
+        let h = hint_of(verify("x", "1/x")).expect("a hint");
+        assert!(h.contains("reciprocal"), "{h}");
+    }
+
+    #[test]
+    fn a_plainly_wrong_answer_has_no_misleading_hint() {
+        assert_eq!(hint_of(verify("x^2 - x - 6", "x^2 + x - 6")), None);
     }
 }

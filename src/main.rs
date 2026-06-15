@@ -178,8 +178,11 @@ fn solve_one(id: &str, answer: &str) -> anyhow::Result<()> {
             println!("✔ Correct — {} [{}]", problem.title, problem.domain);
             Ok(())
         }
-        Verdict::Incorrect { detail } => {
+        Verdict::Incorrect { detail, hint } => {
             println!("✘ Incorrect: {detail}");
+            if let Some(h) = hint {
+                println!("  💡 {h}");
+            }
             std::process::exit(1);
         }
         Verdict::ParseError { message, hint } => {

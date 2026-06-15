@@ -31,8 +31,13 @@ pub enum Verdict {
     /// The answer is mathematically equivalent to the expected one.
     Correct,
     /// The answer parsed cleanly but is wrong; `detail` explains how (e.g.
-    /// "shapes differ: got 2×3, expected 3×2").
-    Incorrect { detail: String },
+    /// "shapes differ: got 2×3, expected 3×2"). `hint` is an optional *near-miss
+    /// diagnosis* — a recognized relationship to the right answer (off by a sign,
+    /// a factor, the transpose, …) that turns a bare ✗ into a lesson.
+    Incorrect {
+        detail: String,
+        hint: Option<String>,
+    },
     /// The answer could not be parsed in this domain's syntax. `message` is
     /// the parser error; `hint` is an optional nudge toward the right syntax.
     ParseError {
@@ -50,10 +55,20 @@ impl Verdict {
         }
     }
 
-    /// Convenience for a wrong-but-well-formed answer.
+    /// Convenience for a wrong-but-well-formed answer (no near-miss diagnosis).
     pub(crate) fn incorrect(detail: impl Into<String>) -> Self {
         Verdict::Incorrect {
             detail: detail.into(),
+            hint: None,
+        }
+    }
+
+    /// A wrong answer with an *optional* near-miss diagnosis — the shape a
+    /// pipeline produces after running its diagnostics (which may find nothing).
+    pub(crate) fn incorrect_maybe(detail: impl Into<String>, hint: Option<String>) -> Self {
+        Verdict::Incorrect {
+            detail: detail.into(),
+            hint,
         }
     }
 

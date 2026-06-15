@@ -1178,7 +1178,7 @@ impl App {
     /// correct or there is none.
     fn ask_why_wrong(&mut self) {
         let detail = match &self.verdict {
-            Some(Verdict::Incorrect { detail }) => detail.clone(),
+            Some(Verdict::Incorrect { detail, .. }) => detail.clone(),
             Some(Verdict::ParseError { message, .. }) => message.clone(),
             _ => return, // nothing to explain
         };
@@ -1742,6 +1742,7 @@ mod tests {
         a.input = "5".into();
         a.verdict = Some(Verdict::Incorrect {
             detail: "got 5, expected 6".into(),
+            hint: None,
         });
         a.ask_why_wrong();
         assert!(a.agent_visible);
