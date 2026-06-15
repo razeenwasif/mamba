@@ -1,0 +1,11 @@
+{
+  "id": "gen-linear-system-2",
+  "title": "Solve a 2×2 System",
+  "domain": "Tensor",
+  "topic": "Linear Algebra",
+  "difficulty": "Hard",
+  "prompt": "Solve the system for (x1, x2):\n\n    4*x1 + -6*x2 = -5\n    2*x1 + 0*x2 = 0\n\nEnter the solution as a column (x1; x2).",
+  "expected": "0; 5/6",
+  "answer_kind": "Scalar",
+  "hint": "Cramer's rule or elimination; exact fractions are accepted"
+}

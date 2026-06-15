@@ -1,0 +1,11 @@
+{
+  "id": "gen-modinverse-1",
+  "title": "Modular Inverse",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Hard",
+  "prompt": "Find the modular inverse of 16 modulo 19\n(the x in [0, 19) with 16*x ≡ 1 (mod 19)).",
+  "expected": "6",
+  "answer_kind": "Scalar",
+  "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)"
+}

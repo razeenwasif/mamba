@@ -4,8 +4,8 @@
   "domain": "Tensor",
   "topic": "Convex Optimization",
   "difficulty": "Medium",
-  "prompt": "Find the Hessian of:\n\n    f(x1, x2) = 5*x1^2 + 4*x1*x2 + 1*x2^2",
-  "expected": "10 4; 4 2",
+  "prompt": "Find the Hessian of:\n\n    f(x1, x2) = 3*x1^2 + 2*x1*x2 + 2*x2^2",
+  "expected": "6 2; 2 4",
   "answer_kind": "Scalar",
   "hint": "the matrix of second partials; rows separated by ';', e.g. 2 1; 1 4"
 }

@@ -1,0 +1,11 @@
+{
+  "id": "gen-lcm-0",
+  "title": "Least Common Multiple",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Easy",
+  "prompt": "Find the least common multiple:\n\n    lcm(55, 19)",
+  "expected": "1045",
+  "answer_kind": "Scalar",
+  "hint": "lcm(a, b) = a*b / gcd(a, b); enter a single integer"
+}

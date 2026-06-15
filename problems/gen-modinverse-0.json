@@ -1,0 +1,11 @@
+{
+  "id": "gen-modinverse-0",
+  "title": "Modular Inverse",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Hard",
+  "prompt": "Find the modular inverse of 20 modulo 29\n(the x in [0, 29) with 20*x ≡ 1 (mod 29)).",
+  "expected": "16",
+  "answer_kind": "Scalar",
+  "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)"
+}

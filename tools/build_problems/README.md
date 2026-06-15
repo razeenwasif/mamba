@@ -43,9 +43,13 @@ parametrized templates `--count` times each:
 | `inverse` | Tensor | `(1/det)·adj`, exact `Fraction`s |
 | `gradient-linear` | Tensor | `∇(aᵀx) = a` (convex opt) |
 | `hessian-quadratic` | Tensor | `[[2a, b], [b, 2c]]` (convex opt) |
+| `eigenvalues` | Tensor | diagonal of a triangular matrix |
+| `linear-system` | Tensor | Cramer's rule, exact `Fraction`s |
 | `factorization` | Exact | trial division → `2^3 * 3^2 * 5` |
 | `modexp` | Exact | `pow(base, exp, mod)` |
 | `gcd` | Exact | Euclid (`math.gcd`) |
+| `lcm` | Exact | `a*b / gcd(a, b)` |
+| `modular-inverse` | Exact | `pow(a, -1, m)` |
 
 The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
 materialized JSON in `problems/` is the committed, browseable data.

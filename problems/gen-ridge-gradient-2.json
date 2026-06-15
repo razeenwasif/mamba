@@ -4,8 +4,8 @@
   "domain": "Symbolic",
   "topic": "Machine Learning",
   "difficulty": "Medium",
-  "prompt": "Ridge objective f(w) = (1/2)*(w - 4)^2 + (1/2)*w^2.\n\nFind f'(w).",
-  "expected": "2*w - 4",
+  "prompt": "Ridge objective f(w) = (1/2)*(w - 2)^2 + (3/2)*w^2.\n\nFind f'(w).",
+  "expected": "4*w - 2",
   "answer_kind": "Scalar",
   "hint": "differentiate and combine like terms; format a*w - b"
 }

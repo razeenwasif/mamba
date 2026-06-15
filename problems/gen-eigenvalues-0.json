@@ -1,0 +1,11 @@
+{
+  "id": "gen-eigenvalues-0",
+  "title": "Eigenvalues of a Triangular Matrix",
+  "domain": "Tensor",
+  "topic": "Linear Algebra",
+  "difficulty": "Medium",
+  "prompt": "Find the eigenvalues of the triangular matrix:\n\n    [[-6, 5], [0, -5]]\n\nList them in increasing order (e.g. -1 3).",
+  "expected": "-6 -5",
+  "answer_kind": "Scalar",
+  "hint": "the eigenvalues of a triangular matrix are its diagonal entries"
+}

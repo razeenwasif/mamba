@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **More generator templates** (bank 56 → 68): least common multiple, modular
+  inverse (`pow(a, -1, m)`), eigenvalues of a triangular matrix, and solving a
+  2×2 linear system by Cramer's rule (exact-fraction solutions). All pass
+  `mamba --verify`.
 - **Machine-learning & convex-optimization problem sets.** 23 new problems
   (bank 25 → 56): activation/loss gradients (sigmoid, tanh, softplus, MSE,
   binary cross-entropy logit, L2/ridge), and convex-optimization staples

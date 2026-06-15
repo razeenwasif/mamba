@@ -1,0 +1,11 @@
+{
+  "id": "gen-modinverse-2",
+  "title": "Modular Inverse",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Hard",
+  "prompt": "Find the modular inverse of 23 modulo 31\n(the x in [0, 31) with 23*x ≡ 1 (mod 31)).",
+  "expected": "27",
+  "answer_kind": "Scalar",
+  "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)"
+}

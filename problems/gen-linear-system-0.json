@@ -1,0 +1,11 @@
+{
+  "id": "gen-linear-system-0",
+  "title": "Solve a 2×2 System",
+  "domain": "Tensor",
+  "topic": "Linear Algebra",
+  "difficulty": "Hard",
+  "prompt": "Solve the system for (x1, x2):\n\n    -1*x1 + -5*x2 = -8\n    -6*x1 + 3*x2 = -2\n\nEnter the solution as a column (x1; x2).",
+  "expected": "34/33; 46/33",
+  "answer_kind": "Scalar",
+  "hint": "Cramer's rule or elimination; exact fractions are accepted"
+}

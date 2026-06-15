@@ -20,7 +20,7 @@ import argparse
 import json
 import random
 from fractions import Fraction
-from math import gcd
+from math import gcd, lcm
 from pathlib import Path
 
 # --------------------------------------------------------------------------
@@ -299,6 +299,87 @@ def t_ridge_gradient(rng: random.Random, i: int) -> dict:
     }
 
 
+def t_lcm(rng: random.Random, i: int) -> dict:
+    a, b = rng.randint(4, 60), rng.randint(4, 60)
+    return {
+        "id": f"gen-lcm-{i}",
+        "title": "Least Common Multiple",
+        "domain": "Exact",
+        "topic": "Number Theory",
+        "difficulty": "Easy",
+        "prompt": f"Find the least common multiple:\n\n    lcm({a}, {b})",
+        "expected": str(lcm(a, b)),
+        "answer_kind": "Scalar",
+        "hint": "lcm(a, b) = a*b / gcd(a, b); enter a single integer",
+    }
+
+
+def t_modular_inverse(rng: random.Random, i: int) -> dict:
+    m = rng.choice([7, 11, 13, 17, 19, 23, 29, 31])  # prime → every a is invertible
+    a = rng.randint(2, m - 1)
+    return {
+        "id": f"gen-modinverse-{i}",
+        "title": "Modular Inverse",
+        "domain": "Exact",
+        "topic": "Number Theory",
+        "difficulty": "Hard",
+        "prompt": (
+            f"Find the modular inverse of {a} modulo {m}\n"
+            f"(the x in [0, {m}) with {a}*x ≡ 1 (mod {m}))."
+        ),
+        "expected": str(pow(a, -1, m)),
+        "answer_kind": "Scalar",
+        "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)",
+    }
+
+
+def t_eigenvalues_triangular(rng: random.Random, i: int) -> dict:
+    l1, l2 = rng.randint(-6, 6), rng.randint(-6, 6)
+    r = rng.randint(-5, 5)
+    evals = sorted([l1, l2])
+    return {
+        "id": f"gen-eigenvalues-{i}",
+        "title": "Eigenvalues of a Triangular Matrix",
+        "domain": "Tensor",
+        "topic": "Linear Algebra",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Find the eigenvalues of the triangular matrix:\n\n    [[{l1}, {r}], [0, {l2}]]\n\n"
+            "List them in increasing order (e.g. -1 3)."
+        ),
+        "expected": f"{evals[0]} {evals[1]}",
+        "answer_kind": "Scalar",
+        "hint": "the eigenvalues of a triangular matrix are its diagonal entries",
+    }
+
+
+def t_linear_system(rng: random.Random, i: int) -> dict:
+    while True:
+        a, b, c, d = (rng.randint(-6, 6) for _ in range(4))
+        det = a * d - b * c
+        if det != 0:
+            break
+    b1, b2 = rng.randint(-8, 8), rng.randint(-8, 8)
+    # Cramer's rule — exact rationals.
+    x1 = Fraction(b1 * d - b * b2, det)
+    x2 = Fraction(a * b2 - b1 * c, det)
+    return {
+        "id": f"gen-linear-system-{i}",
+        "title": "Solve a 2×2 System",
+        "domain": "Tensor",
+        "topic": "Linear Algebra",
+        "difficulty": "Hard",
+        "prompt": (
+            f"Solve the system for (x1, x2):\n\n"
+            f"    {a}*x1 + {b}*x2 = {b1}\n    {c}*x1 + {d}*x2 = {b2}\n\n"
+            "Enter the solution as a column (x1; x2)."
+        ),
+        "expected": f"{frac(x1)}; {frac(x2)}",
+        "answer_kind": "Scalar",
+        "hint": "Cramer's rule or elimination; exact fractions are accepted",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -308,9 +389,13 @@ TEMPLATES = [
     t_prime_factorization,
     t_modular_exponentiation,
     t_gcd,
+    t_lcm,
+    t_modular_inverse,
     t_gradient_linear,
     t_hessian_quadratic,
     t_ridge_gradient,
+    t_eigenvalues_triangular,
+    t_linear_system,
 ]
 
 

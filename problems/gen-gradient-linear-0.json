@@ -4,8 +4,8 @@
   "domain": "Tensor",
   "topic": "Convex Optimization",
   "difficulty": "Easy",
-  "prompt": "Find the gradient ∇f of the linear function:\n\n    f(x) = -3*x1 + 5*x2\n\nEnter it as a column vector (one component per row).",
-  "expected": "-3; 5",
+  "prompt": "Find the gradient ∇f of the linear function:\n\n    f(x) = -5*x1 - 1*x2 + 4*x3\n\nEnter it as a column vector (one component per row).",
+  "expected": "-5; -1; 4",
   "answer_kind": "Scalar",
   "hint": "∇(aᵀx) = a; one component per row, e.g. 2; -3"
 }
