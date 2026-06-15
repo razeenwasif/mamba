@@ -14,8 +14,9 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   accepted answer and frontmatter still reflect the most recent solve.
 - **In-TUI progress overlay (`Ctrl-P`).** A modal, centered overlay shows live
   all-time progress computed from the vault (via the shared `progress` stats
-  API): total solved, per-domain and per-difficulty bars, current/longest
-  streak, and recent solves. `Esc`/`q`/`^P` close it.
+  API): total solved, **per-domain, per-difficulty, and per-topic** bars,
+  current/longest streak, and recent solves. `Esc`/`q`/`^P` close it. The
+  `_progress.md` dashboard gained a matching `## By topic` section.
 - **Topic sub-grouping in the navigator.** With the bank now at 68 problems, the
   sidebar groups problems by **topic within each domain** (e.g. Machine
   Learning, Convex Optimization, Number Theory under their domains), so they are

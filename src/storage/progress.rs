@@ -7,7 +7,7 @@
 //! per-difficulty breakdown, day streaks, and the most recent solves. No
 //! separate ledger to keep in sync.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -28,6 +28,7 @@ const RECENT: usize = 10;
 struct Note {
     title: String,
     domain: String,
+    topic: String,
     difficulty: String,
     date: NaiveDate,
 }
@@ -76,7 +77,8 @@ fn parse_note(content: &str) -> Option<Note> {
     if lines.next()?.trim() != "---" {
         return None;
     }
-    let (mut domain, mut difficulty, mut title, mut date) = (None, None, None, None);
+    let (mut domain, mut topic, mut difficulty, mut title, mut date) =
+        (None, None, None, None, None);
     for line in lines {
         if line.trim() == "---" {
             break;
@@ -87,6 +89,7 @@ fn parse_note(content: &str) -> Option<Note> {
         let value = value.trim().trim_matches('"').to_string();
         match key.trim() {
             "domain" => domain = Some(value),
+            "topic" => topic = Some(value),
             "difficulty" => difficulty = Some(value),
             "title" => title = Some(value),
             "timestamp" => date = NaiveDate::parse_from_str(&value, "%Y-%m-%d").ok(),
@@ -96,6 +99,7 @@ fn parse_note(content: &str) -> Option<Note> {
     Some(Note {
         title: title.unwrap_or_default(),
         domain: domain?,
+        topic: topic.unwrap_or_else(|| "Other".to_string()),
         difficulty: difficulty?,
         date: date?,
     })
@@ -111,6 +115,8 @@ pub struct Stats {
     pub by_domain: Vec<(&'static str, usize)>,
     /// Counts per difficulty, in canonical order.
     pub by_difficulty: Vec<(&'static str, usize)>,
+    /// Counts per topic, most-solved first (topics are dynamic, so owned).
+    pub by_topic: Vec<(String, usize)>,
     /// Consecutive-day streak ending today/yesterday.
     pub current_streak: u32,
     /// Longest consecutive-day streak ever.
@@ -146,6 +152,17 @@ fn aggregate(notes: &[Note], today: NaiveDate) -> Stats {
         .map(|&d| (d, notes.iter().filter(|n| n.difficulty == d).count()))
         .collect();
 
+    // Topics are dynamic — tally them, then rank most-solved first.
+    let mut topic_counts: HashMap<&str, usize> = HashMap::new();
+    for n in notes {
+        *topic_counts.entry(n.topic.as_str()).or_default() += 1;
+    }
+    let mut by_topic: Vec<(String, usize)> = topic_counts
+        .into_iter()
+        .map(|(t, c)| (t.to_string(), c))
+        .collect();
+    by_topic.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+
     let mut ordered: Vec<&Note> = notes.iter().collect();
     // Most recent first; ties broken by title for a stable, readable order.
     ordered.sort_by(|a, b| b.date.cmp(&a.date).then(a.title.cmp(&b.title)));
@@ -164,6 +181,7 @@ fn aggregate(notes: &[Note], today: NaiveDate) -> Stats {
         total: notes.len(),
         by_domain,
         by_difficulty,
+        by_topic,
         current_streak: current_streak(&dates, today),
         longest_streak: longest_streak(&dates),
         recent,
@@ -195,6 +213,11 @@ fn render(notes: &[Note], today: NaiveDate) -> String {
     out.push_str("\n## By difficulty\n\n");
     for (d, n) in &s.by_difficulty {
         out.push_str(&format!("- {d:<7} {n}\n"));
+    }
+
+    out.push_str("\n## By topic\n\n");
+    for (t, n) in &s.by_topic {
+        out.push_str(&format!("- {t}: {n}\n"));
     }
 
     out.push_str("\n## Recently solved\n\n");
@@ -327,6 +350,8 @@ mod tests {
         assert!(row("Exact", 1));
         assert!(row("Easy", 2));
         assert!(row("Hard", 1));
+        assert!(rendered.contains("## By topic"));
+        assert!(row("X", 3)); // all three test notes share topic "X"
         // The dashboard never counts itself.
         let reread = update(&dir, d(2026, 6, 15)).unwrap();
         assert!(fs::read_to_string(reread).unwrap().contains("**3 solved**"));

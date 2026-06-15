@@ -134,7 +134,13 @@ fn draw_stats_overlay(frame: &mut Frame, app: &App, area: Rect) {
         lines.push(section(" By domain"));
         let dmax = stats.by_domain.iter().map(|(_, c)| *c).max().unwrap_or(0);
         for (label, count) in &stats.by_domain {
-            lines.push(bar_line(label, *count, dmax, domain_color_by_name(label)));
+            lines.push(bar_line(
+                label,
+                *count,
+                dmax,
+                domain_color_by_name(label),
+                9,
+            ));
         }
         lines.push(Line::default());
         lines.push(section(" By difficulty"));
@@ -150,12 +156,21 @@ fn draw_stats_overlay(frame: &mut Frame, app: &App, area: Rect) {
                 *count,
                 fmax,
                 difficulty_color_by_name(label),
+                9,
             ));
+        }
+        if !stats.by_topic.is_empty() {
+            lines.push(Line::default());
+            lines.push(section(" By topic"));
+            let tmax = stats.by_topic.iter().map(|(_, c)| *c).max().unwrap_or(0);
+            for (i, (label, count)) in stats.by_topic.iter().take(8).enumerate() {
+                lines.push(bar_line(label, *count, tmax, topic_color(i), 19));
+            }
         }
         if !stats.recent.is_empty() {
             lines.push(Line::default());
             lines.push(section(" Recently solved"));
-            for r in &stats.recent {
+            for r in stats.recent.iter().take(6) {
                 lines.push(Line::from(vec![
                     Span::styled(
                         format!("  {}  ", r.date.format("%m-%d")),
@@ -189,9 +204,16 @@ fn section(label: &str) -> Line<'static> {
     ))
 }
 
-/// One labelled count with a proportional bar (longest count fills `BAR`).
-fn bar_line(label: &str, count: usize, max: usize, color: ratatui::style::Color) -> Line<'static> {
-    const BAR: usize = 22;
+/// One left-padded label + count with a proportional bar (longest count fills
+/// `BAR`). `width` pads the label so a column of bars line up.
+fn bar_line(
+    label: &str,
+    count: usize,
+    max: usize,
+    color: ratatui::style::Color,
+    width: usize,
+) -> Line<'static> {
+    const BAR: usize = 20;
     let pal = theme::palette();
     let filled = if max > 0 {
         (count * BAR).div_ceil(max)
@@ -200,11 +222,30 @@ fn bar_line(label: &str, count: usize, max: usize, color: ratatui::style::Color)
     };
     Line::from(vec![
         Span::styled(
-            format!(" {label:<9} {count:>3}  "),
+            format!(
+                " {label:lw$} {count:>3}  ",
+                label = label,
+                count = count,
+                lw = width
+            ),
             Style::default().fg(pal.subtext),
         ),
         Span::styled("█".repeat(filled), Style::default().fg(color)),
     ])
+}
+
+/// A rotating accent for the (dynamic, uncoloured) topic bars.
+fn topic_color(i: usize) -> ratatui::style::Color {
+    let p = theme::palette();
+    [
+        p.accent,
+        p.blue,
+        p.teal,
+        p.green,
+        p.yellow,
+        p.accent_deep,
+        p.red,
+    ][i % 7]
 }
 
 /// Domain accent by name (the overlay works from `&str` labels, not the enum).

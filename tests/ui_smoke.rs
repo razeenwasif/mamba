@@ -56,6 +56,7 @@ fn renders_navigator_and_stats_overlay() {
     let overlay = text(terminal.backend().buffer());
     assert!(overlay.contains("Progress"), "expected the overlay title");
     assert!(overlay.contains("By domain"), "expected the domain section");
+    assert!(overlay.contains("By topic"), "expected the topic section");
     assert!(overlay.contains("solved"), "expected the totals line");
 
     let _ = std::fs::remove_dir_all(&vault);
