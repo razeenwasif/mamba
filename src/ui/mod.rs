@@ -469,9 +469,20 @@ fn draw_navigator(frame: &mut Frame, app: &mut App, area: Rect) {
         })
         .collect();
 
-    let title = match &app.topic_filter {
-        Some(topic) => format!("Topic · {topic}"),
-        None => "Domains".to_string(),
+    // Review mode with nothing due → a friendly empty state.
+    let items = if items.is_empty() && app.review_due.is_some() {
+        vec![ListItem::new(Line::from(Span::styled(
+            "  ✓ all caught up!",
+            Style::default().fg(pal.green).add_modifier(Modifier::BOLD),
+        )))]
+    } else {
+        items
+    };
+
+    let title = match (&app.review_due, &app.topic_filter) {
+        (Some(due), _) => format!("Review · {} due", due.len()),
+        (None, Some(topic)) => format!("Topic · {topic}"),
+        (None, None) => "Domains".to_string(),
     };
     let list = List::new(items)
         .block(theme::pane_block(title, app.focus == Focus::Navigator))
@@ -655,7 +666,7 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     for (key, action) in [
         ("/", "find"),
         ("t", "topic"),
-        ("⇥", "focus"),
+        ("r", "review"),
         ("↵", "submit"),
         ("^P", "stats"),
         ("esc", "nav"),

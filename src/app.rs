@@ -5,6 +5,7 @@
 //! it. Nothing else holds state, which keeps the immediate-mode draw loop
 //! trivially correct.
 
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::mpsc::{self, Receiver, TryRecvError};
 use std::thread;
@@ -17,6 +18,7 @@ use fuzzy_matcher::skim::SkimMatcherV2;
 use ratatui::widgets::ListState;
 
 use crate::engine::{self, Verdict};
+use crate::review;
 use crate::storage::problem::Problem;
 use crate::storage::{progress, vault};
 
@@ -94,6 +96,9 @@ pub struct App {
     pub topic_filter: Option<String>,
     /// Distinct topics in the bank, sorted — the cycle order for the filter.
     pub topics: Vec<String>,
+    /// When `Some`, review mode (`r`) is on and this holds the indices of the
+    /// problems due for review; the navigator shows only those.
+    pub review_due: Option<HashSet<usize>>,
     /// The pane that currently receives keyboard input.
     pub focus: Focus,
     /// Whether the fuzzy problem finder (`/`) overlay is active. While `true`
@@ -151,7 +156,7 @@ impl App {
     /// Builds the initial state from a loaded problem bank and a vault path,
     /// opening the first problem (if any).
     pub fn new(problems: Vec<Problem>, vault_path: PathBuf) -> Self {
-        let nav_rows = build_nav_rows(&problems, None);
+        let nav_rows = build_nav_rows(&problems, |_, _| true);
         let mut topics: Vec<String> = problems.iter().map(|p| p.topic.clone()).collect();
         topics.sort();
         topics.dedup();
@@ -161,6 +166,7 @@ impl App {
             nav_state: ListState::default(),
             topic_filter: None,
             topics,
+            review_due: None,
             focus: Focus::Navigator,
             search_active: false,
             search_query: String::new(),
@@ -269,6 +275,12 @@ impl App {
             return;
         }
 
+        // `r` toggles spaced-repetition review mode (also non-input only).
+        if key.code == KeyCode::Char('r') && !ctrl {
+            self.toggle_review();
+            return;
+        }
+
         match key.code {
             KeyCode::Tab => {
                 self.focus = self.focus.next();
@@ -308,10 +320,37 @@ impl App {
         self.rebuild_nav();
     }
 
-    /// Rebuilds the navigator rows for the current topic filter and opens the
-    /// first still-visible problem.
+    /// Toggles spaced-repetition review mode. On entry it scans the vault to
+    /// find every problem due for review (see [`crate::review`]); the navigator
+    /// then shows only those.
+    fn toggle_review(&mut self) {
+        if self.review_due.is_some() {
+            self.review_due = None;
+        } else {
+            let today = Local::now().date_naive();
+            let due: HashSet<usize> = self
+                .problems
+                .iter()
+                .enumerate()
+                .filter(|(_, p)| {
+                    review::is_due(vault::history(&self.vault_path, p).as_ref(), today)
+                })
+                .map(|(i, _)| i)
+                .collect();
+            self.review_due = Some(due);
+        }
+        self.rebuild_nav();
+    }
+
+    /// Rebuilds the navigator rows for the current topic + review filters
+    /// (combined with AND) and opens the first still-visible problem.
     fn rebuild_nav(&mut self) {
-        self.nav_rows = build_nav_rows(&self.problems, self.topic_filter.as_deref());
+        let topic = self.topic_filter.clone();
+        let due = self.review_due.clone();
+        self.nav_rows = build_nav_rows(&self.problems, |i, p| {
+            topic.as_deref().is_none_or(|t| p.topic == t)
+                && due.as_ref().is_none_or(|set| set.contains(&i))
+        });
         match self
             .nav_rows
             .iter()
@@ -648,13 +687,16 @@ impl App {
 /// when the domain changes and a topic sub-header when the topic changes within
 /// a domain. Assumes `problems` is sorted by (domain, topic, …) —
 /// [`crate::storage::problem::load_all`] guarantees this.
-fn build_nav_rows(problems: &[Problem], filter: Option<&str>) -> Vec<NavRow> {
+fn build_nav_rows(
+    problems: &[Problem],
+    is_visible: impl Fn(usize, &Problem) -> bool,
+) -> Vec<NavRow> {
     let mut rows = Vec::with_capacity(problems.len() + 16);
     let mut last_domain: Option<String> = None;
     let mut last_topic: Option<String> = None;
     for (i, p) in problems.iter().enumerate() {
-        if filter.is_some_and(|f| p.topic != f) {
-            continue; // hidden by the active topic filter
+        if !is_visible(i, p) {
+            continue; // hidden by the active topic / review filter
         }
         let domain = p.domain.to_string();
         if last_domain.as_deref() != Some(domain.as_str()) {
@@ -853,6 +895,42 @@ mod tests {
         a.cycle_topic_filter(); // → all
         assert!(a.topic_filter.is_none());
         assert_eq!(visible(&a), 2);
+    }
+
+    #[test]
+    fn review_mode_shows_only_due_problems() {
+        let p1 = problem("Fresh", Domain::Symbolic, "x", AnswerKind::Scalar);
+        let p2 = problem("Solved", Domain::Symbolic, "x", AnswerKind::Scalar);
+        let vault = std::env::temp_dir().join(format!("mamba-review-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&vault);
+        // Solve "Solved" today → not due yet (interval is 1 day); "Fresh" is new.
+        let today = Local::now().date_naive();
+        vault::export(
+            &vault,
+            &p2,
+            "x",
+            1,
+            std::time::Duration::from_secs(1),
+            today,
+        )
+        .unwrap();
+
+        let mut a = App::new(vec![p1, p2], vault.clone());
+        a.toggle_review();
+        assert!(a.review_due.is_some());
+        let titles: Vec<&str> = a
+            .nav_rows
+            .iter()
+            .filter_map(|r| match r {
+                NavRow::Problem(i) => Some(a.problems[*i].title.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(titles, vec!["Fresh"]); // only the never-solved one is due
+
+        a.toggle_review();
+        assert!(a.review_due.is_none());
+        let _ = std::fs::remove_dir_all(&vault);
     }
 
     #[test]

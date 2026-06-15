@@ -30,5 +30,6 @@
 
 pub mod app;
 pub mod engine;
+pub mod review;
 pub mod storage;
 pub mod ui;

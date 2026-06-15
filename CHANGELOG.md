@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Spaced-repetition review mode (`r`).** Pressing `r` scans the vault and
+  filters the navigator to the problems **due for review** — never-solved ones,
+  and solved ones whose Leitner-style interval (1 → 3 → 7 → 16 → 35 → 90 days,
+  growing with each solve) has elapsed. The pane title shows `Review · N due`,
+  combines with the topic filter, and shows "✓ all caught up!" when nothing is
+  due. New pure `review` module (`interval_days`, `is_due`).
 - **Navigator topic filter (`t`).** Pressing `t` cycles the navigator through
   `all → topic₁ → … → topicₙ → all`, showing only the selected topic's problems
   (the pane title becomes `Topic · <name>`). Handy with 100+ problems for
