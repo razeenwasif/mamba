@@ -1,0 +1,11 @@
+{
+  "id": "gen-power-of-i-2",
+  "title": "Powers of i",
+  "domain": "Tensor",
+  "topic": "Complex Numbers",
+  "difficulty": "Easy",
+  "prompt": "Compute i^93. Enter it as `real imag`.",
+  "expected": "0 1",
+  "answer_kind": "Scalar",
+  "hint": "i cycles with period 4: 1, i, −1, −i"
+}

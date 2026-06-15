@@ -1,0 +1,11 @@
+{
+  "id": "complex-i-cubed",
+  "title": "i Cubed",
+  "domain": "Tensor",
+  "topic": "Complex Numbers",
+  "difficulty": "Easy",
+  "prompt": "Compute i^3. Enter it as `real imag`.",
+  "expected": "0 -1",
+  "answer_kind": "Scalar",
+  "hint": "i^3 = i^2·i = −i"
+}

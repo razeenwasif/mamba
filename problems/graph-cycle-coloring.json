@@ -1,0 +1,11 @@
+{
+  "id": "graph-cycle-coloring",
+  "title": "Chromatic Number of a Cycle",
+  "domain": "Exact",
+  "topic": "Graph Theory",
+  "difficulty": "Medium",
+  "prompt": "What is the chromatic number of the cycle graph C_5 (a pentagon)?",
+  "expected": "3",
+  "answer_kind": "Scalar",
+  "hint": "an odd cycle needs 3 colours; an even cycle needs 2"
+}

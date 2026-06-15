@@ -1,0 +1,11 @@
+{
+  "id": "gen-exp-growth-1",
+  "title": "Exponential Growth",
+  "domain": "Symbolic",
+  "topic": "ODEs",
+  "difficulty": "Medium",
+  "prompt": "Solve y' = -3*y with y(0) = 7. Give y(t).",
+  "expected": "7*exp(-3*t)",
+  "answer_kind": "Scalar",
+  "hint": "y(t) = y(0)·e^(k·t)"
+}

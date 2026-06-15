@@ -1,0 +1,11 @@
+{
+  "id": "gen-modulus-2",
+  "title": "Complex Modulus",
+  "domain": "Exact",
+  "topic": "Complex Numbers",
+  "difficulty": "Medium",
+  "prompt": "Find the modulus |-6 + -8i|.",
+  "expected": "10",
+  "answer_kind": "Scalar",
+  "hint": "|a + bi| = √(a² + b²)"
+}

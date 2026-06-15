@@ -1,0 +1,11 @@
+{
+  "id": "gen-cholesky-0",
+  "title": "Cholesky Factor",
+  "domain": "Tensor",
+  "topic": "Decompositions",
+  "difficulty": "Hard",
+  "prompt": "Find the lower-triangular Cholesky factor L (positive diagonal) with L·Lᵀ = A:\n\n    A = [[1, -2], [-2, 8]]",
+  "expected": "1 0; -2 2",
+  "answer_kind": "Scalar",
+  "hint": "L = [[l11, 0], [l21, l22]]: l11 = √A₁₁, l21 = A₂₁/l11, l22 = √(A₂₂ − l21²)"
+}

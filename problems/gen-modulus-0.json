@@ -1,0 +1,11 @@
+{
+  "id": "gen-modulus-0",
+  "title": "Complex Modulus",
+  "domain": "Exact",
+  "topic": "Complex Numbers",
+  "difficulty": "Medium",
+  "prompt": "Find the modulus |20 + -21i|.",
+  "expected": "29",
+  "answer_kind": "Scalar",
+  "hint": "|a + bi| = √(a² + b²)"
+}

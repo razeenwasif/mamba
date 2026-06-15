@@ -1,0 +1,11 @@
+{
+  "id": "gen-complete-edges-1",
+  "title": "Edges in a Complete Graph",
+  "domain": "Exact",
+  "topic": "Graph Theory",
+  "difficulty": "Easy",
+  "prompt": "How many edges does the complete graph K_6 have?",
+  "expected": "15",
+  "answer_kind": "Scalar",
+  "hint": "C(n, 2) = n(n−1)/2"
+}

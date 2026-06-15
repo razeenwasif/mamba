@@ -693,6 +693,21 @@ def _convolve(x: list[int], h: list[int]) -> list[int]:
     return y
 
 
+def _matmul(a: list[list[int]], b: list[list[int]]) -> list[list[int]]:
+    """Integer matrix product."""
+    return [[sum(a[i][k] * b[k][j] for k in range(len(b))) for j in range(len(b[0]))] for i in range(len(a))]
+
+
+def _mat_literal(rows: list[list]) -> str:
+    """`[[a, b], [c, d]]` ASCII form for a prompt (rendered as a bracketed matrix)."""
+    return "[" + ", ".join("[" + ", ".join(str(x) for x in row) + "]" for row in rows) + "]"
+
+
+def _mat_answer(rows: list[list]) -> str:
+    """`a b; c d` answer form for the tensor pipeline."""
+    return "; ".join(" ".join(str(x) for x in row) for row in rows)
+
+
 # ---- Signals & DSP --------------------------------------------------------
 
 
@@ -883,6 +898,224 @@ def t_standard_error(rng: random.Random, i: int) -> dict:
     }
 
 
+# ---- Linear-algebra decompositions ----------------------------------------
+
+
+def t_trace(rng: random.Random, i: int) -> dict:
+    rows = [[rng.randint(-9, 9) for _ in range(3)] for _ in range(3)]
+    return {
+        "id": f"gen-trace-{i}",
+        "title": "Matrix Trace",
+        "domain": "Exact",
+        "topic": "Decompositions",
+        "difficulty": "Easy",
+        "prompt": f"Find the trace of\n\n    {_mat_literal(rows)}",
+        "expected": str(sum(rows[k][k] for k in range(3))),
+        "answer_kind": "Scalar",
+        "hint": "the trace is the sum of the diagonal (= sum of eigenvalues)",
+    }
+
+
+def t_rank_2x2(rng: random.Random, i: int) -> dict:
+    a, b, c, d = (rng.randint(-4, 4) for _ in range(4))
+    det = a * d - b * c
+    rank = 2 if det != 0 else (1 if any(v != 0 for v in (a, b, c, d)) else 0)
+    return {
+        "id": f"gen-rank-{i}",
+        "title": "Matrix Rank",
+        "domain": "Exact",
+        "topic": "Decompositions",
+        "difficulty": "Medium",
+        "prompt": f"What is the rank of\n\n    {_mat_literal([[a, b], [c, d]])}?",
+        "expected": str(rank),
+        "answer_kind": "Scalar",
+        "hint": "a 2×2 has rank 2 if its determinant is nonzero",
+    }
+
+
+def t_cholesky_2x2(rng: random.Random, i: int) -> dict:
+    l11, l22 = rng.randint(1, 5), rng.randint(1, 5)
+    l21 = rng.randint(-4, 4)
+    a = [[l11 * l11, l11 * l21], [l11 * l21, l21 * l21 + l22 * l22]]
+    return {
+        "id": f"gen-cholesky-{i}",
+        "title": "Cholesky Factor",
+        "domain": "Tensor",
+        "topic": "Decompositions",
+        "difficulty": "Hard",
+        "prompt": (
+            f"Find the lower-triangular Cholesky factor L (positive diagonal) with L·Lᵀ = A:\n\n"
+            f"    A = {_mat_literal(a)}"
+        ),
+        "expected": _mat_answer([[l11, 0], [l21, l22]]),
+        "answer_kind": "Scalar",
+        "hint": "L = [[l11, 0], [l21, l22]]: l11 = √A₁₁, l21 = A₂₁/l11, l22 = √(A₂₂ − l21²)",
+    }
+
+
+# ---- Graph theory ---------------------------------------------------------
+
+
+def t_complete_edges(rng: random.Random, i: int) -> dict:
+    n = rng.randint(3, 20)
+    return {
+        "id": f"gen-complete-edges-{i}",
+        "title": "Edges in a Complete Graph",
+        "domain": "Exact",
+        "topic": "Graph Theory",
+        "difficulty": "Easy",
+        "prompt": f"How many edges does the complete graph K_{n} have?",
+        "expected": str(n * (n - 1) // 2),
+        "answer_kind": "Scalar",
+        "hint": "C(n, 2) = n(n−1)/2",
+    }
+
+
+def t_cayley(rng: random.Random, i: int) -> dict:
+    n = rng.randint(4, 18)
+    return {
+        "id": f"gen-cayley-{i}",
+        "title": "Spanning Trees of K_n",
+        "domain": "Exact",
+        "topic": "Graph Theory",
+        "difficulty": "Hard",
+        "prompt": f"By Cayley's formula, how many labelled spanning trees does K_{n} have?",
+        "expected": str(n ** (n - 2)),
+        "answer_kind": "Scalar",
+        "hint": "Cayley's formula: n^(n−2)",
+    }
+
+
+def t_adjacency_walks(rng: random.Random, i: int) -> dict:
+    # Symmetric 0/1 adjacency matrix, zero diagonal (simple graph).
+    a = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    for r in range(3):
+        for c in range(r + 1, 3):
+            a[r][c] = a[c][r] = rng.randint(0, 1)
+    return {
+        "id": f"gen-walks-{i}",
+        "title": "Walks of Length 2",
+        "domain": "Tensor",
+        "topic": "Graph Theory",
+        "difficulty": "Medium",
+        "prompt": (
+            f"For the adjacency matrix\n\n    A = {_mat_literal(a)}\n\ncompute A² "
+            "(entry (i,j) counts walks of length 2)."
+        ),
+        "expected": _mat_answer(_matmul(a, a)),
+        "answer_kind": "Scalar",
+        "hint": "A² is the matrix product of A with itself",
+    }
+
+
+# ---- Complex numbers ------------------------------------------------------
+
+
+def t_complex_multiply(rng: random.Random, i: int) -> dict:
+    a, b, c, d = (rng.randint(-6, 6) for _ in range(4))
+    return {
+        "id": f"gen-complex-mul-{i}",
+        "title": "Complex Multiplication",
+        "domain": "Tensor",
+        "topic": "Complex Numbers",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Multiply ({a} + {b}i)({c} + {d}i). Enter the result as `real imag`."
+        ),
+        "expected": f"{a * c - b * d} {a * d + b * c}",
+        "answer_kind": "Scalar",
+        "hint": "(a+bi)(c+di) = (ac−bd) + (ad+bc)i",
+    }
+
+
+def t_power_of_i(rng: random.Random, i: int) -> dict:
+    n = rng.randint(2, 99)
+    val = [(1, 0), (0, 1), (-1, 0), (0, -1)][n % 4]
+    return {
+        "id": f"gen-power-of-i-{i}",
+        "title": "Powers of i",
+        "domain": "Tensor",
+        "topic": "Complex Numbers",
+        "difficulty": "Easy",
+        "prompt": f"Compute i^{n}. Enter it as `real imag`.",
+        "expected": f"{val[0]} {val[1]}",
+        "answer_kind": "Scalar",
+        "hint": "i cycles with period 4: 1, i, −1, −i",
+    }
+
+
+def t_modulus(rng: random.Random, i: int) -> dict:
+    a0, b0, m = rng.choice([(3, 4, 5), (6, 8, 10), (5, 12, 13), (8, 15, 17), (7, 24, 25), (20, 21, 29)])
+    a = a0 * rng.choice([-1, 1])
+    b = b0 * rng.choice([-1, 1])
+    return {
+        "id": f"gen-modulus-{i}",
+        "title": "Complex Modulus",
+        "domain": "Exact",
+        "topic": "Complex Numbers",
+        "difficulty": "Medium",
+        "prompt": f"Find the modulus |{a} + {b}i|.",
+        "expected": str(m),
+        "answer_kind": "Scalar",
+        "hint": "|a + bi| = √(a² + b²)",
+    }
+
+
+# ---- Ordinary differential equations --------------------------------------
+
+
+def t_ode_char_roots(rng: random.Random, i: int) -> dict:
+    r1, r2 = sorted(rng.sample(range(-5, 6), 2))
+    b, c = -(r1 + r2), r1 * r2  # y'' + b y' + c y = 0 has roots r1, r2
+    ode = f"y'' + {b}*y' + {c}*y = 0".replace("+ -", "- ")
+    return {
+        "id": f"gen-ode-roots-{i}",
+        "title": "Characteristic Roots",
+        "domain": "Tensor",
+        "topic": "ODEs",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Find the roots of the characteristic equation of\n\n    {ode}\n\n"
+            "Enter them smaller-first as `r1 r2`."
+        ),
+        "expected": f"{r1} {r2}",
+        "answer_kind": "Scalar",
+        "hint": "the characteristic equation is r² + b·r + c = 0",
+    }
+
+
+def t_ode_equilibrium(rng: random.Random, i: int) -> dict:
+    a = rng.choice([k for k in range(-5, 6) if k != 0])
+    b = rng.randint(-8, 8)
+    return {
+        "id": f"gen-ode-equilibrium-{i}",
+        "title": "ODE Equilibrium",
+        "domain": "Tensor",
+        "topic": "ODEs",
+        "difficulty": "Medium",
+        "prompt": f"Find the equilibrium of y' = {a}*y + {b} (the y with y' = 0), as an exact fraction.",
+        "expected": frac(Fraction(-b, a)),
+        "answer_kind": "Scalar",
+        "hint": "set a·y + b = 0 and solve for y",
+    }
+
+
+def t_exp_growth(rng: random.Random, i: int) -> dict:
+    k = rng.choice([k for k in range(-4, 5) if k != 0])
+    y0 = rng.randint(1, 9)
+    return {
+        "id": f"gen-exp-growth-{i}",
+        "title": "Exponential Growth",
+        "domain": "Symbolic",
+        "topic": "ODEs",
+        "difficulty": "Medium",
+        "prompt": f"Solve y' = {k}*y with y(0) = {y0}. Give y(t).",
+        "expected": f"{y0}*exp({k}*t)",
+        "answer_kind": "Scalar",
+        "hint": "y(t) = y(0)·e^(k·t)",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -925,6 +1158,18 @@ TEMPLATES = [
     t_t_test_df,
     t_z_score,
     t_standard_error,
+    t_trace,
+    t_rank_2x2,
+    t_cholesky_2x2,
+    t_complete_edges,
+    t_cayley,
+    t_adjacency_walks,
+    t_complex_multiply,
+    t_power_of_i,
+    t_modulus,
+    t_ode_char_roots,
+    t_ode_equilibrium,
+    t_exp_growth,
 ]
 
 
@@ -1042,6 +1287,23 @@ FIXED = [
     _p("stats-two-sample-df", "Two-Sample t-Test df", "Exact", "Hypothesis Testing", "Medium",
        "A pooled two-sample t-test has groups of sizes n1 = 10 and n2 = 12. How many degrees of freedom?",
        "20", "df = n1 + n2 − 2"),
+    # ---- Decompositions ----
+    _p("decomp-cholesky-3x3", "Cholesky of a 3×3", "Tensor", "Decompositions", "Hard",
+       "Find the lower-triangular Cholesky factor L (positive diagonal) with L·Lᵀ = A:\n\n"
+       "    A = [[4, 2, 2], [2, 10, 4], [2, 4, 6]]",
+       "2 0 0; 1 3 0; 1 1 2", "solve row by row: l11 = 2, then the first column, then l22, …"),
+    # ---- Graph Theory ----
+    _p("graph-cycle-coloring", "Chromatic Number of a Cycle", "Exact", "Graph Theory", "Medium",
+       "What is the chromatic number of the cycle graph C_5 (a pentagon)?",
+       "3", "an odd cycle needs 3 colours; an even cycle needs 2"),
+    # ---- Complex Numbers ----
+    _p("complex-i-cubed", "i Cubed", "Tensor", "Complex Numbers", "Easy",
+       "Compute i^3. Enter it as `real imag`.",
+       "0 -1", "i^3 = i^2·i = −i"),
+    # ---- ODEs ----
+    _p("ode-exp-decay", "Exponential Decay", "Symbolic", "ODEs", "Easy",
+       "Solve y' = -3*y with y(0) = 5. Give y(t).",
+       "5*exp(-3*t)", "y(t) = y(0)·e^(k·t) with k = −3"),
 ]
 
 

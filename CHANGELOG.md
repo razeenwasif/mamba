@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Decompositions, Graph Theory, Complex Numbers, and ODEs topics** (bank
+  159 → 199): matrix trace/rank and Cholesky factors; complete-graph edges,
+  Cayley's spanning-tree count, and adjacency-matrix walk counts; complex
+  multiplication, powers of i, and modulus; ODE characteristic roots,
+  equilibria, and exponential solutions (`5*exp(-3*t)`). Twelve new generator
+  templates + four curated problems; all pass `mamba --verify`.
 - **Per-topic mastery view in the `Ctrl-P` overlay.** The topic section now shows
   `solved / total` coverage per topic (from the bank vs the vault) with a `█`/`░`
   bar — green when complete, yellow when started, dim when untouched — sorted

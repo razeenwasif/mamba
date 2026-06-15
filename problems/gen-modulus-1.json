@@ -1,0 +1,11 @@
+{
+  "id": "gen-modulus-1",
+  "title": "Complex Modulus",
+  "domain": "Exact",
+  "topic": "Complex Numbers",
+  "difficulty": "Medium",
+  "prompt": "Find the modulus |-3 + -4i|.",
+  "expected": "5",
+  "answer_kind": "Scalar",
+  "hint": "|a + bi| = √(a² + b²)"
+}

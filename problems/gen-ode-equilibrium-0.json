@@ -1,0 +1,11 @@
+{
+  "id": "gen-ode-equilibrium-0",
+  "title": "ODE Equilibrium",
+  "domain": "Tensor",
+  "topic": "ODEs",
+  "difficulty": "Medium",
+  "prompt": "Find the equilibrium of y' = 3*y + 3 (the y with y' = 0), as an exact fraction.",
+  "expected": "-1",
+  "answer_kind": "Scalar",
+  "hint": "set a·y + b = 0 and solve for y"
+}

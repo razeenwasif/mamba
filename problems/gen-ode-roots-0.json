@@ -1,0 +1,11 @@
+{
+  "id": "gen-ode-roots-0",
+  "title": "Characteristic Roots",
+  "domain": "Tensor",
+  "topic": "ODEs",
+  "difficulty": "Medium",
+  "prompt": "Find the roots of the characteristic equation of\n\n    y'' + 6*y' + 5*y = 0\n\nEnter them smaller-first as `r1 r2`.",
+  "expected": "-5 -1",
+  "answer_kind": "Scalar",
+  "hint": "the characteristic equation is r² + b·r + c = 0"
+}

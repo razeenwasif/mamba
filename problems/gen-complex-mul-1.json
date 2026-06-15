@@ -1,0 +1,11 @@
+{
+  "id": "gen-complex-mul-1",
+  "title": "Complex Multiplication",
+  "domain": "Tensor",
+  "topic": "Complex Numbers",
+  "difficulty": "Medium",
+  "prompt": "Multiply (-6 + 2i)(-4 + -2i). Enter the result as `real imag`.",
+  "expected": "28 4",
+  "answer_kind": "Scalar",
+  "hint": "(a+bi)(c+di) = (ac−bd) + (ad+bc)i"
+}

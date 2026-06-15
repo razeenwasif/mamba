@@ -1,0 +1,11 @@
+{
+  "id": "gen-walks-2",
+  "title": "Walks of Length 2",
+  "domain": "Tensor",
+  "topic": "Graph Theory",
+  "difficulty": "Medium",
+  "prompt": "For the adjacency matrix\n\n    A = [[0, 0, 0], [0, 0, 1], [0, 1, 0]]\n\ncompute A² (entry (i,j) counts walks of length 2).",
+  "expected": "0 0 0; 0 1 0; 0 0 1",
+  "answer_kind": "Scalar",
+  "hint": "A² is the matrix product of A with itself"
+}

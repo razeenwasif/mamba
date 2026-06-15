@@ -1,0 +1,11 @@
+{
+  "id": "gen-rank-2",
+  "title": "Matrix Rank",
+  "domain": "Exact",
+  "topic": "Decompositions",
+  "difficulty": "Medium",
+  "prompt": "What is the rank of\n\n    [[3, 2], [0, -1]]?",
+  "expected": "2",
+  "answer_kind": "Scalar",
+  "hint": "a 2×2 has rank 2 if its determinant is nonzero"
+}

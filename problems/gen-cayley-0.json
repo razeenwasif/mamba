@@ -1,0 +1,11 @@
+{
+  "id": "gen-cayley-0",
+  "title": "Spanning Trees of K_n",
+  "domain": "Exact",
+  "topic": "Graph Theory",
+  "difficulty": "Hard",
+  "prompt": "By Cayley's formula, how many labelled spanning trees does K_6 have?",
+  "expected": "1296",
+  "answer_kind": "Scalar",
+  "hint": "Cayley's formula: n^(n−2)"
+}

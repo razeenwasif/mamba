@@ -1,0 +1,11 @@
+{
+  "id": "ode-exp-decay",
+  "title": "Exponential Decay",
+  "domain": "Symbolic",
+  "topic": "ODEs",
+  "difficulty": "Easy",
+  "prompt": "Solve y' = -3*y with y(0) = 5. Give y(t).",
+  "expected": "5*exp(-3*t)",
+  "answer_kind": "Scalar",
+  "hint": "y(t) = y(0)·e^(k·t) with k = −3"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "gen-complex-mul-0",
+  "title": "Complex Multiplication",
+  "domain": "Tensor",
+  "topic": "Complex Numbers",
+  "difficulty": "Medium",
+  "prompt": "Multiply (5 + 5i)(-1 + -1i). Enter the result as `real imag`.",
+  "expected": "0 -10",
+  "answer_kind": "Scalar",
+  "hint": "(a+bi)(c+di) = (ac−bd) + (ad+bc)i"
+}

@@ -58,6 +58,13 @@ parametrized templates `--count` times each:
 | `convolution` | Tensor | linear convolution sequence (DSP) |
 | `z-score` | Tensor | `(x−μ)/σ` fraction (Hypothesis Testing) |
 | `standard-error` | Tensor | `σ/√n` exact fraction (Hypothesis Testing) |
+| `cholesky` | Tensor | lower-triangular Cholesky factor (Decompositions) |
+| `walks` | Tensor | `A²` walk counts (Graph Theory) |
+| `complex-mul` | Tensor | `(a+bi)(c+di)` as `re im` (Complex Numbers) |
+| `power-of-i` | Tensor | `i^n` as `re im` (Complex Numbers) |
+| `ode-roots` | Tensor | characteristic roots (ODEs) |
+| `ode-equilibrium` | Tensor | `−b/a` equilibrium (ODEs) |
+| `exp-growth` | Symbolic | `y₀·exp(k·t)` (ODEs) |
 | `combination` | Exact | `C(n, k)` (Probability) |
 | `permutation` | Exact | `P(n, k)` (Probability) |
 | `factorial` | Exact | `n!` (Probability) |
@@ -76,6 +83,11 @@ parametrized templates `--count` times each:
 | `lp-standard-vars` | Exact | `n+m` standard-form vars (LP) |
 | `lp-objective` | Exact | `c·x` at a point (LP) |
 | `t-test-df` | Exact | `n−1` degrees of freedom (Hyp. Testing) |
+| `trace` | Exact | sum of the diagonal (Decompositions) |
+| `rank` | Exact | rank of a 2×2 (Decompositions) |
+| `complete-edges` | Exact | `n(n−1)/2` (Graph Theory) |
+| `cayley` | Exact | `n^(n−2)` spanning trees (Graph Theory) |
+| `modulus` | Exact | `√(a²+b²)` (Complex Numbers) |
 
 The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
 materialized JSON in `problems/` is the committed, browseable data.

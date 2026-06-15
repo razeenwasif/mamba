@@ -1,0 +1,11 @@
+{
+  "id": "gen-exp-growth-0",
+  "title": "Exponential Growth",
+  "domain": "Symbolic",
+  "topic": "ODEs",
+  "difficulty": "Medium",
+  "prompt": "Solve y' = -4*y with y(0) = 2. Give y(t).",
+  "expected": "2*exp(-4*t)",
+  "answer_kind": "Scalar",
+  "hint": "y(t) = y(0)·e^(k·t)"
+}
