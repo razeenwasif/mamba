@@ -13,6 +13,7 @@ A one-page reference for keybindings, the CLI, and configuration.
 | `Ctrl-P` | Toggle the progress / stats overlay |
 | `/` | Open the fuzzy problem finder |
 | `t` | Cycle the topic filter (`all → topic → … → all`) |
+| `n` | Jump to the adaptively-recommended next problem (due + weakest topic) |
 | `r` | Toggle spaced-repetition review mode (only due problems) |
 | `s` | Start/stop a study session over the due queue (progress HUD + summary) |
 | `g` | Toggle the recap (preliminary reading) in the problem pane |
@@ -80,6 +81,7 @@ mamba --check                  # load the bank and report (no TUI)
 mamba --verify [DIR]           # verify every problem's canonical answer
 mamba solve <id> "<answer>"    # verify one answer (exit 0 iff correct)
 mamba review                   # list the problems due for review
+mamba next                     # recommend the next problem to attempt
 ```
 
 ## Environment

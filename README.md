@@ -33,9 +33,10 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
   arbitrary-precision number theory with Miller–Rabin primality.
 - **A real study loop**: a `/` fuzzy finder, `t` topic filter, `r`
   spaced-repetition review, an `s` **study session** over the due queue (with a
-  live progress HUD and an end-of-session summary), a `^P` progress overlay
-  (streaks, per-domain / per-difficulty bars, and a `solved/total`
-  **topic-mastery** view), and a per-problem attempt-history peek.
+  live progress HUD and an end-of-session summary), an `n` **adaptive “next
+  problem”** (`mamba next`) that blends due-ness, topic mastery, and difficulty,
+  a `^P` progress overlay (streaks, per-domain / per-difficulty bars, and a
+  `solved/total` **topic-mastery** view), and a per-problem attempt-history peek.
 - **A local AI tutor** (`^A`): a streaming chat with a local
   [Ollama](https://ollama.com) model, scoped to the open problem — private,
   offline, no API keys.
@@ -64,13 +65,14 @@ mamba --check       # load the problem bank and report (no TUI) — a health che
 mamba --verify      # run every problem's canonical answer through the engine
 mamba solve <id> "<answer>"   # verify one answer from the shell (exit 0 iff correct)
 mamba review        # list the problems due for review (spaced repetition)
+mamba next          # recommend the single best problem to attempt next
 ```
 
-Keys: `/` fuzzy-find · `t` cycle topic filter · `r` spaced-repetition review ·
-`s` study session (work the due queue) · `g` toggle the recap · `^A` AI tutor ·
-`⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll · `^P`
-progress/stats overlay · `esc` return to navigator · `^Q` quit. The sidebar
-groups problems by topic within each domain.
+Keys: `/` fuzzy-find · `n` next recommended problem · `t` cycle topic filter ·
+`r` spaced-repetition review · `s` study session (work the due queue) · `g`
+toggle the recap · `^A` AI tutor · `⇥` cycle focus · `↵` open/submit · `j`/`k`
+navigate & scroll · `^P` progress/stats overlay · `esc` return to navigator ·
+`^Q` quit. The sidebar groups problems by topic within each domain.
 
 Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; and an
 answer that starts with `?` is sent to the tutor as a question (a bare `?` asks

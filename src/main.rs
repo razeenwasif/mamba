@@ -18,7 +18,7 @@ use crossterm::event::{self, Event, KeyEventKind};
 
 use mamba::app::App;
 use mamba::engine::{self, Verdict};
-use mamba::{review, storage, ui};
+use mamba::{recommend, review, storage, ui};
 
 /// How long the event loop blocks waiting for input before redrawing.
 ///
@@ -82,6 +82,9 @@ fn main() -> anyhow::Result<()> {
         // `mamba review` — list the problems due for review (no TUI), using the
         // same spaced-repetition schedule and vault history as the `r` mode.
         Some("review") => return review_due(),
+        // `mamba next` — print the single adaptively-recommended problem to do
+        // next (the same pick the in-TUI `n` key jumps to).
+        Some("next") => return recommend_next(),
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
             print_help();
@@ -237,6 +240,33 @@ fn review_due() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Prints the single adaptively-recommended problem to attempt next (the same
+/// pick the in-TUI `n` key jumps to), reading the vault history and blending
+/// spaced repetition with per-topic mastery. See [`mamba::recommend`].
+fn recommend_next() -> anyhow::Result<()> {
+    let dir = storage::default_problems_path()?;
+    let problems = storage::problem::load_all(&dir)
+        .with_context(|| format!("loading problem bank from {}", dir.display()))?;
+    let vault = storage::default_vault_path()?;
+    let today = chrono::Local::now().date_naive();
+
+    match recommend::next(&problems, &vault, today) {
+        Some(pick) => {
+            let p = &problems[pick.index];
+            println!("➡ Next up: {}\n", p.title);
+            println!("  id     {}", p.id);
+            println!(
+                "  topic  {}  ·  {:?}  ·  {:?}",
+                p.topic, p.domain, p.difficulty
+            );
+            println!("  why    {}", pick.reason);
+            println!("\nSolve it: mamba solve {} \"<answer>\"", p.id);
+        }
+        None => println!("The problem bank is empty — nothing to recommend."),
+    }
+    Ok(())
+}
+
 /// Prints CLI usage, in-TUI key bindings, and the environment overrides.
 fn print_help() {
     println!(
@@ -244,7 +274,8 @@ fn print_help() {
          USAGE:\n    \
          mamba [OPTIONS]\n    \
          mamba solve <problem-id> <answer>   Verify one answer (exit 0 iff correct)\n    \
-         mamba review                        List the problems due for review\n\n\
+         mamba review                        List the problems due for review\n    \
+         mamba next                          Recommend the next problem to attempt\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \

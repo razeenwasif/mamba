@@ -19,6 +19,7 @@ use ratatui::widgets::ListState;
 
 use crate::agent::{self, AgentEvent, ChatMessage};
 use crate::engine::{self, Verdict};
+use crate::recommend;
 use crate::review;
 use crate::storage::problem::Problem;
 use crate::storage::{progress, vault};
@@ -377,6 +378,12 @@ impl App {
             return;
         }
 
+        // `n` jumps to the adaptively-recommended next problem.
+        if key.code == KeyCode::Char('n') && !ctrl {
+            self.jump_to_next();
+            return;
+        }
+
         match key.code {
             KeyCode::Tab => {
                 self.focus = self.focus.next();
@@ -425,6 +432,23 @@ impl App {
             None => Some(self.due_problems()),
         };
         self.rebuild_nav();
+    }
+
+    /// Jumps to the adaptively-recommended next problem (see
+    /// [`crate::recommend`]): opens it, moves the navigator cursor onto it (if
+    /// visible under the current filter), drops the user into the answer bar, and
+    /// flashes the rationale in the console. A no-op for an empty bank.
+    fn jump_to_next(&mut self) {
+        let today = Local::now().date_naive();
+        if let Some(pick) = recommend::next(&self.problems, &self.vault_path, today) {
+            self.open_index(pick.index);
+            self.select_problem_row(pick.index);
+            self.focus = Focus::Input;
+            self.session_summary = Some(format!(
+                "➡ Next: {} · {}",
+                self.problems[pick.index].title, pick.reason
+            ));
+        }
     }
 
     /// The set of problem indices due for review as of today (scans the vault).
@@ -689,6 +713,15 @@ impl App {
         let Some(idx) = self.selected_index() else {
             return;
         };
+        self.open_index(idx);
+    }
+
+    /// Opens the problem at `idx` (an index into [`problems`](App::problems)),
+    /// resetting all per-problem state (input, verdict, attempts, scroll, timer)
+    /// and cancelling any in-flight verification. Unlike [`open_selected`], this
+    /// works from any source — the navigator cursor, the fuzzy finder, or the
+    /// `n` recommendation — not just the current selection.
+    fn open_index(&mut self, idx: usize) {
         self.open_problem = Some(idx);
         self.input.clear();
         self.verdict = None;

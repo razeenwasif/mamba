@@ -867,6 +867,7 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let mut spans: Vec<Span> = vec![Span::raw(" ")];
     for (key, action) in [
         ("/", "find"),
+        ("n", "next"),
         ("s", "session"),
         ("r", "review"),
         ("g", "recap"),

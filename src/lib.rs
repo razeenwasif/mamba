@@ -31,6 +31,7 @@
 pub mod agent;
 pub mod app;
 pub mod engine;
+pub mod recommend;
 pub mod review;
 pub mod storage;
 pub mod ui;

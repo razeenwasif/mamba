@@ -7,6 +7,14 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Adaptive “next problem” (`n` / `mamba next`).** A new `recommend` module
+  picks the single best problem to do right now, blending three signals from the
+  vault: spaced repetition (most-overdue reviews first), per-topic mastery (ties
+  break toward your weakest topic), and difficulty (easier first). When nothing
+  is due it suggests *getting ahead* in the weakest topic, so there's always an
+  answer. Press `n` in the TUI to jump straight to it (cursor moves, answer bar
+  focused, rationale flashed in the console); `mamba next` prints the same pick
+  with its `why` from the shell.
 - **Study-session mode (`s`).** Press `s` to start a focused session over
   everything currently due for review: the navigator is filtered to that queue,
   a live `📚 solved/total · Nm` HUD shows progress, and each correct answer
