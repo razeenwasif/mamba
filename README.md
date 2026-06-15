@@ -72,6 +72,10 @@ Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; and an
 answer that starts with `?` is sent to the tutor as a question (a bare `?` asks
 for a hint) instead of being verified.
 
+Full reference — keys, CLI, answer syntax, and config — is in
+[**QUICKGUIDE.md**](QUICKGUIDE.md), which is also embedded in the tutor's
+context, so you can just ask it "which key opens the stats overlay?".
+
 ### From a checkout, without installing
 
 ```sh

@@ -766,16 +766,23 @@ impl App {
         }
     }
 
-    /// A system prompt giving the model the current problem and the user's
-    /// in-progress answer, so its help is targeted.
+    /// A system prompt giving the model the current problem, the user's
+    /// in-progress answer, and the Quick Guide (so it can remind the user of
+    /// keybindings/commands when asked), so its help is targeted.
     fn agent_context(&self) -> String {
+        /// The user-facing reference, embedded at compile time so the tutor can
+        /// answer questions about keys, commands, and configuration.
+        const QUICK_GUIDE: &str = include_str!("../QUICKGUIDE.md");
+
         let base = "You are a concise math tutor inside Mamba, a terminal practice tool. \
              Prefer hints, the method, and intuition over giving the full answer unless \
              explicitly asked. Keep replies short and terminal-friendly — plain text, no \
-             markdown tables.";
-        match self.open_problem_ref() {
+             markdown tables. If the user asks about Mamba's keys, shortcuts, commands, or \
+             configuration, answer from the QUICK GUIDE below.";
+
+        let problem = match self.open_problem_ref() {
             Some(p) => format!(
-                "{base}\n\nThe user is working on:\n{} [{}] — {} · {}\n\n{}\n\nTheir current answer attempt:\n{}",
+                "\n\nThe user is working on:\n{} [{}] — {} · {}\n\n{}\n\nTheir current answer attempt:\n{}",
                 p.title,
                 p.difficulty,
                 p.domain,
@@ -787,8 +794,10 @@ impl App {
                     self.input.trim()
                 },
             ),
-            None => base.to_string(),
-        }
+            None => String::new(),
+        };
+
+        format!("{base}{problem}\n\n--- MAMBA QUICK GUIDE ---\n{QUICK_GUIDE}")
     }
 
     /// Sends the typed prompt to the tutor and begins streaming the reply.

@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Quick Guide + tutor keymap recall.** A new `QUICKGUIDE.md` documents every
+  keybinding, the CLI, the answer syntax, and configuration in one page. It's
+  embedded into the tutor's system prompt at compile time, so you can ask the
+  tutor "which key opens the stats overlay?" and it answers from the guide.
 - **Tutor chat saved to the vault.** The tutor conversation is now scoped to the
   open problem (reset when you switch problems) and, on a correct solve, appended
   to that problem's vault note as a `## Tutor` section — so the help you got is
