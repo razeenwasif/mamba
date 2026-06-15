@@ -4,7 +4,7 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Easy",
-  "prompt": "Find the determinant of the matrix:\n\n    ⎡ 4   7 ⎤\n    ⎣ 2   6 ⎦\n\nFor a 2×2 matrix [[a, b], [c, d]], det = ad − bc. Enter the scalar result.",
+  "prompt": "Find the determinant of the matrix:\n\n    [[4, 7], [2, 6]]\n\nFor a 2×2 matrix [[a, b], [c, d]], det = ad − bc. Enter the scalar result.",
   "expected": "10",
   "answer_kind": "Scalar",
   "hint": "the answer is a single number; the tensor pipeline treats it as a 1×1 matrix"

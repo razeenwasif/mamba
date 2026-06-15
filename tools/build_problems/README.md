@@ -57,3 +57,7 @@ add it to `TEMPLATES`, and emit `expected` in **Mamba syntax**: `^` for powers,
 explicit `*`, `*` between variables, `a/b` fractions, and the factored form
 (`2^3 * 3^2 * 5`) for `Factorization` problems. Then `make gen` and check the
 verify output.
+
+`prompt` may be written in plain ASCII: `^`/`_` become super/subscripts and a
+line that is wholly `[[a, b], [c, d]]` renders as a bracketed matrix (see
+`src/ui/formula.rs`). No need to hand-embed Unicode.

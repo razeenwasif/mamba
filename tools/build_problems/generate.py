@@ -140,7 +140,7 @@ def t_determinant_2x2(rng: random.Random, i: int) -> dict:
         "domain": "Tensor",
         "topic": "Linear Algebra",
         "difficulty": "Easy",
-        "prompt": f"Find the determinant:\n\n    ⎡ {a:>3} {b:>3} ⎤\n    ⎣ {c:>3} {d:>3} ⎦",
+        "prompt": f"Find the determinant:\n\n    [[{a}, {b}], [{c}, {d}]]",
         "expected": str(det),
         "answer_kind": "Scalar",
         "hint": "for [[a,b],[c,d]], det = ad - bc",
@@ -152,14 +152,14 @@ def t_transpose(rng: random.Random, i: int) -> dict:
     m = [[rng.randint(-9, 9) for _ in range(cols)] for _ in range(rows)]
     transposed = [[m[r][c] for r in range(rows)] for c in range(cols)]
     expected = "; ".join(" ".join(str(x) for x in row) for row in transposed)
-    body = "\n".join("    " + " ".join(f"{x:>3}" for x in row) for row in m)
+    literal = "[" + ", ".join("[" + ", ".join(str(x) for x in row) + "]" for row in m) + "]"
     return {
         "id": f"gen-transpose-{i}",
         "title": "Transpose a Matrix",
         "domain": "Tensor",
         "topic": "Linear Algebra",
         "difficulty": "Medium",
-        "prompt": f"Write the transpose Aᵀ of:\n\n{body}",
+        "prompt": f"Write the transpose A^T of:\n\n    {literal}",
         "expected": expected,
         "answer_kind": "Scalar",
         "hint": "rows separated by ';', elements by spaces, e.g. 1 4; 2 5",
@@ -180,10 +180,7 @@ def t_inverse_2x2(rng: random.Random, i: int) -> dict:
         "domain": "Tensor",
         "topic": "Linear Algebra",
         "difficulty": "Hard",
-        "prompt": (
-            f"Find the inverse:\n\n    ⎡ {a:>3} {b:>3} ⎤\n    ⎣ {c:>3} {d:>3} ⎦\n\n"
-            "Enter exact fractions."
-        ),
+        "prompt": f"Find the inverse:\n\n    [[{a}, {b}], [{c}, {d}]]\n\nEnter exact fractions.",
         "expected": expected,
         "answer_kind": "Scalar",
         "hint": "inverse of [[a,b],[c,d]] is (1/(ad-bc))*[[d,-b],[-c,a]]; use fractions",

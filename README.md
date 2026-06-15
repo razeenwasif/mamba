@@ -93,6 +93,7 @@ src/
 │   └── vault.rs         # Markdown + YAML vault exporter
 └── ui/
     ├── mod.rs           # pure render: navigator · problem · console · answer bar
+    ├── formula.rs       # ASCII → typeset math (^/_ scripts, [[…]] matrices)
     └── theme.rs         # role-based palette (MAMBA_THEME)
 problems/                # declarative JSON problem bank (data, not code)
 docs/adr/                # architecture decision records

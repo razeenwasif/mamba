@@ -5,6 +5,7 @@
 //! already made in [`crate::app`]; this module only draws it. All colors come
 //! from [`theme`]; widgets never hardcode a `Color`.
 
+mod formula;
 pub mod theme;
 
 use ratatui::Frame;
@@ -298,7 +299,8 @@ fn draw_description(frame: &mut Frame, app: &App, area: Rect) {
             ),
         ]));
         lines.push(Line::default());
-        lines.extend(p.prompt.lines().map(|l| Line::from(l.to_string())));
+        // Render ASCII formula markers (^, _, [[…]]) into typeset math.
+        lines.extend(formula::render(&p.prompt));
     } else {
         lines.push(Line::from("No problems found — see README for setup."));
     }

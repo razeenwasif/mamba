@@ -4,7 +4,7 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Hard",
-  "prompt": "Find the inverse of the matrix:\n\n    ⎡ 4   7 ⎤\n    ⎣ 2   6 ⎦\n\nFor [[a, b], [c, d]], the inverse is (1 / (ad − bc)) · [[d, −b], [−c, a]]. Enter exact fractions — they are checked exactly.",
+  "prompt": "Find the inverse of the matrix:\n\n    [[4, 7], [2, 6]]\n\nFor [[a, b], [c, d]], the inverse is (1 / (ad − bc)) · [[d, −b], [−c, a]]. Enter exact fractions — they are checked exactly.",
   "expected": "3/5 -7/10; -1/5 2/5",
   "answer_kind": "Scalar",
   "hint": "rows separated by ';', fractions like 3/5; equivalent fractions (6/10) are accepted"

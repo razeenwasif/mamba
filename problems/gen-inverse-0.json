@@ -4,7 +4,7 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Hard",
-  "prompt": "Find the inverse:\n\n    ⎡   2  -6 ⎤\n    ⎣  -5   5 ⎦\n\nEnter exact fractions.",
+  "prompt": "Find the inverse:\n\n    [[2, -6], [-5, 5]]\n\nEnter exact fractions.",
   "expected": "-1/4 -3/10; -1/4 -1/10",
   "answer_kind": "Scalar",
   "hint": "inverse of [[a,b],[c,d]] is (1/(ad-bc))*[[d,-b],[-c,a]]; use fractions"

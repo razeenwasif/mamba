@@ -4,7 +4,7 @@
   "domain": "Symbolic",
   "topic": "Calculus",
   "difficulty": "Easy",
-  "prompt": "Differentiate with respect to x:\n\n    d/dx [ 3x² ]\n\nEnter the derivative as an expression in x.",
+  "prompt": "Differentiate with respect to x:\n\n    d/dx [ 3x^2 ]\n\nEnter the derivative as an expression in x.",
   "expected": "6*x",
   "answer_kind": "Scalar",
   "hint": "the power rule: d/dx[a·xⁿ] = a·n·xⁿ⁻¹  →  enter like 6x or 6*x"

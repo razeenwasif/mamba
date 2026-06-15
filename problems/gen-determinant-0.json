@@ -4,7 +4,7 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Easy",
-  "prompt": "Find the determinant:\n\n    ⎡   2   9 ⎤\n    ⎣  -3   7 ⎦",
+  "prompt": "Find the determinant:\n\n    [[2, 9], [-3, 7]]",
   "expected": "41",
   "answer_kind": "Scalar",
   "hint": "for [[a,b],[c,d]], det = ad - bc"

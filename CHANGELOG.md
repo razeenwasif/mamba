@@ -7,6 +7,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Richer formula rendering.** A new `src/ui/formula.rs` turns plain-ASCII math
+  markers in prompts into typeset terminal math: `^…` → superscripts
+  (`x^2` → `x²`, `x^(n-1)` → `xⁿ⁻¹`, `A^T` → `Aᵀ`), `_…` → subscripts
+  (`a_i` → `aᵢ`), and a line that is wholly a matrix literal `[[4, 7], [2, 6]]`
+  → a Unicode-bracketed multi-line layout. Each script run is all-or-nothing
+  (falls back to literal if a character has no Unicode form). Prompts can now be
+  authored in ASCII — the generator and hand-authored problems use it.
 - **Problem-bank generator + `mamba --verify`.** A pure-Python generator
   (`tools/build_problems/generate.py`) mass-authors problems across all three
   domains with answers that are *correct by construction* (exact `int`/`Fraction`

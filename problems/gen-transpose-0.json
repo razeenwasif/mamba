@@ -4,7 +4,7 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Medium",
-  "prompt": "Write the transpose Aᵀ of:\n\n      0  -6\n     -7   1\n      6   8",
+  "prompt": "Write the transpose A^T of:\n\n    [[0, -6], [-7, 1], [6, 8]]",
   "expected": "0 -7 6; -6 1 8",
   "answer_kind": "Scalar",
   "hint": "rows separated by ';', elements by spaces, e.g. 1 4; 2 5"
