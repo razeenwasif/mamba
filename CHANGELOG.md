@@ -7,11 +7,17 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Tutor shortcuts.** `Ctrl-E` after a wrong answer asks the tutor to explain
+  what's going wrong (the console shows a `press ^E to ask the tutor why` hint);
+  and typing an answer that **starts with `?`** sends the rest to the tutor as a
+  one-shot question instead of verifying it (a bare `?` asks for a hint). Both
+  open and focus the panel.
 - **Local AI tutor (`Ctrl-A`).** A right-hand chat panel powered by a local
   [Ollama](https://ollama.com) model (default `gemma4:12b-it-qat`, overridable
   via `MAMBA_OLLAMA_MODEL`/`MAMBA_OLLAMA_URL`). The system prompt is scoped to
   the open problem and your current answer attempt, and the model is asked to
-  prefer hints and method over the full answer. Replies stream token-by-token on
+  prefer hints and method over the full answer. The default model is the light
+  `gemma4:e2b-it-qat` for snappy hints. Replies stream token-by-token on
   a worker thread over an `mpsc` channel (the same pattern as verification), so
   the UI never blocks; failures (server down, model not pulled) surface in the
   panel and nothing else breaks. See

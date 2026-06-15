@@ -264,6 +264,11 @@ impl App {
             self.toggle_agent();
             return;
         }
+        // Ctrl-E asks the tutor to explain the last wrong answer.
+        if key.code == KeyCode::Char('e') && ctrl {
+            self.ask_why_wrong();
+            return;
+        }
         // The tutor input owns the keyboard while it has focus (so `/`, `t`,
         // `r`, etc. are literal characters there).
         if self.focus == Focus::Agent {
@@ -526,7 +531,7 @@ impl App {
             KeyCode::Esc => self.focus = Focus::Navigator,
             KeyCode::Tab => self.focus = self.focus.next(),
             KeyCode::BackTab => self.focus = self.focus.prev(),
-            KeyCode::Enter => self.submit_answer(),
+            KeyCode::Enter => self.submit_or_ask(),
             KeyCode::Backspace => {
                 self.input.pop();
             }
@@ -597,6 +602,25 @@ impl App {
             .open_problem_ref()
             .cloned()
             .and_then(|problem| vault::history(&self.vault_path, &problem));
+    }
+
+    /// Enter in the answer bar: if the text starts with `?`, send the rest to
+    /// the tutor as a one-shot question (showing the panel); otherwise verify it
+    /// as an answer.
+    fn submit_or_ask(&mut self) {
+        if let Some(question) = self.input.strip_prefix('?') {
+            let question = question.trim().to_string();
+            self.input.clear();
+            self.agent_visible = true;
+            self.focus = Focus::Agent;
+            self.send_message(if question.is_empty() {
+                "Give me a hint for this problem.".into()
+            } else {
+                question
+            });
+        } else {
+            self.submit_answer();
+        }
     }
 
     /// Kicks off verification of the typed answer **on a worker thread**, so a
@@ -742,20 +766,27 @@ impl App {
         }
     }
 
-    /// Sends the typed prompt to Ollama and begins streaming the reply.
+    /// Sends the typed prompt to the tutor and begins streaming the reply.
     fn send_prompt(&mut self) {
         if self.agent_streaming {
             return;
         }
-        let prompt = self.agent_input.trim().to_string();
-        if prompt.is_empty() {
+        let prompt = std::mem::take(&mut self.agent_input);
+        self.send_message(prompt);
+    }
+
+    /// Appends a user message and streams a reply. The empty assistant turn is
+    /// the sink the streamed tokens append into.
+    fn send_message(&mut self, user_text: String) {
+        if self.agent_streaming {
             return;
         }
-        self.agent_input.clear();
-        self.agent_messages.push(ChatMessage::user(prompt));
+        let text = user_text.trim().to_string();
+        if text.is_empty() {
+            return;
+        }
+        self.agent_messages.push(ChatMessage::user(text));
 
-        // System context + full history; the empty assistant turn is the sink
-        // the streamed tokens append into.
         let mut wire = vec![ChatMessage::system(self.agent_context())];
         wire.extend(self.agent_messages.iter().cloned());
         self.agent_messages
@@ -767,6 +798,28 @@ impl App {
             self.agent_model.clone(),
             wire,
         ));
+    }
+
+    /// Asks the tutor to explain the most recent *failed* verdict — wired to
+    /// `Ctrl-E`. Shows and focuses the panel; a no-op when the last result was
+    /// correct or there is none.
+    fn ask_why_wrong(&mut self) {
+        let detail = match &self.verdict {
+            Some(Verdict::Incorrect { detail }) => detail.clone(),
+            Some(Verdict::ParseError { message, .. }) => message.clone(),
+            _ => return, // nothing to explain
+        };
+        if self.agent_streaming {
+            return;
+        }
+        let prompt = format!(
+            "I answered \"{}\" but it was marked wrong ({detail}). Without giving the \
+             full answer, explain what's going wrong and how to fix my approach.",
+            self.input.trim()
+        );
+        self.agent_visible = true;
+        self.focus = Focus::Agent;
+        self.send_message(prompt);
     }
 
     /// Drains any streamed tutor tokens into the last assistant message. Called
@@ -1095,6 +1148,52 @@ mod tests {
         a.toggle_review();
         assert!(a.review_due.is_none());
         let _ = std::fs::remove_dir_all(&vault);
+    }
+
+    #[test]
+    fn explain_is_a_noop_without_a_failed_verdict() {
+        let mut a = app();
+        a.ask_why_wrong(); // no verdict
+        assert!(!a.agent_visible);
+        a.verdict = Some(Verdict::Correct);
+        a.ask_why_wrong(); // correct, nothing to explain
+        assert!(!a.agent_visible);
+        assert!(a.agent_messages.is_empty());
+    }
+
+    #[test]
+    fn explain_after_a_wrong_answer_messages_the_tutor() {
+        let mut a = app();
+        a.agent_url = "http://127.0.0.1:1".into(); // unreachable → worker fails fast
+        a.input = "5".into();
+        a.verdict = Some(Verdict::Incorrect {
+            detail: "got 5, expected 6".into(),
+        });
+        a.ask_why_wrong();
+        assert!(a.agent_visible);
+        assert_eq!(a.focus, Focus::Agent);
+        assert!(
+            a.agent_messages
+                .iter()
+                .any(|m| m.role == "user" && m.content.contains("marked wrong"))
+        );
+    }
+
+    #[test]
+    fn question_prefix_asks_the_tutor_instead_of_verifying() {
+        let mut a = app();
+        a.agent_url = "http://127.0.0.1:1".into();
+        a.input = "?what is a determinant".into();
+        a.submit_or_ask();
+        assert!(a.agent_visible);
+        assert_eq!(a.focus, Focus::Agent);
+        assert!(a.input.is_empty());
+        assert_eq!(a.verdict, None); // routed to the tutor, not verified
+        assert!(
+            a.agent_messages
+                .iter()
+                .any(|m| m.role == "user" && m.content.contains("determinant"))
+        );
     }
 
     #[test]

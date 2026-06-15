@@ -68,6 +68,10 @@ Keys: `/` fuzzy-find · `t` cycle topic filter · `r` spaced-repetition review �
 `^P` progress/stats overlay · `esc` return to navigator · `^Q` quit. The sidebar
 groups problems by topic within each domain.
 
+Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; and an
+answer that starts with `?` is sent to the tutor as a question (a bare `?` asks
+for a hint) instead of being verified.
+
 ### From a checkout, without installing
 
 ```sh
@@ -142,7 +146,7 @@ exact arithmetic (correct by construction) and emits it in Mamba syntax;
 - `MAMBA_PROBLEMS` — override the problem-bank directory.
 - `MAMBA_VAULT` — override the export vault (default `~/OnyxVault/Mamba`).
 - `MAMBA_THEME` — `venom` (default), `midnight`, or `slate`.
-- `MAMBA_OLLAMA_MODEL` — tutor model tag (default `gemma4:12b-it-qat`).
+- `MAMBA_OLLAMA_MODEL` — tutor model tag (default `gemma4:e2b-it-qat`).
 - `MAMBA_OLLAMA_URL` — Ollama server URL (default `http://localhost:11434`).
 
 ## Tests

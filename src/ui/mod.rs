@@ -561,7 +561,7 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
     } else {
         match &app.verdict {
             None => lines.push(Line::from(Span::styled(
-                "Type your answer below and press Enter to verify.",
+                "Type your answer and press Enter · start with ? to ask the tutor.",
                 Style::default().fg(pal.overlay),
             ))),
             Some(Verdict::Correct) => {
@@ -603,6 +603,17 @@ fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
                 }
             }
         }
+    }
+
+    // After a failed answer, offer the tutor.
+    if matches!(
+        &app.verdict,
+        Some(Verdict::Incorrect { .. } | Verdict::ParseError { .. })
+    ) {
+        lines.push(Line::from(Span::styled(
+            "  press ^E to ask the tutor why",
+            Style::default().fg(pal.teal),
+        )));
     }
 
     // A persistent per-problem syntax hint and attempt counter footer line.
