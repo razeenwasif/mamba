@@ -43,7 +43,7 @@ fn solving_problems_builds_a_progress_dashboard() {
         ),
     ];
     for (p, d) in &solves {
-        vault::export(&dir, p, "answer", 1, Duration::from_secs(90), *d).unwrap();
+        vault::export(&dir, p, "answer", 1, Duration::from_secs(90), *d, None).unwrap();
     }
 
     let path = progress::update(&dir, day(15)).unwrap();

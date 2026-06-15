@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Tutor chat saved to the vault.** The tutor conversation is now scoped to the
+  open problem (reset when you switch problems) and, on a correct solve, appended
+  to that problem's vault note as a `## Tutor` section — so the help you got is
+  archived alongside the solution.
 - **Tutor shortcuts.** `Ctrl-E` after a wrong answer asks the tutor to explain
   what's going wrong (the console shows a `press ^E to ask the tutor why` hint);
   and typing an answer that **starts with `?`** sends the rest to the tutor as a

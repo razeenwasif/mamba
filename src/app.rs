@@ -590,8 +590,33 @@ impl App {
         self.description_scroll = 0;
         self.console_scroll = 0;
         self.exported_to = None;
+        // The tutor chat is scoped to the open problem, so it persists cleanly
+        // into that problem's note on a solve.
+        self.agent_messages.clear();
+        self.agent_input.clear();
+        self.agent_rx = None;
+        self.agent_streaming = false;
         self.opened_at = Instant::now();
         self.refresh_open_history();
+    }
+
+    /// Formats the current tutor conversation as a Markdown transcript for the
+    /// vault note, or `None` if there's nothing worth saving.
+    fn tutor_transcript(&self) -> Option<String> {
+        let lines: Vec<String> = self
+            .agent_messages
+            .iter()
+            .filter(|m| !m.content.trim().is_empty())
+            .map(|m| {
+                let who = if m.role == "user" {
+                    "**you:**"
+                } else {
+                    "**tutor:**"
+                };
+                format!("{who} {}", m.content.trim())
+            })
+            .collect();
+        (!lines.is_empty()).then(|| lines.join("\n\n"))
     }
 
     /// Reads the open problem's solve history from the vault (if it has a note),
@@ -878,6 +903,7 @@ impl App {
     /// navigated elsewhere.
     fn export_solution(&mut self, problem: &Problem, answer: &str, opened_at: Instant) {
         let today = Local::now().date_naive();
+        let transcript = self.tutor_transcript();
         match vault::export(
             &self.vault_path,
             problem,
@@ -885,6 +911,7 @@ impl App {
             self.attempts,
             opened_at.elapsed(),
             today,
+            transcript.as_deref(),
         ) {
             Ok(path) => {
                 self.exported_to = Some(path);
@@ -1129,6 +1156,7 @@ mod tests {
             1,
             std::time::Duration::from_secs(1),
             today,
+            None,
         )
         .unwrap();
 

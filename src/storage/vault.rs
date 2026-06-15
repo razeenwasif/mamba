@@ -31,6 +31,7 @@ pub fn export(
     attempts: u32,
     time_spent: Duration,
     solved_on: NaiveDate,
+    tutor: Option<&str>,
 ) -> anyhow::Result<PathBuf> {
     fs::create_dir_all(vault)
         .with_context(|| format!("failed to create vault directory {}", vault.display()))?;
@@ -51,7 +52,9 @@ pub fn export(
         format_duration(time_spent),
     ));
 
-    let note = render_note(problem, answer, attempts, time_spent, solved_on, &rows);
+    let note = render_note(
+        problem, answer, attempts, time_spent, solved_on, &rows, tutor,
+    );
     fs::write(&path, note).with_context(|| format!("failed to write {}", path.display()))?;
     Ok(path)
 }
@@ -111,8 +114,9 @@ fn render_note(
     time_spent: Duration,
     solved_on: NaiveDate,
     history_rows: &[String],
+    tutor: Option<&str>,
 ) -> String {
-    format!(
+    let mut note = format!(
         "---\n\
          title: {title}\n\
          topic: {topic}\n\
@@ -154,7 +158,13 @@ fn render_note(
         prompt = problem.prompt.trim_end(),
         answer = answer.trim_end(),
         history = history_rows.join("\n"),
-    )
+    );
+
+    // Append the tutor transcript for the solve, if there was a conversation.
+    if let Some(transcript) = tutor.map(str::trim).filter(|t| !t.is_empty()) {
+        note.push_str(&format!("\n## Tutor\n\n{transcript}\n"));
+    }
+    note
 }
 
 /// Quotes and escapes a string for safe inclusion as a YAML scalar value.
@@ -242,6 +252,7 @@ mod tests {
             Duration::from_secs(125),
             date,
             &rows,
+            Some("**you:** hint?\n\n**tutor:** factor it"),
         );
 
         assert!(note.starts_with("---\n"));
@@ -254,6 +265,9 @@ mod tests {
         assert!(note.contains("```text\nx^2 - x - 6\n```"));
         assert!(note.contains("## History"));
         assert!(note.contains("| 2026-06-14 | 2 | 2m 05s |"));
+        // The tutor transcript is appended when present.
+        assert!(note.contains("## Tutor"));
+        assert!(note.contains("**tutor:** factor it"));
     }
 
     #[test]
@@ -265,6 +279,7 @@ mod tests {
             Duration::from_secs(30),
             NaiveDate::from_ymd_opt(2026, 6, 14).unwrap(),
             &["| 2026-06-14 | 1 | 30s |".to_string()],
+            None,
         );
         // Round-trips: the header and separator are dropped, the data row kept.
         assert_eq!(
@@ -286,6 +301,7 @@ mod tests {
             3,
             Duration::from_secs(90),
             day(14),
+            None,
         )
         .unwrap();
         let path = export(
@@ -295,6 +311,7 @@ mod tests {
             1,
             Duration::from_secs(40),
             day(15),
+            None,
         )
         .unwrap();
 
@@ -316,8 +333,26 @@ mod tests {
         let day = |d: u32| NaiveDate::from_ymd_opt(2026, 6, d).unwrap();
 
         assert_eq!(history(&dir, &fixture()), None); // never solved → no note
-        export(&dir, &fixture(), "x", 2, Duration::from_secs(60), day(14)).unwrap();
-        export(&dir, &fixture(), "x", 1, Duration::from_secs(30), day(16)).unwrap();
+        export(
+            &dir,
+            &fixture(),
+            "x",
+            2,
+            Duration::from_secs(60),
+            day(14),
+            None,
+        )
+        .unwrap();
+        export(
+            &dir,
+            &fixture(),
+            "x",
+            1,
+            Duration::from_secs(30),
+            day(16),
+            None,
+        )
+        .unwrap();
 
         let h = history(&dir, &fixture()).unwrap();
         assert_eq!(h.solves, 2);
