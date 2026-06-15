@@ -313,6 +313,11 @@ impl App {
             self.ask_why_wrong();
             return;
         }
+        // Ctrl-G asks the tutor to generate a fresh, similar practice problem.
+        if key.code == KeyCode::Char('g') && ctrl {
+            self.generate_similar();
+            return;
+        }
         // The tutor input owns the keyboard while it has focus (so `/`, `t`,
         // `r`, etc. are literal characters there).
         if self.focus == Focus::Agent {
@@ -1000,6 +1005,28 @@ impl App {
         self.send_message(prompt);
     }
 
+    /// Asks the tutor to pose a fresh practice problem in the same vein as the
+    /// open one — wired to `Ctrl-G`. The model already has the problem in its
+    /// context, so the request is brief. Shows and focuses the panel; a no-op
+    /// when no problem is open or a reply is already streaming.
+    ///
+    /// The generated problem is a *tutor exercise*, not a bank problem: the
+    /// model poses it and (when asked) grades it, so Mamba's own engine-verified
+    /// problems stay the ground truth and this never adds an unverified answer.
+    fn generate_similar(&mut self) {
+        if self.agent_streaming || self.open_problem_ref().is_none() {
+            return;
+        }
+        let prompt = "Generate ONE new practice problem in the same vein as the one I'm working \
+             on — same type, topic, and difficulty, but with different numbers or wording. Show \
+             me only the problem statement (no solution). I'll attempt it and then ask you to \
+             check my work."
+            .to_string();
+        self.agent_visible = true;
+        self.focus = Focus::Agent;
+        self.send_message(prompt);
+    }
+
     /// Drains any streamed tutor tokens into the last assistant message. Called
     /// once per main-loop tick so replies appear live.
     pub fn poll_agent(&mut self) {
@@ -1420,6 +1447,20 @@ mod tests {
             a.agent_messages
                 .iter()
                 .any(|m| m.role == "user" && m.content.contains("marked wrong"))
+        );
+    }
+
+    #[test]
+    fn generate_similar_seeds_a_tutor_request() {
+        let mut a = app();
+        a.agent_url = "http://127.0.0.1:1".into(); // unreachable → worker fails fast
+        a.generate_similar();
+        assert!(a.agent_visible);
+        assert_eq!(a.focus, Focus::Agent);
+        assert!(
+            a.agent_messages
+                .iter()
+                .any(|m| m.role == "user" && m.content.contains("practice problem"))
         );
     }
 

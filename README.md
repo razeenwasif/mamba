@@ -74,9 +74,11 @@ toggle the recap · `^A` AI tutor · `⇥` cycle focus · `↵` open/submit · `
 navigate & scroll · `^P` progress/stats overlay · `esc` return to navigator ·
 `^Q` quit. The sidebar groups problems by topic within each domain.
 
-Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; and an
-answer that starts with `?` is sent to the tutor as a question (a bare `?` asks
-for a hint) instead of being verified.
+Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; `^G`
+asks it to generate a fresh, similar practice problem to try (a tutor exercise —
+the model poses and grades it, so the engine-verified bank stays ground truth);
+and an answer that starts with `?` is sent to the tutor as a question (a bare `?`
+asks for a hint) instead of being verified.
 
 Full reference — keys, CLI, answer syntax, and config — is in
 [**QUICKGUIDE.md**](QUICKGUIDE.md), which is also embedded in the tutor's

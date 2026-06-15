@@ -7,6 +7,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **“Generate a similar problem” tutor action (`Ctrl-G`).** One keystroke asks
+  the local tutor to pose a fresh practice problem in the same vein as the open
+  one — same type, topic, and difficulty, different numbers — for you to attempt
+  and then have the tutor check. It's a *tutor exercise*, deliberately not added
+  to the bank: Mamba's engine still owns verification, so this never introduces
+  an unchecked answer.
 - **Adaptive “next problem” (`n` / `mamba next`).** A new `recommend` module
   picks the single best problem to do right now, blending three signals from the
   vault: spaced repetition (most-overdue reviews first), per-topic mastery (ties

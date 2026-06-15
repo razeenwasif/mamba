@@ -10,6 +10,7 @@ A one-page reference for keybindings, the CLI, and configuration.
 | `Ctrl-Q` / `Ctrl-C` | Quit |
 | `Ctrl-A` | Toggle the AI tutor panel |
 | `Ctrl-E` | Ask the tutor to explain the last wrong answer |
+| `Ctrl-G` | Ask the tutor to generate a fresh, similar practice problem |
 | `Ctrl-P` | Toggle the progress / stats overlay |
 | `/` | Open the fuzzy problem finder |
 | `t` | Cycle the topic filter (`all → topic → … → all`) |
@@ -59,8 +60,14 @@ A one-page reference for keybindings, the CLI, and configuration.
 |-----|--------|
 | *(type)* | Compose a message |
 | `Enter` | Send |
+| `Ctrl-E` | Explain the last wrong answer |
+| `Ctrl-G` | Generate a similar practice problem to try |
 | `Esc` / `Tab` | Leave the input (panel stays open) |
 | `Ctrl-A` | Hide the panel |
+
+A `Ctrl-G` problem is a *tutor exercise* — the model poses it and grades it when
+you ask. Mamba's own engine still verifies the bank problems, so this never
+introduces an unchecked answer.
 
 ## Answer syntax cheatsheet
 
