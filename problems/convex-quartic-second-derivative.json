@@ -1,0 +1,11 @@
+{
+  "id": "convex-quartic-second-derivative",
+  "title": "Convexity via 2nd Derivative",
+  "domain": "Symbolic",
+  "topic": "Convex Optimization",
+  "difficulty": "Medium",
+  "prompt": "A function is convex where its second derivative is ≥ 0. Compute:\n\n    d^2/dx^2 [ x^4 ]",
+  "expected": "12*x^2",
+  "answer_kind": "Scalar",
+  "hint": "differentiate twice"
+}

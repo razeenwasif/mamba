@@ -1,0 +1,11 @@
+{
+  "id": "ml-log-likelihood-derivative",
+  "title": "Log Term Derivative",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Easy",
+  "prompt": "A log-likelihood contains ln(x). Find:\n\n    d/dx [ ln(x) ]",
+  "expected": "1/x",
+  "answer_kind": "Scalar",
+  "hint": "for x > 0"
+}

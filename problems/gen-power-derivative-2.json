@@ -1,0 +1,11 @@
+{
+  "id": "gen-power-derivative-2",
+  "title": "Derivative of a Power",
+  "domain": "Symbolic",
+  "topic": "Calculus",
+  "difficulty": "Easy",
+  "prompt": "Differentiate with respect to x:\n\n    d/dx [ 5x^3 ]",
+  "expected": "15*x^2",
+  "answer_kind": "Scalar",
+  "hint": "power rule: d/dx[a*x^n] = a*n*x^(n-1)"
+}

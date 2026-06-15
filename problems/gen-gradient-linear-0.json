@@ -1,0 +1,11 @@
+{
+  "id": "gen-gradient-linear-0",
+  "title": "Gradient of a Linear Form",
+  "domain": "Tensor",
+  "topic": "Convex Optimization",
+  "difficulty": "Easy",
+  "prompt": "Find the gradient ∇f of the linear function:\n\n    f(x) = -3*x1 + 5*x2\n\nEnter it as a column vector (one component per row).",
+  "expected": "-3; 5",
+  "answer_kind": "Scalar",
+  "hint": "∇(aᵀx) = a; one component per row, e.g. 2; -3"
+}

@@ -4,8 +4,8 @@
   "domain": "Symbolic",
   "topic": "Calculus",
   "difficulty": "Easy",
-  "prompt": "Differentiate with respect to x:\n\n    d/dx [ 6x^5 ]",
-  "expected": "30*x^4",
+  "prompt": "Differentiate with respect to x:\n\n    d/dx [ 9x^4 ]",
+  "expected": "36*x^3",
   "answer_kind": "Scalar",
   "hint": "power rule: d/dx[a*x^n] = a*n*x^(n-1)"
 }

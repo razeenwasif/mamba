@@ -1,0 +1,11 @@
+{
+  "id": "ml-bce-logit-gradient",
+  "title": "Cross-Entropy Logit Gradient",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Hard",
+  "prompt": "With a sigmoid output and logit z, the binary cross-entropy gradient simplifies to σ(z) − y. Write σ(z) − y in terms of z and y.",
+  "expected": "1/(1+exp(-z)) - y",
+  "answer_kind": "Scalar",
+  "hint": "σ(z) = 1/(1+exp(-z))"
+}

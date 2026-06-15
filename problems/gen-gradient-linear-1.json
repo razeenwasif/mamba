@@ -1,0 +1,11 @@
+{
+  "id": "gen-gradient-linear-1",
+  "title": "Gradient of a Linear Form",
+  "domain": "Tensor",
+  "topic": "Convex Optimization",
+  "difficulty": "Easy",
+  "prompt": "Find the gradient ∇f of the linear function:\n\n    f(x) = 4*x1 - 2*x2 + 2*x3\n\nEnter it as a column vector (one component per row).",
+  "expected": "4; -2; 2",
+  "answer_kind": "Scalar",
+  "hint": "∇(aᵀx) = a; one component per row, e.g. 2; -3"
+}

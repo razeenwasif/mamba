@@ -1,0 +1,11 @@
+{
+  "id": "gen-factorization-2",
+  "title": "Prime Factorization",
+  "domain": "Exact",
+  "topic": "Number Theory",
+  "difficulty": "Medium",
+  "prompt": "Find the prime factorization of:\n\n    8772621",
+  "expected": "3 * 11^3 * 13^3",
+  "answer_kind": "Factorization",
+  "hint": "format like 2^3 * 3^2 * 5"
+}

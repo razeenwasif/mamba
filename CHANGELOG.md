@@ -6,6 +6,18 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Machine-learning & convex-optimization problem sets.** 23 new problems
+  (bank 25 → 56): activation/loss gradients (sigmoid, tanh, softplus, MSE,
+  binary cross-entropy logit, L2/ridge), and convex-optimization staples
+  (convexity via the 2nd derivative, log-barrier and exponential gradients,
+  negative entropy, Hessian of a quadratic, gradient of a linear form, Gram
+  matrix). These map onto the existing Symbolic and Tensor pipelines — the
+  symbolic pipeline verifies `exp`/`ln`/`tanh` expressions by numeric probing.
+  Authored as a curated `FIXED` set plus three new parametrized generator
+  templates (linear-form gradient, quadratic Hessian, ridge gradient); the
+  generator default count is now 3. All 56 problems pass `mamba --verify`.
+
 ### Changed
 - **Tensor cells widened to arbitrary precision.** Exact matrix cells now use
   `BigRational` (`Ratio<BigInt>`) instead of `Ratio<i64>`, so no numerator or

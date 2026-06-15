@@ -1,0 +1,11 @@
+{
+  "id": "ml-l2-gradient",
+  "title": "L2 Regularizer Gradient",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Easy",
+  "prompt": "The L2 (ridge) penalty is R(w) = (lambda/2)*w^2. Find dR/dw.",
+  "expected": "lambda*w",
+  "answer_kind": "Scalar",
+  "hint": "treat lambda as a constant; write lambda*w"
+}

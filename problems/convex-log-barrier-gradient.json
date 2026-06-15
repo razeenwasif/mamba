@@ -1,0 +1,11 @@
+{
+  "id": "convex-log-barrier-gradient",
+  "title": "Log-Barrier Gradient",
+  "domain": "Symbolic",
+  "topic": "Convex Optimization",
+  "difficulty": "Easy",
+  "prompt": "The log-barrier for x > 0 is φ(x) = -ln(x). Find φ'(x).",
+  "expected": "-1/x",
+  "answer_kind": "Scalar",
+  "hint": "for x > 0"
+}

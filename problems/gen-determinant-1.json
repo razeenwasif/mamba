@@ -4,8 +4,8 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Easy",
-  "prompt": "Find the determinant:\n\n    [[-5, 0], [-5, -6]]",
-  "expected": "30",
+  "prompt": "Find the determinant:\n\n    [[8, -5], [0, -6]]",
+  "expected": "-48",
   "answer_kind": "Scalar",
   "hint": "for [[a,b],[c,d]], det = ad - bc"
 }

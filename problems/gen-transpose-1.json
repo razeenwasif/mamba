@@ -4,8 +4,8 @@
   "domain": "Tensor",
   "topic": "Linear Algebra",
   "difficulty": "Medium",
-  "prompt": "Write the transpose A^T of:\n\n    [[4, 1, -3], [8, 6, 5]]",
-  "expected": "4 8; 1 6; -3 5",
+  "prompt": "Write the transpose A^T of:\n\n    [[8, -9], [-7, 3], [-9, 6]]",
+  "expected": "8 -7 -9; -9 3 6",
   "answer_kind": "Scalar",
   "hint": "rows separated by ';', elements by spaces, e.g. 1 4; 2 5"
 }

@@ -244,6 +244,61 @@ def t_gcd(rng: random.Random, i: int) -> dict:
     }
 
 
+def t_gradient_linear(rng: random.Random, i: int) -> dict:
+    n = rng.randint(2, 3)
+    a = [rng.choice([k for k in range(-6, 7) if k != 0]) for _ in range(n)]
+    terms = " + ".join(f"{c}*x{j}" for j, c in enumerate(a, start=1)).replace("+ -", "- ")
+    return {
+        "id": f"gen-gradient-linear-{i}",
+        "title": "Gradient of a Linear Form",
+        "domain": "Tensor",
+        "topic": "Convex Optimization",
+        "difficulty": "Easy",
+        "prompt": (
+            f"Find the gradient ∇f of the linear function:\n\n    f(x) = {terms}\n\n"
+            "Enter it as a column vector (one component per row)."
+        ),
+        "expected": "; ".join(str(c) for c in a),
+        "answer_kind": "Scalar",
+        "hint": "∇(aᵀx) = a; one component per row, e.g. 2; -3",
+    }
+
+
+def t_hessian_quadratic(rng: random.Random, i: int) -> dict:
+    a = rng.randint(1, 5)
+    c = rng.randint(1, 5)
+    b = rng.choice([k for k in range(-4, 5) if k != 0])
+    f = f"{a}*x1^2 + {b}*x1*x2 + {c}*x2^2".replace("+ -", "- ")
+    return {
+        "id": f"gen-hessian-quadratic-{i}",
+        "title": "Hessian of a Quadratic",
+        "domain": "Tensor",
+        "topic": "Convex Optimization",
+        "difficulty": "Medium",
+        "prompt": f"Find the Hessian of:\n\n    f(x1, x2) = {f}",
+        "expected": f"{2 * a} {b}; {b} {2 * c}",
+        "answer_kind": "Scalar",
+        "hint": "the matrix of second partials; rows separated by ';', e.g. 2 1; 1 4",
+    }
+
+
+def t_ridge_gradient(rng: random.Random, i: int) -> dict:
+    lam = rng.randint(1, 3)
+    t = rng.randint(1, 9)
+    expected = format_polynomial([(1 + lam, "w"), (-t, "")])
+    return {
+        "id": f"gen-ridge-gradient-{i}",
+        "title": "Ridge Regression Gradient",
+        "domain": "Symbolic",
+        "topic": "Machine Learning",
+        "difficulty": "Medium",
+        "prompt": f"Ridge objective f(w) = (1/2)*(w - {t})^2 + ({lam}/2)*w^2.\n\nFind f'(w).",
+        "expected": expected,
+        "answer_kind": "Scalar",
+        "hint": "differentiate and combine like terms; format a*w - b",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -253,6 +308,77 @@ TEMPLATES = [
     t_prime_factorization,
     t_modular_exponentiation,
     t_gcd,
+    t_gradient_linear,
+    t_hessian_quadratic,
+    t_ridge_gradient,
+]
+
+
+def _p(id, title, domain, topic, difficulty, prompt, expected, hint, answer_kind="Scalar"):
+    """Compact constructor for the curated, non-random `FIXED` problems."""
+    return {
+        "id": id,
+        "title": title,
+        "domain": domain,
+        "topic": topic,
+        "difficulty": difficulty,
+        "prompt": prompt,
+        "expected": expected,
+        "answer_kind": answer_kind,
+        "hint": hint,
+    }
+
+
+# Curated, canonical problems emitted once each (no randomization). Heavy on the
+# ML/AI calculus and convex-optimization staples; the answers are in Mamba's own
+# input syntax and verified end-to-end by `mamba --verify`.
+FIXED = [
+    # ---- Machine Learning · activation & loss gradients (Symbolic) ----
+    _p("ml-sigmoid-derivative", "Sigmoid Derivative", "Symbolic", "Machine Learning", "Medium",
+       "The logistic sigmoid is σ(x) = 1/(1+exp(-x)). Differentiate it:\n\n    d/dx [ 1/(1+exp(-x)) ]",
+       "exp(-x)/(1+exp(-x))^2", "use exp(...); the equivalent s*(1-s) form is accepted"),
+    _p("ml-tanh-derivative", "Tanh Derivative", "Symbolic", "Machine Learning", "Easy",
+       "Differentiate the tanh activation:\n\n    d/dx [ tanh(x) ]",
+       "1 - tanh(x)^2", "a standard identity in terms of tanh(x)"),
+    _p("ml-softplus-derivative", "Softplus Derivative", "Symbolic", "Machine Learning", "Medium",
+       "Softplus is f(x) = ln(1 + exp(x)). Find f'(x).",
+       "1/(1+exp(-x))", "it equals the sigmoid; exp(x)/(1+exp(x)) is accepted"),
+    _p("ml-mse-gradient", "MSE Gradient", "Symbolic", "Machine Learning", "Easy",
+       "Squared error for one sample (x is the prediction, y the target):\n\n    L = (1/2)*(y - x)^2\n\nFind dL/dx.",
+       "x - y", "chain rule — mind the sign"),
+    _p("ml-bce-logit-gradient", "Cross-Entropy Logit Gradient", "Symbolic", "Machine Learning", "Hard",
+       "With a sigmoid output and logit z, the binary cross-entropy gradient simplifies to σ(z) − y. "
+       "Write σ(z) − y in terms of z and y.",
+       "1/(1+exp(-z)) - y", "σ(z) = 1/(1+exp(-z))"),
+    _p("ml-log-likelihood-derivative", "Log Term Derivative", "Symbolic", "Machine Learning", "Easy",
+       "A log-likelihood contains ln(x). Find:\n\n    d/dx [ ln(x) ]",
+       "1/x", "for x > 0"),
+    _p("ml-l2-gradient", "L2 Regularizer Gradient", "Symbolic", "Machine Learning", "Easy",
+       "The L2 (ridge) penalty is R(w) = (lambda/2)*w^2. Find dR/dw.",
+       "lambda*w", "treat lambda as a constant; write lambda*w"),
+    # ---- Convex Optimization (Symbolic) ----
+    _p("convex-quartic-second-derivative", "Convexity via 2nd Derivative", "Symbolic", "Convex Optimization", "Medium",
+       "A function is convex where its second derivative is ≥ 0. Compute:\n\n    d^2/dx^2 [ x^4 ]",
+       "12*x^2", "differentiate twice"),
+    _p("convex-log-barrier-gradient", "Log-Barrier Gradient", "Symbolic", "Convex Optimization", "Easy",
+       "The log-barrier for x > 0 is φ(x) = -ln(x). Find φ'(x).",
+       "-1/x", "for x > 0"),
+    _p("convex-exp-derivative", "Exponential Derivative", "Symbolic", "Convex Optimization", "Easy",
+       "exp is a canonical convex function. Find:\n\n    d/dx [ exp(x) ]",
+       "exp(x)", "it is its own derivative"),
+    _p("convex-negentropy-derivative", "Negative-Entropy Derivative", "Symbolic", "Convex Optimization", "Medium",
+       "Negative entropy is f(x) = x*ln(x) for x > 0. Find f'(x).",
+       "ln(x) + 1", "product rule"),
+    # ---- ML / Convex (Tensor) ----
+    _p("ml-gram-matrix", "Gram Matrix", "Tensor", "Machine Learning", "Medium",
+       "For the data matrix\n\n    X = [[1, 2], [3, 4]]\n\ncompute the Gram matrix X^T X.",
+       "10 14; 14 20", "X^T X is symmetric; rows separated by ';'"),
+    _p("convex-hessian-quadratic", "Hessian of a Quadratic", "Tensor", "Convex Optimization", "Medium",
+       "Find the Hessian of:\n\n    f(x1, x2) = x1^2 + x1*x2 + 2*x2^2",
+       "2 1; 1 4", "the matrix of second partials"),
+    _p("convex-gradient-linear", "Gradient of a Linear Form", "Tensor", "Convex Optimization", "Easy",
+       "Find the gradient ∇f of:\n\n    f(x) = 2*x1 - 3*x2 + 5*x3\n\nEnter it as a column vector.",
+       "2; -3; 5", "∇(aᵀx) = a; one component per row"),
 ]
 
 
@@ -261,7 +387,7 @@ TEMPLATES = [
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Mamba problem JSON files.")
-    parser.add_argument("--count", type=int, default=2, help="problems per template")
+    parser.add_argument("--count", type=int, default=3, help="problems per template")
     parser.add_argument(
         "--out",
         type=Path,
@@ -274,17 +400,21 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
     rng = random.Random(args.seed)
 
-    written = 0
+    def write(problem: dict) -> None:
+        path = args.out / f"{problem['id']}.json"
+        path.write_text(json.dumps(problem, indent=2, ensure_ascii=False) + "\n")
+
+    # Curated problems are emitted once; parametrized templates `--count` times.
+    for problem in FIXED:
+        write(problem)
     for template in TEMPLATES:
         for i in range(args.count):
-            problem = template(rng, i)
-            path = args.out / f"{problem['id']}.json"
-            path.write_text(json.dumps(problem, indent=2, ensure_ascii=False) + "\n")
-            written += 1
+            write(template(rng, i))
 
+    written = len(FIXED) + len(TEMPLATES) * args.count
     print(
         f"generated {written} problems "
-        f"({len(TEMPLATES)} templates × {args.count}) → {args.out}"
+        f"({len(FIXED)} curated + {len(TEMPLATES)} templates × {args.count}) → {args.out}"
     )
     print("verify them with:  mamba --verify", args.out)
 

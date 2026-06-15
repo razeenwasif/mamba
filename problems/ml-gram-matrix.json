@@ -1,0 +1,11 @@
+{
+  "id": "ml-gram-matrix",
+  "title": "Gram Matrix",
+  "domain": "Tensor",
+  "topic": "Machine Learning",
+  "difficulty": "Medium",
+  "prompt": "For the data matrix\n\n    X = [[1, 2], [3, 4]]\n\ncompute the Gram matrix X^T X.",
+  "expected": "10 14; 14 20",
+  "answer_kind": "Scalar",
+  "hint": "X^T X is symmetric; rows separated by ';'"
+}

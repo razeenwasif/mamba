@@ -1,0 +1,11 @@
+{
+  "id": "convex-exp-derivative",
+  "title": "Exponential Derivative",
+  "domain": "Symbolic",
+  "topic": "Convex Optimization",
+  "difficulty": "Easy",
+  "prompt": "exp is a canonical convex function. Find:\n\n    d/dx [ exp(x) ]",
+  "expected": "exp(x)",
+  "answer_kind": "Scalar",
+  "hint": "it is its own derivative"
+}

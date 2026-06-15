@@ -1,0 +1,11 @@
+{
+  "id": "ml-softplus-derivative",
+  "title": "Softplus Derivative",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Medium",
+  "prompt": "Softplus is f(x) = ln(1 + exp(x)). Find f'(x).",
+  "expected": "1/(1+exp(-x))",
+  "answer_kind": "Scalar",
+  "hint": "it equals the sigmoid; exp(x)/(1+exp(x)) is accepted"
+}

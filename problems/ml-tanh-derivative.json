@@ -1,0 +1,11 @@
+{
+  "id": "ml-tanh-derivative",
+  "title": "Tanh Derivative",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Easy",
+  "prompt": "Differentiate the tanh activation:\n\n    d/dx [ tanh(x) ]",
+  "expected": "1 - tanh(x)^2",
+  "answer_kind": "Scalar",
+  "hint": "a standard identity in terms of tanh(x)"
+}

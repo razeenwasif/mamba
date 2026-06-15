@@ -28,16 +28,27 @@ to clear).
 
 ## Templates
 
+The generator emits a curated `FIXED` set once each — the canonical
+machine-learning and convex-optimization problems (sigmoid/tanh/softplus/MSE/
+cross-entropy gradients, log-barrier, Hessians, Gram matrix, …) — plus these
+parametrized templates `--count` times each:
+
 | template | domain | answer computed by |
 |----------|--------|--------------------|
 | `expand-binomial` | Symbolic | `(x+a)(x+b)` → expanded quadratic |
 | `power-derivative` | Symbolic | power rule `d/dx[c·xⁿ]` |
+| `ridge-gradient` | Symbolic | `(1+λ)·w − t` (ML) |
 | `determinant` | Tensor | `ad − bc` |
 | `transpose` | Tensor | index swap |
 | `inverse` | Tensor | `(1/det)·adj`, exact `Fraction`s |
+| `gradient-linear` | Tensor | `∇(aᵀx) = a` (convex opt) |
+| `hessian-quadratic` | Tensor | `[[2a, b], [b, 2c]]` (convex opt) |
 | `factorization` | Exact | trial division → `2^3 * 3^2 * 5` |
 | `modexp` | Exact | `pow(base, exp, mod)` |
 | `gcd` | Exact | Euclid (`math.gcd`) |
+
+The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
+materialized JSON in `problems/` is the committed, browseable data.
 
 ## Why answers are trustworthy
 

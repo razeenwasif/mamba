@@ -1,0 +1,11 @@
+{
+  "id": "convex-negentropy-derivative",
+  "title": "Negative-Entropy Derivative",
+  "domain": "Symbolic",
+  "topic": "Convex Optimization",
+  "difficulty": "Medium",
+  "prompt": "Negative entropy is f(x) = x*ln(x) for x > 0. Find f'(x).",
+  "expected": "ln(x) + 1",
+  "answer_kind": "Scalar",
+  "hint": "product rule"
+}

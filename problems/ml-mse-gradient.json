@@ -1,0 +1,11 @@
+{
+  "id": "ml-mse-gradient",
+  "title": "MSE Gradient",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Easy",
+  "prompt": "Squared error for one sample (x is the prediction, y the target):\n\n    L = (1/2)*(y - x)^2\n\nFind dL/dx.",
+  "expected": "x - y",
+  "answer_kind": "Scalar",
+  "hint": "chain rule — mind the sign"
+}

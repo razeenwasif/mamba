@@ -1,0 +1,11 @@
+{
+  "id": "ml-sigmoid-derivative",
+  "title": "Sigmoid Derivative",
+  "domain": "Symbolic",
+  "topic": "Machine Learning",
+  "difficulty": "Medium",
+  "prompt": "The logistic sigmoid is σ(x) = 1/(1+exp(-x)). Differentiate it:\n\n    d/dx [ 1/(1+exp(-x)) ]",
+  "expected": "exp(-x)/(1+exp(-x))^2",
+  "answer_kind": "Scalar",
+  "hint": "use exp(...); the equivalent s*(1-s) form is accepted"
+}
