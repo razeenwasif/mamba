@@ -8,5 +8,5 @@
   "expected": "34/33; 46/33",
   "answer_kind": "Scalar",
   "hint": "Cramer's rule or elimination; exact fractions are accepted",
-  "recap": "A 2×2 system A·x = b is solved by Cramer's rule: each xⱼ = det(Aⱼ)/det(A), where Aⱼ replaces column j of A with b. It needs det(A) ≠ 0."
+  "recap": "A 2×2 system A·x = b is solved by Cramer's rule: xⱼ = det(Aⱼ)/det(A), where Aⱼ replaces column j of A with b. It needs det(A) ≠ 0.\n\nExample — x + 2y = 5, 3x + 4y = 6: det(A) = 4 − 6 = −2; x = (5·4 − 2·6)/−2 = −4; y = (1·6 − 5·3)/−2 = 9/2.\n\nFor larger systems use Gaussian elimination (Cramer's is O(n!)). Reference: Strang, Introduction to Linear Algebra."
 }

@@ -13,6 +13,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   are authored per concept in the generator (`RECAPS`, injected by problem id)
   and on the hand-authored bootstrap problems; a new optional `recap` field on
   the problem schema.
+- **Expanded recaps for Hard problems.** Hard-difficulty problems get a longer
+  recap (`RECAPS_HARD`) with a worked mini-example and a textbook reference —
+  e.g. Cholesky, modular exponentiation, the softmax Jacobian, and Bayes' rule.
+
+### Changed
+- **The AI tutor panel is shown by default** (still toggled with `Ctrl-A`), so
+  help is one keystroke (or a `?`-prefixed answer) away from the start.
 
 ## [0.3.0] — 2026-06-15
 

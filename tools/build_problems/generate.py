@@ -1490,10 +1490,72 @@ RECAPS["complex-i-cubed"] = RECAPS["power-of-i"]
 RECAPS["ode-exp-decay"] = RECAPS["exp-growth"]
 
 
-def recap_for(problem_id: str) -> str | None:
+# Expanded recaps for the hardest problems: more depth, a worked mini-example,
+# and a reference. Used in place of the base recap when difficulty == "Hard".
+RECAPS_HARD = {
+    "cholesky": "A symmetric positive-definite A factors uniquely as A = L·Lᵀ with L lower-triangular and "
+        "positive diagonal — the 'matrix square root' used to solve systems and sample Gaussians.\n\n"
+        "Solve column by column: l₁₁ = √A₁₁; then l_{i1} = A_{i1}/l₁₁; and l_{jj} = √(A_{jj} − Σ_{k<j} l_{jk}²).\n\n"
+        "Example — A = [[4, 2], [2, 5]]: l₁₁ = √4 = 2, l₂₁ = 2/2 = 1, l₂₂ = √(5 − 1) = 2, so L = [[2, 0], [1, 2]] "
+        "(check L·Lᵀ ✓).\n\nReference: Trefethen & Bau, Numerical Linear Algebra, Lecture 23.",
+    "inverse": "For a 2×2 [[a, b], [c, d]] with det = ad − bc ≠ 0, the inverse is (1/det)·[[d, −b], [−c, a]]: "
+        "swap the diagonal, negate the off-diagonal, divide by the determinant. A·A⁻¹ = I.\n\n"
+        "Example — A = [[4, 7], [2, 6]]: det = 24 − 14 = 10, so A⁻¹ = (1/10)[[6, −7], [−2, 4]] = "
+        "[[3/5, −7/10], [−1/5, 2/5]].\n\nExact fractions avoid rounding. Reference: Strang, Introduction to "
+        "Linear Algebra, §2.5.",
+    "linear-system": "A 2×2 system A·x = b is solved by Cramer's rule: xⱼ = det(Aⱼ)/det(A), where Aⱼ replaces "
+        "column j of A with b. It needs det(A) ≠ 0.\n\nExample — x + 2y = 5, 3x + 4y = 6: det(A) = 4 − 6 = −2; "
+        "x = (5·4 − 2·6)/−2 = −4; y = (1·6 − 5·3)/−2 = 9/2.\n\nFor larger systems use Gaussian elimination "
+        "(Cramer's is O(n!)). Reference: Strang, Introduction to Linear Algebra.",
+    "cayley": "Cayley's formula: K_n has exactly n^(n-2) labelled spanning trees — a count that explodes with n.\n\n"
+        "It follows from the Prüfer code, a bijection between labelled trees on n vertices and length-(n−2) strings "
+        "over {1,…,n}; there are n^(n−2) of them.\n\nExample — K₄ has 4² = 16 spanning trees.\n\nReference: Aigner & "
+        "Ziegler, Proofs from THE BOOK (Cayley's formula).",
+    "convolution": "Linear convolution y[n] = Σₖ x[k]·h[n−k] flips h, slides it across x, and sums the overlap — "
+        "exactly the output of an LTI system with impulse response h. Length is len(x)+len(h)−1.\n\n"
+        "Example — x = [1, 2, 3], h = [1, 1]: y = [1, 1+2, 2+3, 3] = [1, 3, 5, 3].\n\nConvolution in time is "
+        "multiplication in frequency (the convolution theorem), which the FFT exploits. Reference: Oppenheim & "
+        "Schafer, Discrete-Time Signal Processing, ch. 2.",
+    "modexp": "Modular exponentiation a^b mod m uses square-and-multiply in O(log b) steps, never forming a^b. "
+        "Fermat's little theorem helps for prime m with gcd(a, m) = 1: a^(m-1) ≡ 1, so reduce the exponent "
+        "mod (m − 1).\n\nExample — 7^128 mod 13: 128 ≡ 8 (mod 12), so it is 7^8; squaring, 7²≡10, 7⁴≡9, 7⁸≡81≡3 "
+        "(mod 13).\n\nReference: CLRS, Introduction to Algorithms, §31.6.",
+    "modinverse": "The modular inverse of a (mod m) is the x with a·x ≡ 1 (mod m); it exists iff gcd(a, m) = 1. "
+        "The extended Euclidean algorithm finds (x, y) with a·x + m·y = 1, so x mod m is the inverse. For prime m, "
+        "Fermat gives a⁻¹ ≡ a^(m-2).\n\nExample — 3⁻¹ mod 7: 3·5 = 15 ≡ 1 (mod 7), so it is 5.\n\nReference: "
+        "CLRS §31.4.",
+    "ml-bce-logit-gradient": "For a sigmoid output p = σ(z) and binary cross-entropy "
+        "L = −[y·ln p + (1−y)·ln(1−p)], the gradient w.r.t. the logit z simplifies to dL/dz = σ(z) − y = p − y — the "
+        "σ′ = σ(1−σ) factors cancel the denominators.\n\nExample — y = 1, z = 0: p = 1/2, so dL/dz = −1/2 (push z "
+        "up).\n\nThis 'predicted minus target' form is why logits are what you backprop. Reference: Goodfellow, "
+        "Bengio & Courville, Deep Learning, §6.2.",
+    "ml-softmax-jacobian": "For softmax s = softmax(z), the Jacobian is J(i, j) = sᵢ(δᵢⱼ − sⱼ): diagonal "
+        "sᵢ(1 − sᵢ), off-diagonal −sᵢsⱼ. It is symmetric and each row sums to 0 (softmax outputs sum to 1).\n\n"
+        "Example — z = [0, 0] → s = [1/2, 1/2], so J = [[1/4, −1/4], [−1/4, 1/4]].\n\nWith cross-entropy it collapses "
+        "to the p − y gradient. Reference: Bishop, Pattern Recognition and ML, §4.3.4.",
+    "prob-bayes-disease": "Bayes' rule inverts conditionals: P(D|+) = P(+|D)·P(D) / P(+), with "
+        "P(+) = P(+|D)P(D) + P(+|¬D)P(¬D). A low base rate makes most positives false — the base-rate fallacy.\n\n"
+        "Example — P(D)=0.01, P(+|D)=0.9, P(+|¬D)=0.1: P(+) = 0.009 + 0.099 = 0.108, so P(D|+) = 0.009/0.108 = 1/12 "
+        "≈ 8%.\n\nReference: Blitzstein & Hwang, Introduction to Probability, ch. 2.",
+    "variance": "Variance Var(X) = E[(X − μ)²] = E[X²] − E[X]² is the mean squared deviation from the mean: the "
+        "average of the squares minus the square of the average. Always ≥ 0; √Var (the standard deviation) restores "
+        "the original units.\n\nExample — [1, 2, 3] equal-weight: μ = 2, E[X²] = 14/3, Var = 14/3 − 4 = 2/3.\n\nFor "
+        "a sample, dividing by n−1 (Bessel) is unbiased. Reference: Wasserman, All of Statistics, §3.",
+}
+
+
+RECAPS_HARD["decomp-cholesky-3x3"] = RECAPS_HARD["cholesky"]
+RECAPS_HARD["dsp-convolution"] = RECAPS_HARD["convolution"]
+
+
+def recap_for(problem_id: str, difficulty: str = "") -> str | None:
     """Looks up a problem's recap by its concept key (the id minus the `gen-`
-    prefix and trailing index for templates; the full id for fixed problems)."""
+    prefix and trailing index for templates; the full id for fixed problems).
+    Hard problems get the expanded recap (worked example + reference) when one
+    exists."""
     key = problem_id[4:].rsplit("-", 1)[0] if problem_id.startswith("gen-") else problem_id
+    if difficulty == "Hard" and key in RECAPS_HARD:
+        return RECAPS_HARD[key]
     return RECAPS.get(key)
 
 
@@ -1516,7 +1578,7 @@ def main() -> None:
 
     def write(problem: dict) -> None:
         if not problem.get("recap"):
-            recap = recap_for(problem["id"])
+            recap = recap_for(problem["id"], problem.get("difficulty", ""))
             if recap:
                 problem["recap"] = recap
             else:

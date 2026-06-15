@@ -8,5 +8,5 @@
   "expected": "3/5 -7/10; -1/5 2/5",
   "answer_kind": "Scalar",
   "hint": "rows separated by ';', fractions like 3/5; equivalent fractions (6/10) are accepted",
-  "recap": "For [[a, b], [c, d]] with det = ad − bc ≠ 0, the inverse is (1/det)·[[d, −b], [−c, a]]: swap the diagonal, negate the off-diagonal, divide by the determinant."
+  "recap": "For a 2×2 [[a, b], [c, d]] with det = ad − bc ≠ 0, the inverse is (1/det)·[[d, −b], [−c, a]]: swap the diagonal, negate the off-diagonal, divide by the determinant. A·A⁻¹ = I.\n\nExample — A = [[4, 7], [2, 6]]: det = 24 − 14 = 10, so A⁻¹ = (1/10)[[6, −7], [−2, 4]] = [[3/5, −7/10], [−1/5, 2/5]].\n\nExact fractions avoid rounding. Reference: Strang, Introduction to Linear Algebra, §2.5."
 }

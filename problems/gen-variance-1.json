@@ -8,5 +8,5 @@
   "expected": "519/64",
   "answer_kind": "Scalar",
   "hint": "compute E[X²] and E[X] from the weights, then subtract the square",
-  "recap": "Var(X) = E[X^2] − E[X]^2 measures spread: the mean of the squares minus the square of the mean. It is always ≥ 0."
+  "recap": "Variance Var(X) = E[(X − μ)²] = E[X²] − E[X]² is the mean squared deviation from the mean: the average of the squares minus the square of the average. Always ≥ 0; √Var (the standard deviation) restores the original units.\n\nExample — [1, 2, 3] equal-weight: μ = 2, E[X²] = 14/3, Var = 14/3 − 4 = 2/3.\n\nFor a sample, dividing by n−1 (Bessel) is unbiased. Reference: Wasserman, All of Statistics, §3."
 }

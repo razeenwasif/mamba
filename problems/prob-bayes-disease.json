@@ -8,5 +8,5 @@
   "expected": "1/12",
   "answer_kind": "Scalar",
   "hint": "P(D|+) = P(+|D)P(D) / P(+); the base rate dominates",
-  "recap": "Bayes' rule updates beliefs: P(D|+) = P(+|D)P(D)/P(+). A rare condition makes most positives false — the base-rate effect."
+  "recap": "Bayes' rule inverts conditionals: P(D|+) = P(+|D)·P(D) / P(+), with P(+) = P(+|D)P(D) + P(+|¬D)P(¬D). A low base rate makes most positives false — the base-rate fallacy.\n\nExample — P(D)=0.01, P(+|D)=0.9, P(+|¬D)=0.1: P(+) = 0.009 + 0.099 = 0.108, so P(D|+) = 0.009/0.108 = 1/12 ≈ 8%.\n\nReference: Blitzstein & Hwang, Introduction to Probability, ch. 2."
 }

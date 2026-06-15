@@ -8,5 +8,5 @@
   "expected": "2 8 -4 0",
   "answer_kind": "Scalar",
   "hint": "y[n] = Σ x[k]·h[n−k]; length is len(x)+len(h)−1",
-  "recap": "Linear convolution y[n] = Σ x[k]·h[n − k] slides one signal across the other, multiplying and summing — how an LTI system's output is built from its impulse response."
+  "recap": "Linear convolution y[n] = Σₖ x[k]·h[n−k] flips h, slides it across x, and sums the overlap — exactly the output of an LTI system with impulse response h. Length is len(x)+len(h)−1.\n\nExample — x = [1, 2, 3], h = [1, 1]: y = [1, 1+2, 2+3, 3] = [1, 3, 5, 3].\n\nConvolution in time is multiplication in frequency (the convolution theorem), which the FFT exploits. Reference: Oppenheim & Schafer, Discrete-Time Signal Processing, ch. 2."
 }

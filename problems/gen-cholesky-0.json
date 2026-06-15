@@ -8,5 +8,5 @@
   "expected": "1 0; -2 2",
   "answer_kind": "Scalar",
   "hint": "L = [[l11, 0], [l21, l22]]: l11 = √A₁₁, l21 = A₂₁/l11, l22 = √(A₂₂ − l21²)",
-  "recap": "A symmetric positive-definite A factors uniquely as A = L·Lᵀ with L lower-triangular, positive diagonal. Solve row by row: l₁₁ = √A₁₁, l₂₁ = A₂₁/l₁₁, l₂₂ = √(A₂₂ − l₂₁^2)."
+  "recap": "A symmetric positive-definite A factors uniquely as A = L·Lᵀ with L lower-triangular and positive diagonal — the 'matrix square root' used to solve systems and sample Gaussians.\n\nSolve column by column: l₁₁ = √A₁₁; then l_{i1} = A_{i1}/l₁₁; and l_{jj} = √(A_{jj} − Σ_{k<j} l_{jk}²).\n\nExample — A = [[4, 2], [2, 5]]: l₁₁ = √4 = 2, l₂₁ = 2/2 = 1, l₂₂ = √(5 − 1) = 2, so L = [[2, 0], [1, 2]] (check L·Lᵀ ✓).\n\nReference: Trefethen & Bau, Numerical Linear Algebra, Lecture 23."
 }

@@ -8,5 +8,5 @@
   "expected": "6",
   "answer_kind": "Scalar",
   "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)",
-  "recap": "The modular inverse of a (mod m) is the x with a·x ≡ 1 (mod m). It exists iff gcd(a, m) = 1; the extended Euclidean algorithm finds it."
+  "recap": "The modular inverse of a (mod m) is the x with a·x ≡ 1 (mod m); it exists iff gcd(a, m) = 1. The extended Euclidean algorithm finds (x, y) with a·x + m·y = 1, so x mod m is the inverse. For prime m, Fermat gives a⁻¹ ≡ a^(m-2).\n\nExample — 3⁻¹ mod 7: 3·5 = 15 ≡ 1 (mod 7), so it is 5.\n\nReference: CLRS §31.4."
 }

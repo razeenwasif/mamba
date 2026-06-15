@@ -8,5 +8,5 @@
   "expected": "33",
   "answer_kind": "Scalar",
   "hint": "reduce the exponent with Fermat's little theorem; enter one integer",
-  "recap": "Modular exponentiation a^b mod m is computed by repeated squaring. Fermat's little theorem helps: if m is prime and gcd(a, m) = 1 then a^(m-1) ≡ 1, so reduce the exponent mod (m − 1) first."
+  "recap": "Modular exponentiation a^b mod m uses square-and-multiply in O(log b) steps, never forming a^b. Fermat's little theorem helps for prime m with gcd(a, m) = 1: a^(m-1) ≡ 1, so reduce the exponent mod (m − 1).\n\nExample — 7^128 mod 13: 128 ≡ 8 (mod 12), so it is 7^8; squaring, 7²≡10, 7⁴≡9, 7⁸≡81≡3 (mod 13).\n\nReference: CLRS, Introduction to Algorithms, §31.6."
 }

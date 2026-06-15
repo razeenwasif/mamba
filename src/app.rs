@@ -205,7 +205,7 @@ impl App {
             open_history: None,
             stats_visible: false,
             stats: None,
-            agent_visible: false,
+            agent_visible: true,
             agent_messages: Vec::new(),
             agent_input: String::new(),
             agent_streaming: false,
@@ -1202,12 +1202,13 @@ mod tests {
     #[test]
     fn explain_is_a_noop_without_a_failed_verdict() {
         let mut a = app();
-        a.ask_why_wrong(); // no verdict
-        assert!(!a.agent_visible);
-        a.verdict = Some(Verdict::Correct);
-        a.ask_why_wrong(); // correct, nothing to explain
-        assert!(!a.agent_visible);
+        a.ask_why_wrong(); // no verdict → no message, no focus change
         assert!(a.agent_messages.is_empty());
+        assert_ne!(a.focus, Focus::Agent);
+        a.verdict = Some(Verdict::Correct);
+        a.ask_why_wrong(); // correct → nothing to explain
+        assert!(a.agent_messages.is_empty());
+        assert_ne!(a.focus, Focus::Agent);
     }
 
     #[test]

@@ -8,5 +8,5 @@
   "expected": "1/4 -1/4; -1/4 1/4",
   "answer_kind": "Scalar",
   "hint": "diagonal: s_i*(1−s_i); off-diagonal: −s_i*s_j; exact fractions",
-  "recap": "Softmax s has Jacobian J(i, j) = sᵢ(δᵢⱼ − sⱼ): diagonal sᵢ(1 − sᵢ), off-diagonal −sᵢsⱼ. At equal logits s = (1/2, 1/2)."
+  "recap": "For softmax s = softmax(z), the Jacobian is J(i, j) = sᵢ(δᵢⱼ − sⱼ): diagonal sᵢ(1 − sᵢ), off-diagonal −sᵢsⱼ. It is symmetric and each row sums to 0 (softmax outputs sum to 1).\n\nExample — z = [0, 0] → s = [1/2, 1/2], so J = [[1/4, −1/4], [−1/4, 1/4]].\n\nWith cross-entropy it collapses to the p − y gradient. Reference: Bishop, Pattern Recognition and ML, §4.3.4."
 }

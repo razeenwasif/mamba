@@ -8,5 +8,5 @@
   "expected": "1/(1+exp(-z)) - y",
   "answer_kind": "Scalar",
   "hint": "σ(z) = 1/(1+exp(-z))",
-  "recap": "With a sigmoid output p = σ(z) and binary cross-entropy, the gradient w.r.t. the logit collapses to dL/dz = p − y."
+  "recap": "For a sigmoid output p = σ(z) and binary cross-entropy L = −[y·ln p + (1−y)·ln(1−p)], the gradient w.r.t. the logit z simplifies to dL/dz = σ(z) − y = p − y — the σ′ = σ(1−σ) factors cancel the denominators.\n\nExample — y = 1, z = 0: p = 1/2, so dL/dz = −1/2 (push z up).\n\nThis 'predicted minus target' form is why logits are what you backprop. Reference: Goodfellow, Bengio & Courville, Deep Learning, §6.2."
 }
