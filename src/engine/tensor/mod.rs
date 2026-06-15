@@ -33,7 +33,9 @@
 use std::fmt;
 
 use ndarray::Array2;
-use num_rational::Ratio;
+use num_bigint::BigInt;
+use num_rational::BigRational;
+use num_traits::{ToPrimitive, Zero};
 
 use crate::engine::Verdict;
 
@@ -44,8 +46,9 @@ const EPSILON: f64 = 1e-6;
 /// One matrix element: an exact fraction, or an approximate decimal.
 #[derive(Debug, Clone, PartialEq)]
 enum Cell {
-    /// An integer or `a/b` fraction — compared exactly.
-    Exact(Ratio<i64>),
+    /// An integer or `a/b` fraction — compared exactly. Arbitrary-precision
+    /// ([`BigRational`]), so no numerator/denominator can ever overflow.
+    Exact(BigRational),
     /// A decimal literal — compared within [`EPSILON`].
     Approx(f64),
 }
@@ -55,7 +58,7 @@ impl Cell {
     /// approximate comparison path.
     fn to_f64(&self) -> f64 {
         match self {
-            Cell::Exact(r) => *r.numer() as f64 / *r.denom() as f64,
+            Cell::Exact(r) => r.to_f64().unwrap_or(f64::NAN),
             Cell::Approx(v) => *v,
         }
     }
@@ -76,7 +79,7 @@ impl Cell {
 impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Cell::Exact(r) if *r.denom() == 1 => write!(f, "{}", r.numer()),
+            Cell::Exact(r) if r.is_integer() => write!(f, "{}", r.numer()),
             Cell::Exact(r) => write!(f, "{}/{}", r.numer(), r.denom()),
             Cell::Approx(v) => write!(f, "{v}"),
         }
@@ -169,18 +172,18 @@ fn parse_row(row: &str) -> Result<Vec<Cell>, String> {
 fn parse_cell(tok: &str) -> Result<Cell, String> {
     let tok = tok.trim();
     if let Some((num, den)) = tok.split_once('/') {
-        let n: i64 = num
+        let n: BigInt = num
             .trim()
             .parse()
             .map_err(|_| format!("'{num}' is not an integer numerator in '{tok}'"))?;
-        let d: i64 = den
+        let d: BigInt = den
             .trim()
             .parse()
             .map_err(|_| format!("'{den}' is not an integer denominator in '{tok}'"))?;
-        if d == 0 {
+        if d.is_zero() {
             return Err(format!("division by zero in '{tok}'"));
         }
-        return Ok(Cell::Exact(Ratio::new(n, d)));
+        return Ok(Cell::Exact(BigRational::new(n, d)));
     }
     // A decimal point or exponent signals an approximate value.
     if tok.contains('.') || tok.contains(['e', 'E']) {
@@ -189,8 +192,8 @@ fn parse_cell(tok: &str) -> Result<Cell, String> {
             .map(Cell::Approx)
             .map_err(|_| format!("'{tok}' is not a number"));
     }
-    tok.parse::<i64>()
-        .map(|n| Cell::Exact(Ratio::from_integer(n)))
+    tok.parse::<BigInt>()
+        .map(|n| Cell::Exact(BigRational::from_integer(n)))
         .map_err(|_| format!("'{tok}' is not a number"))
 }
 
@@ -230,6 +233,18 @@ mod tests {
         assert!(verify(inverse, "6/10 -7/10; -2/10 4/10").is_correct());
         assert!(matches!(
             verify(inverse, "3/5 -7/10; -1/5 1/5"),
+            Verdict::Incorrect { .. }
+        ));
+    }
+
+    #[test]
+    fn huge_fractions_never_overflow() {
+        // Numerator beyond i64::MAX (~9.2e18); the old Ratio<i64> would panic.
+        let big = "12345678901234567890/2";
+        assert!(verify(big, "6172839450617283945").is_correct());
+        assert!(verify("1/98765432109876543210", "1/98765432109876543210").is_correct());
+        assert!(matches!(
+            verify("1/98765432109876543210", "1/98765432109876543211"),
             Verdict::Incorrect { .. }
         ));
     }

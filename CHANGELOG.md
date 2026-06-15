@@ -6,6 +6,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **Tensor cells widened to arbitrary precision.** Exact matrix cells now use
+  `BigRational` (`Ratio<BigInt>`) instead of `Ratio<i64>`, so no numerator or
+  denominator can ever overflow — fractions of any size compare exactly. Resolves
+  the accepted limitation noted in [ADR 0004](docs/adr/0004-rational-tensor-cells.md).
+
 ### Added
 - **Rolling progress dashboard.** On every correct answer, after the per-problem
   note is written, Mamba (re)renders `_progress.md` in the vault: total solved, a
