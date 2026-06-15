@@ -7,6 +7,11 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Per-problem attempt history in the vault.** A solved problem's note now
+  accumulates a `## History` table — one row per solve (date · attempts-to-solve
+  · time) — by reading the prior note and appending, instead of overwriting it.
+  The frontmatter gains `attempts` (latest) and `solves` (total). The latest
+  accepted answer and frontmatter still reflect the most recent solve.
 - **In-TUI progress overlay (`Ctrl-P`).** A modal, centered overlay shows live
   all-time progress computed from the vault (via the shared `progress` stats
   API): total solved, per-domain and per-difficulty bars, current/longest

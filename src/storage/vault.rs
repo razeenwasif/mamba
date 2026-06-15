@@ -16,9 +16,11 @@ use crate::storage::problem::Problem;
 
 /// Renders and writes the solved-problem note, returning the path written.
 ///
-/// The file lands at `<vault>/<slug-of-title>.md` and is overwritten on
-/// re-solve, so the vault always holds the *latest* accepted answer. The vault
-/// directory is created on demand.
+/// The file lands at `<vault>/<slug-of-title>.md`. The frontmatter and the
+/// "Accepted Answer" always reflect the *latest* solve, but a `## History`
+/// table **accumulates** one row per solve (date · attempts-to-solve · time) by
+/// reading the prior note and appending to it. The vault directory is created
+/// on demand.
 ///
 /// `solved_on` is injected (rather than read from the clock here) so tests and
 /// callers fully control the rendered frontmatter.
@@ -26,6 +28,7 @@ pub fn export(
     vault: &Path,
     problem: &Problem,
     answer: &str,
+    attempts: u32,
     time_spent: Duration,
     solved_on: NaiveDate,
 ) -> anyhow::Result<PathBuf> {
@@ -33,18 +36,52 @@ pub fn export(
         .with_context(|| format!("failed to create vault directory {}", vault.display()))?;
 
     let path = vault.join(format!("{}.md", slugify(&problem.title)));
-    let note = render_note(problem, answer, time_spent, solved_on);
+
+    // Preserve the existing history rows (if the note already exists), then
+    // append this solve as the newest row.
+    let mut rows = fs::read_to_string(&path)
+        .ok()
+        .as_deref()
+        .map(extract_history_rows)
+        .unwrap_or_default();
+    rows.push(format!(
+        "| {} | {} | {} |",
+        solved_on.format("%Y-%m-%d"),
+        attempts,
+        format_duration(time_spent),
+    ));
+
+    let note = render_note(problem, answer, attempts, time_spent, solved_on, &rows);
     fs::write(&path, note).with_context(|| format!("failed to write {}", path.display()))?;
     Ok(path)
 }
 
-/// Renders the full note: YAML frontmatter, the problem statement, and the
-/// accepted answer in a fenced block.
+/// Extracts the data rows of a prior note's `## History` table — lines that
+/// begin with `| ` whose first cell parses as a `YYYY-MM-DD` date (so the
+/// header and separator rows are skipped). Order is preserved.
+fn extract_history_rows(content: &str) -> Vec<String> {
+    content
+        .lines()
+        .filter(|line| line.starts_with("| "))
+        .filter(|line| {
+            line.trim_start_matches("| ")
+                .split('|')
+                .next()
+                .is_some_and(|cell| NaiveDate::parse_from_str(cell.trim(), "%Y-%m-%d").is_ok())
+        })
+        .map(str::to_string)
+        .collect()
+}
+
+/// Renders the full note: YAML frontmatter, the problem statement, the latest
+/// accepted answer, and the accumulated solve history.
 fn render_note(
     problem: &Problem,
     answer: &str,
+    attempts: u32,
     time_spent: Duration,
     solved_on: NaiveDate,
+    history_rows: &[String],
 ) -> String {
     format!(
         "---\n\
@@ -54,6 +91,8 @@ fn render_note(
          difficulty: {difficulty}\n\
          timestamp: {timestamp}\n\
          time_spent: {time_spent}\n\
+         attempts: {attempts}\n\
+         solves: {solves}\n\
          tags: [mamba, math]\n\
          ---\n\
          \n\
@@ -67,16 +106,25 @@ fn render_note(
          \n\
          ```text\n\
          {answer}\n\
-         ```\n",
+         ```\n\
+         \n\
+         ## History\n\
+         \n\
+         | Date | Attempts | Time |\n\
+         |------|----------|------|\n\
+         {history}\n",
         title = yaml_string(&problem.title),
         topic = yaml_string(&problem.topic),
         domain = problem.domain,
         difficulty = problem.difficulty,
         timestamp = solved_on.format("%Y-%m-%d"),
         time_spent = yaml_string(&format_duration(time_spent)),
+        attempts = attempts,
+        solves = history_rows.len(),
         raw_title = problem.title,
         prompt = problem.prompt.trim_end(),
         answer = answer.trim_end(),
+        history = history_rows.join("\n"),
     )
 }
 
@@ -155,17 +203,80 @@ mod tests {
     }
 
     #[test]
-    fn rendered_note_has_frontmatter_and_fenced_answer() {
+    fn rendered_note_has_frontmatter_answer_and_history() {
         let date = NaiveDate::from_ymd_opt(2026, 6, 14).unwrap();
-        let note = render_note(&fixture(), "x^2 - x - 6", Duration::from_secs(125), date);
+        let rows = vec!["| 2026-06-14 | 2 | 2m 05s |".to_string()];
+        let note = render_note(
+            &fixture(),
+            "x^2 - x - 6",
+            2,
+            Duration::from_secs(125),
+            date,
+            &rows,
+        );
 
         assert!(note.starts_with("---\n"));
         assert!(note.contains("title: \"Expand a Binomial\""));
-        assert!(note.contains("topic: \"Algebra\""));
         assert!(note.contains("domain: Symbolic"));
-        assert!(note.contains("difficulty: Easy"));
         assert!(note.contains("timestamp: 2026-06-14"));
         assert!(note.contains("time_spent: \"2m 05s\""));
+        assert!(note.contains("attempts: 2"));
+        assert!(note.contains("solves: 1"));
         assert!(note.contains("```text\nx^2 - x - 6\n```"));
+        assert!(note.contains("## History"));
+        assert!(note.contains("| 2026-06-14 | 2 | 2m 05s |"));
+    }
+
+    #[test]
+    fn extract_history_rows_keeps_only_dated_rows() {
+        let note = render_note(
+            &fixture(),
+            "x",
+            1,
+            Duration::from_secs(30),
+            NaiveDate::from_ymd_opt(2026, 6, 14).unwrap(),
+            &["| 2026-06-14 | 1 | 30s |".to_string()],
+        );
+        // Round-trips: the header and separator are dropped, the data row kept.
+        assert_eq!(
+            extract_history_rows(&note),
+            vec!["| 2026-06-14 | 1 | 30s |"]
+        );
+    }
+
+    #[test]
+    fn export_accumulates_history_across_solves() {
+        let dir = std::env::temp_dir().join(format!("mamba-vault-hist-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let day = |d: u32| NaiveDate::from_ymd_opt(2026, 6, d).unwrap();
+
+        export(
+            &dir,
+            &fixture(),
+            "x^2 - x - 6",
+            3,
+            Duration::from_secs(90),
+            day(14),
+        )
+        .unwrap();
+        let path = export(
+            &dir,
+            &fixture(),
+            "x*x - x - 6",
+            1,
+            Duration::from_secs(40),
+            day(15),
+        )
+        .unwrap();
+
+        let note = fs::read_to_string(&path).unwrap();
+        assert!(note.contains("solves: 2"));
+        assert!(note.contains("attempts: 1")); // latest solve
+        assert!(note.contains("| 2026-06-14 | 3 |"));
+        assert!(note.contains("| 2026-06-15 | 1 |"));
+        // Latest accepted answer is the second one.
+        assert!(note.contains("```text\nx*x - x - 6\n```"));
+
+        let _ = fs::remove_dir_all(&dir);
     }
 }

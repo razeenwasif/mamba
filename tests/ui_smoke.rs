@@ -34,7 +34,7 @@ fn renders_navigator_and_stats_overlay() {
     // Seed a few solves so the overlay has data (before `problems` is moved).
     let day = NaiveDate::from_ymd_opt(2026, 6, 15).unwrap();
     for p in problems.iter().take(3) {
-        vault::export(&vault, p, "x", Duration::from_secs(60), day).unwrap();
+        vault::export(&vault, p, "x", 1, Duration::from_secs(60), day).unwrap();
     }
 
     let mut app = App::new(problems, vault.clone());

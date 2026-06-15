@@ -566,6 +566,7 @@ impl App {
             &self.vault_path,
             problem,
             answer,
+            self.attempts,
             opened_at.elapsed(),
             today,
         ) {
