@@ -17,7 +17,8 @@ use anyhow::Context;
 use crossterm::event::{self, Event, KeyEventKind};
 
 use mamba::app::App;
-use mamba::{engine, storage, ui};
+use mamba::engine::{self, Verdict};
+use mamba::{storage, ui};
 
 /// How long the event loop blocks waiting for input before redrawing.
 ///
@@ -69,6 +70,14 @@ fn main() -> anyhow::Result<()> {
                 None => storage::default_problems_path()?,
             };
             return verify_bank(&dir);
+        }
+        // `mamba solve <id> <answer…>` — verify one problem's answer from the
+        // shell (no TUI). The answer may span several args (e.g. a matrix
+        // `1 2 ; 3 4`); they are rejoined with spaces. Exit 0 iff correct.
+        Some("solve") => {
+            let id = args.get(1).map(String::as_str).unwrap_or_default();
+            let answer = args.get(2..).map(|a| a.join(" ")).unwrap_or_default();
+            return solve_one(id, &answer);
         }
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
@@ -133,12 +142,48 @@ fn verify_bank(dir: &std::path::Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Verifies a single problem's answer by id and reports the verdict, exiting
+/// non-zero if the answer is wrong or unparseable (so it is scriptable).
+fn solve_one(id: &str, answer: &str) -> anyhow::Result<()> {
+    if id.is_empty() {
+        eprintln!("usage: mamba solve <problem-id> <answer>");
+        std::process::exit(2);
+    }
+    let dir = storage::default_problems_path()?;
+    let problems = storage::problem::load_all(&dir)
+        .with_context(|| format!("loading problem bank from {}", dir.display()))?;
+
+    let Some(problem) = problems.iter().find(|p| p.id == id) else {
+        eprintln!("no problem with id '{id}' ({} in the bank)", problems.len());
+        std::process::exit(2);
+    };
+
+    match engine::verify(problem, answer) {
+        Verdict::Correct => {
+            println!("✔ Correct — {} [{}]", problem.title, problem.domain);
+            Ok(())
+        }
+        Verdict::Incorrect { detail } => {
+            println!("✘ Incorrect: {detail}");
+            std::process::exit(1);
+        }
+        Verdict::ParseError { message, hint } => {
+            println!("⚠ {message}");
+            if let Some(h) = hint {
+                println!("  hint: {h}");
+            }
+            std::process::exit(1);
+        }
+    }
+}
+
 /// Prints CLI usage, in-TUI key bindings, and the environment overrides.
 fn print_help() {
     println!(
         "mamba {} — a terminal mathematics practice engine\n\n\
          USAGE:\n    \
-         mamba [OPTIONS]\n\n\
+         mamba [OPTIONS]\n    \
+         mamba solve <problem-id> <answer>   Verify one answer (exit 0 iff correct)\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \

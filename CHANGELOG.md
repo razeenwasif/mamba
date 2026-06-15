@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`mamba solve <id> <answer>` subcommand.** Verify a single problem's answer
+  from the shell without the TUI — prints the verdict and exits `0` only when
+  correct, so it's usable in scripts and CI. The answer may span several args
+  (e.g. a matrix) and is rejoined. End-to-end CLI test included.
 - **Probability & Statistics problems** (bank 103 → 124): combinations,
   permutations, and factorials (Exact, exercising arbitrary-precision integers);
   two-dice probabilities, expected value, discrete variance, Bayes' rule, the
