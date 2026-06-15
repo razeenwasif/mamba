@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-velocity-2",
+  "title": "Final Velocity",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "A body starts at 16 m/s and accelerates uniformly at 10 m/s² for 5 s. Find its final velocity (m/s).",
+  "expected": "66",
+  "answer_kind": "Scalar",
+  "hint": "v = u + a·t",
+  "recap": "For constant acceleration, velocity grows linearly: v = u + a·t — start speed plus acceleration times elapsed time. One of the SUVAT equations."
+}

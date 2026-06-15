@@ -6,6 +6,19 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Physics and Engineering Math topics** (bank 199 → 262). Two new subject
+  areas spanning all difficulties: mechanics, energy, waves, kinematics, and SHM
+  for **Physics** (Newton's second law, SUVAT velocity/displacement, kinetic and
+  potential energy, momentum, wave speed, symbolic velocity-from-position, SHM
+  acceleration/velocity, half-life, thin-lens); and circuits, statics, and
+  materials for **Engineering Math** (Ohm's law, resistive power, series/parallel
+  resistors, RC time constant, capacitor energy, moment of a force, axial stress,
+  Hooke's law, series-RL complex impedance, decibel gain, voltage divider, RC
+  discharge rate). Nineteen new generator templates + six curated problems; each
+  carries a recap (the Hard ones — SHM and RL impedance — get the expanded recap
+  with a worked example and reference), and all pass `mamba --verify`.
+
 ## [0.4.0] — 2026-06-16
 
 A full study loop and a sharper tutor: a study-session mode, an adaptive "next

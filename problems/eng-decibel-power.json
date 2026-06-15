@@ -1,0 +1,12 @@
+{
+  "id": "eng-decibel-power",
+  "title": "Power Ratio in Decibels",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "An amplifier raises a signal's power by a factor of 1000. Express the gain in decibels using 10·log₁₀(ratio).",
+  "expected": "30",
+  "answer_kind": "Scalar",
+  "hint": "log₁₀(1000) = 3, so 10·3 = 30 dB",
+  "recap": "Decibels express ratios logarithmically: gain = 10·log₁₀(P_out/P_in) for power. A ×1000 ratio is 30 dB; every ×10 adds 10 dB."
+}

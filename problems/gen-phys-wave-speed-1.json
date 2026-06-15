@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-wave-speed-1",
+  "title": "Wave Speed",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "A wave of frequency 47 Hz has wavelength 3 m. Find its speed (m/s).",
+  "expected": "141",
+  "answer_kind": "Scalar",
+  "hint": "v = f·λ",
+  "recap": "A wave's speed is frequency times wavelength: v = f·λ. It ties how often crests pass (f) to how far apart they are (λ)."
+}

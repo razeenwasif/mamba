@@ -1,0 +1,12 @@
+{
+  "id": "eng-voltage-divider",
+  "title": "Voltage Divider",
+  "domain": "Tensor",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "A 5 V source drives R1 = 2 Ω and R2 = 2 Ω in series. Find the output voltage across R2, V_out = V_in·R2/(R1 + R2), as an exact fraction.",
+  "expected": "5/2",
+  "answer_kind": "Scalar",
+  "hint": "V_out = 5·2/(2 + 2) = 10/4 = 5/2",
+  "recap": "Two series resistors split the source voltage in proportion: V_out = V_in·R₂/(R₁ + R₂). The larger resistor drops the larger share."
+}

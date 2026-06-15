@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-impedance-rl-1",
+  "title": "Series RL Impedance",
+  "domain": "Tensor",
+  "topic": "Engineering Math",
+  "difficulty": "Hard",
+  "prompt": "A 4 Ω resistor is in series with an inductor of reactance X_L = 14 Ω.\n\nWrite the impedance Z = R + jX_L as `real imag`.",
+  "expected": "4 14",
+  "answer_kind": "Scalar",
+  "hint": "series impedances add: Z = R + jX_L → enter `R X_L`",
+  "recap": "In AC steady state, impedance Z = R + jX generalizes resistance to complex numbers. A resistor contributes R (real); an inductor contributes a positive reactance X_L = ω·L (imaginary), a capacitor a negative one X_C = −1/(ω·C). In series they add.\n\nExample — R = 3 Ω in series with X_L = 4 Ω: Z = 3 + j4, magnitude |Z| = √(3² + 4²) = 5 Ω and phase arctan(4/3) ≈ 53°, so the current lags the voltage.\n\nThe magnitude sets the current (I = V/|Z|); the phase sets the power factor. Reference: Irwin & Nelms, Basic Engineering Circuit Analysis, ch. 8."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "phys-half-life",
+  "title": "Counting Half-Lives",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "A radioactive sample decays to 1/8 of its initial amount. How many half-lives have elapsed?",
+  "expected": "3",
+  "answer_kind": "Scalar",
+  "hint": "after n half-lives a fraction (1/2)^n remains; (1/2)^3 = 1/8",
+  "recap": "Each half-life halves the amount, so after n half-lives a fraction (1/2)ⁿ remains. Invert it: 1/8 = (1/2)³ means 3 half-lives."
+}

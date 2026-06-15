@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-rc-tau-2",
+  "title": "RC Time Constant",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Easy",
+  "prompt": "An RC circuit has R = 13 kΩ and C = 15 µF. Find the time constant (in ms).",
+  "expected": "195",
+  "answer_kind": "Scalar",
+  "hint": "τ = R·C  (kΩ × µF gives ms)",
+  "recap": "An RC circuit charges/discharges with time constant τ = R·C — the time to reach ~63%. Handily, kΩ × µF gives milliseconds."
+}

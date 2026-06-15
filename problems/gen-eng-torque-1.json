@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-torque-1",
+  "title": "Moment of a Force",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Easy",
+  "prompt": "A 18 N force acts perpendicular to a lever 1 m from the pivot. Find the moment (N·m).",
+  "expected": "18",
+  "answer_kind": "Scalar",
+  "hint": "moment τ = F·d",
+  "recap": "The moment (torque) of a perpendicular force about a pivot is τ = F·d — force times lever arm. Longer levers multiply turning effect."
+}

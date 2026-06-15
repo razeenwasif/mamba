@@ -1,0 +1,12 @@
+{
+  "id": "phys-shm-velocity",
+  "title": "SHM Velocity",
+  "domain": "Symbolic",
+  "topic": "Physics",
+  "difficulty": "Hard",
+  "prompt": "A particle in simple harmonic motion has displacement x(t) = 3*sin(2*t). Find its velocity v(t) = dx/dt.",
+  "expected": "6*cos(2*t)",
+  "answer_kind": "Scalar",
+  "hint": "chain rule: d/dt[sin(ω t)] = ω·cos(ω t)",
+  "recap": "Velocity is the time-derivative of displacement. For SHM x(t) = A·sin(ω t), the chain rule gives v(t) = A·ω·cos(ω t): the speed is greatest (A·ω) as the particle passes through equilibrium and zero at the turning points.\n\nExample — x(t) = 3·sin(2t): v(t) = 6·cos(2t); peak speed 6 at t = 0.\n\nEnergy check: max KE = (1/2)m(Aω)² equals the max PE = (1/2)kA² since k = mω². Reference: Kleppner & Kolenkow, An Introduction to Mechanics, ch. 11."
+}

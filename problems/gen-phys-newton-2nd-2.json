@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-newton-2nd-2",
+  "title": "Newton's Second Law",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "A net force accelerates a 14 kg mass at 10 m/s². Find the force (in newtons).",
+  "expected": "140",
+  "answer_kind": "Scalar",
+  "hint": "F = m·a",
+  "recap": "Newton's second law: the net force equals mass times acceleration, F = m·a. Force is in newtons (N) when m is in kg and a in m/s²."
+}

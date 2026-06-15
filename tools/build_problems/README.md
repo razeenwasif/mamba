@@ -88,6 +88,25 @@ parametrized templates `--count` times each:
 | `complete-edges` | Exact | `n(n−1)/2` (Graph Theory) |
 | `cayley` | Exact | `n^(n−2)` spanning trees (Graph Theory) |
 | `modulus` | Exact | `√(a²+b²)` (Complex Numbers) |
+| `phys-newton-2nd` | Exact | `F = m·a` (Physics) |
+| `phys-velocity` | Exact | `v = u + a·t` (Physics) |
+| `phys-displacement` | Exact | `s = u·t + ½·a·t²` (Physics) |
+| `phys-ke` | Exact | `KE = ½·m·v²` (Physics) |
+| `phys-pe` | Exact | `PE = m·g·h` (Physics) |
+| `phys-wave-speed` | Exact | `v = f·λ` (Physics) |
+| `phys-momentum` | Exact | `p = m·v` (Physics) |
+| `phys-projectile` | Symbolic | `v(t) = ds/dt` (Physics) |
+| `phys-shm-accel` | Symbolic | `a = −A·ω²·cos(ω t)` (Physics) |
+| `eng-ohms-law` | Exact | `V = I·R` (Engineering Math) |
+| `eng-power` | Exact | `P = I²·R` (Engineering Math) |
+| `eng-series-r` | Exact | `R = ΣRᵢ` (Engineering Math) |
+| `eng-parallel-r` | Tensor | `R₁R₂/(R₁+R₂)` fraction (Engineering Math) |
+| `eng-rc-tau` | Exact | `τ = R·C` (Engineering Math) |
+| `eng-cap-energy` | Exact | `E = ½·C·V²` (Engineering Math) |
+| `eng-torque` | Exact | `τ = F·d` (Engineering Math) |
+| `eng-stress` | Exact | `σ = F/A` (Engineering Math) |
+| `eng-hooke` | Exact | `F = k·x` (Engineering Math) |
+| `eng-impedance-rl` | Tensor | `Z = R + jX_L` as `re im` (Engineering Math) |
 
 The `FIXED` curated problems are authored as literal dicts in `generate.py`; the
 materialized JSON in `problems/` is the committed, browseable data.

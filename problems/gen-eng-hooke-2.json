@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-hooke-2",
+  "title": "Hooke's Law",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Easy",
+  "prompt": "A spring of stiffness 29 N/m is stretched 10 m. Find the restoring force (N).",
+  "expected": "290",
+  "answer_kind": "Scalar",
+  "hint": "F = k·x",
+  "recap": "Hooke's law: a spring's restoring force is proportional to its extension, F = k·x, with stiffness k. Valid in the elastic (small-x) regime."
+}

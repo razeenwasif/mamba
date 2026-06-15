@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-projectile-0",
+  "title": "Velocity from Position",
+  "domain": "Symbolic",
+  "topic": "Physics",
+  "difficulty": "Medium",
+  "prompt": "A ball thrown upward has height s(t) = 29*t - 5*t^2 (metres, g = 10 m/s²).\n\nFind its velocity v(t) = ds/dt.",
+  "expected": "29 - 10*t",
+  "answer_kind": "Scalar",
+  "hint": "differentiate term by term: d/dt[a*t] = a, d/dt[t^2] = 2*t",
+  "recap": "Velocity is the time-derivative of position: v(t) = ds/dt. Differentiate term by term — d/dt[a·t] = a and d/dt[t²] = 2t — so s = u·t − 5t² gives v = u − 10t."
+}

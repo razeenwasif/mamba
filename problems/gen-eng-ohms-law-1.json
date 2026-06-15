@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-ohms-law-1",
+  "title": "Ohm's Law",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Easy",
+  "prompt": "A current of 2 A flows through a 23 Ω resistor. Find the voltage (V).",
+  "expected": "46",
+  "answer_kind": "Scalar",
+  "hint": "V = I·R",
+  "recap": "Ohm's law relates voltage, current, and resistance: V = I·R. It is the workhorse of circuit analysis — volts equal amps times ohms."
+}

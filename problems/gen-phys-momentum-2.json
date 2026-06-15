@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-momentum-2",
+  "title": "Linear Momentum",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "Find the momentum (kg·m/s) of a 20 kg mass moving at 15 m/s.",
+  "expected": "300",
+  "answer_kind": "Scalar",
+  "hint": "p = m·v",
+  "recap": "Linear momentum p = m·v measures 'quantity of motion'. It is conserved in collisions, which is why it matters more than speed alone."
+}

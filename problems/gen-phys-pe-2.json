@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-pe-2",
+  "title": "Gravitational Potential Energy",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "Find the gravitational potential energy (J) of a 14 kg mass raised 5 m. Take g = 10 m/s².",
+  "expected": "700",
+  "answer_kind": "Scalar",
+  "hint": "PE = m·g·h",
+  "recap": "Gravitational potential energy near the surface is PE = m·g·h — the work to lift a mass m through a height h against gravity g (≈ 9.8, often 10, m/s²)."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-wave-speed-0",
+  "title": "Wave Speed",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Easy",
+  "prompt": "A wave of frequency 33 Hz has wavelength 20 m. Find its speed (m/s).",
+  "expected": "660",
+  "answer_kind": "Scalar",
+  "hint": "v = f·λ",
+  "recap": "A wave's speed is frequency times wavelength: v = f·λ. It ties how often crests pass (f) to how far apart they are (λ)."
+}

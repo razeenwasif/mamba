@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-parallel-r-0",
+  "title": "Resistors in Parallel",
+  "domain": "Tensor",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "Find the equivalent resistance (Ω) of 11 Ω and 6 Ω in parallel, as an exact fraction.",
+  "expected": "66/17",
+  "answer_kind": "Scalar",
+  "hint": "1/R = 1/R1 + 1/R2, so R = R1·R2/(R1 + R2)",
+  "recap": "Resistors in parallel share the same voltage; conductances add, so 1/R = 1/R₁ + 1/R₂, giving R = R₁·R₂/(R₁ + R₂) for two. The total is below the smallest one."
+}

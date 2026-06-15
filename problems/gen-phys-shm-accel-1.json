@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-shm-accel-1",
+  "title": "SHM Acceleration",
+  "domain": "Symbolic",
+  "topic": "Physics",
+  "difficulty": "Hard",
+  "prompt": "A particle in simple harmonic motion has displacement x(t) = 3*cos(2*t).\n\nFind its acceleration a(t) = d²x/dt².",
+  "expected": "-12*cos(2*t)",
+  "answer_kind": "Scalar",
+  "hint": "differentiate twice; note a(t) = -ω²·x(t)",
+  "recap": "Simple harmonic motion is x(t) = A·cos(ω t): a restoring force proportional to displacement. Differentiate once for velocity v = −A·ω·sin(ω t), again for acceleration a = −A·ω²·cos(ω t) = −ω²·x — always toward equilibrium, with magnitude set by ω².\n\nExample — x(t) = 3·cos(2t): v = −6·sin(2t), a = −12·cos(2t) (= −4·x, since ω² = 4).\n\nThe defining relation a = −ω²·x is what makes the motion sinusoidal with angular frequency ω. Reference: Kleppner & Kolenkow, An Introduction to Mechanics, ch. 11."
+}

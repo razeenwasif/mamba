@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-series-r-0",
+  "title": "Resistors in Series",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Easy",
+  "prompt": "Find the total resistance (Ω) of 40 Ω, 45 Ω, and 30 Ω in series.",
+  "expected": "115",
+  "answer_kind": "Scalar",
+  "hint": "series resistances add: R = R1 + R2 + R3",
+  "recap": "Resistors in series share the same current and their resistances add: R = R₁ + R₂ + R₃. The total always exceeds the largest one."
+}

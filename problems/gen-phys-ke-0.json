@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-ke-0",
+  "title": "Kinetic Energy",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Medium",
+  "prompt": "Find the kinetic energy (in joules) of a 6 kg mass moving at 11 m/s.",
+  "expected": "363",
+  "answer_kind": "Scalar",
+  "hint": "KE = (1/2)·m·v²",
+  "recap": "Kinetic energy is the work needed to reach a speed: KE = (1/2)·m·v². It scales with the *square* of speed, so doubling v quadruples the energy."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-cap-energy-1",
+  "title": "Capacitor Energy",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "Find the energy (J) stored in a 16 F capacitor charged to 6 V.",
+  "expected": "288",
+  "answer_kind": "Scalar",
+  "hint": "E = (1/2)·C·V²",
+  "recap": "A charged capacitor stores energy E = (1/2)·C·V², analogous to (1/2)·k·x² for a spring. It grows with the square of voltage."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-stress-2",
+  "title": "Axial Stress",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "An axial force of 150 N acts over a cross-section of 10 mm². Find the stress (in MPa, i.e. N/mm²).",
+  "expected": "15",
+  "answer_kind": "Scalar",
+  "hint": "σ = F/A",
+  "recap": "Axial stress is force per unit area: σ = F/A. In N/mm² it reads directly as MPa; it normalizes the load by cross-section, so it (not raw force) drives deformation."
+}

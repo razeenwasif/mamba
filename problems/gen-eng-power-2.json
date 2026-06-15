@@ -1,0 +1,12 @@
+{
+  "id": "gen-eng-power-2",
+  "title": "Resistive Power",
+  "domain": "Exact",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "A current of 2 A flows through a 2 Ω resistor. Find the power dissipated (W).",
+  "expected": "8",
+  "answer_kind": "Scalar",
+  "hint": "P = I²·R",
+  "recap": "Power dissipated in a resistor is P = I²·R (equivalently V²/R or V·I). It grows with the *square* of current — why thick wires carry heavy loads."
+}

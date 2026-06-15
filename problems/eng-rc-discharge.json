@@ -1,0 +1,12 @@
+{
+  "id": "eng-rc-discharge",
+  "title": "RC Discharge Rate",
+  "domain": "Symbolic",
+  "topic": "Engineering Math",
+  "difficulty": "Medium",
+  "prompt": "A discharging capacitor's voltage is V(t) = 10*exp(-t/2). Find the rate of change dV/dt.",
+  "expected": "-5*exp(-t/2)",
+  "answer_kind": "Scalar",
+  "hint": "d/dt[a·exp(k·t)] = a·k·exp(k·t), here k = −1/2",
+  "recap": "A discharging RC capacitor follows V(t) = V₀·exp(−t/τ). Differentiating, dV/dt = −(V₀/τ)·exp(−t/τ): the rate is steepest at the start and decays with the voltage."
+}

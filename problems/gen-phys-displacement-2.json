@@ -1,0 +1,12 @@
+{
+  "id": "gen-phys-displacement-2",
+  "title": "Displacement under Acceleration",
+  "domain": "Exact",
+  "topic": "Physics",
+  "difficulty": "Medium",
+  "prompt": "A body starts at 12 m/s and accelerates at 8 m/s² for 1 s. Find the displacement (m).",
+  "expected": "16",
+  "answer_kind": "Scalar",
+  "hint": "s = u·t + (1/2)·a·t²",
+  "recap": "With constant acceleration the distance covered is s = u·t + (1/2)·a·t²: the steady part u·t plus the area of the velocity ramp. A SUVAT staple."
+}

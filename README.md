@@ -25,9 +25,11 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
 
 ## Highlights
 
-- **124+ problems** across Algebra, Calculus, Trigonometry, Linear Algebra,
-  Number Theory, **Machine Learning, Convex Optimization, Deep Learning,
-  Probability, and Statistics** — all verified end-to-end by `mamba --verify`.
+- **260+ problems** across Algebra, Calculus, Trigonometry, Linear Algebra,
+  Number Theory, Machine Learning, Convex Optimization, Deep Learning,
+  Probability, Statistics, Graph Theory, Complex Numbers, ODEs, Signals & DSP,
+  and now **Physics and Engineering Math** — all verified end-to-end by
+  `mamba --verify`.
 - **Mathematical verification, not string matching**: multivariate algebraic
   equivalence (incl. `exp`/`ln`/trig), exact `BigRational` matrices, and
   arbitrary-precision number theory with Miller–Rabin primality.

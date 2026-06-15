@@ -1116,6 +1116,347 @@ def t_exp_growth(rng: random.Random, i: int) -> dict:
     }
 
 
+# ---- Physics (mechanics, energy, waves) -----------------------------------
+
+
+def t_newton_second_law(rng: random.Random, i: int) -> dict:
+    m = rng.randint(2, 20)
+    a = rng.randint(1, 12)
+    return {
+        "id": f"gen-phys-newton-2nd-{i}",
+        "title": "Newton's Second Law",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Easy",
+        "prompt": f"A net force accelerates a {m} kg mass at {a} m/s². Find the force (in newtons).",
+        "expected": str(m * a),
+        "answer_kind": "Scalar",
+        "hint": "F = m·a",
+    }
+
+
+def t_kinematics_velocity(rng: random.Random, i: int) -> dict:
+    u = rng.randint(0, 20)
+    a = rng.randint(1, 10)
+    t = rng.randint(1, 10)
+    return {
+        "id": f"gen-phys-velocity-{i}",
+        "title": "Final Velocity",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Easy",
+        "prompt": (
+            f"A body starts at {u} m/s and accelerates uniformly at {a} m/s² for {t} s. "
+            "Find its final velocity (m/s)."
+        ),
+        "expected": str(u + a * t),
+        "answer_kind": "Scalar",
+        "hint": "v = u + a·t",
+    }
+
+
+def t_kinematics_displacement(rng: random.Random, i: int) -> dict:
+    u = rng.randint(0, 15)
+    a = 2 * rng.randint(1, 6)  # even, so (1/2)·a·t² is an integer
+    t = rng.randint(1, 8)
+    s = u * t + (a * t * t) // 2
+    return {
+        "id": f"gen-phys-displacement-{i}",
+        "title": "Displacement under Acceleration",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A body starts at {u} m/s and accelerates at {a} m/s² for {t} s. "
+            "Find the displacement (m)."
+        ),
+        "expected": str(s),
+        "answer_kind": "Scalar",
+        "hint": "s = u·t + (1/2)·a·t²",
+    }
+
+
+def t_kinetic_energy(rng: random.Random, i: int) -> dict:
+    m = 2 * rng.randint(1, 10)  # even mass → (1/2)·m·v² is an integer
+    v = rng.randint(1, 12)
+    return {
+        "id": f"gen-phys-ke-{i}",
+        "title": "Kinetic Energy",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Medium",
+        "prompt": f"Find the kinetic energy (in joules) of a {m} kg mass moving at {v} m/s.",
+        "expected": str((m * v * v) // 2),
+        "answer_kind": "Scalar",
+        "hint": "KE = (1/2)·m·v²",
+    }
+
+
+def t_gravitational_pe(rng: random.Random, i: int) -> dict:
+    m = rng.randint(1, 20)
+    h = rng.randint(1, 20)
+    g = 10
+    return {
+        "id": f"gen-phys-pe-{i}",
+        "title": "Gravitational Potential Energy",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Easy",
+        "prompt": (
+            f"Find the gravitational potential energy (J) of a {m} kg mass raised {h} m. "
+            "Take g = 10 m/s²."
+        ),
+        "expected": str(m * g * h),
+        "answer_kind": "Scalar",
+        "hint": "PE = m·g·h",
+    }
+
+
+def t_wave_speed(rng: random.Random, i: int) -> dict:
+    f = rng.randint(2, 50)
+    lam = rng.randint(1, 20)
+    return {
+        "id": f"gen-phys-wave-speed-{i}",
+        "title": "Wave Speed",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Easy",
+        "prompt": f"A wave of frequency {f} Hz has wavelength {lam} m. Find its speed (m/s).",
+        "expected": str(f * lam),
+        "answer_kind": "Scalar",
+        "hint": "v = f·λ",
+    }
+
+
+def t_momentum(rng: random.Random, i: int) -> dict:
+    m = rng.randint(1, 30)
+    v = rng.randint(1, 25)
+    return {
+        "id": f"gen-phys-momentum-{i}",
+        "title": "Linear Momentum",
+        "domain": "Exact",
+        "topic": "Physics",
+        "difficulty": "Easy",
+        "prompt": f"Find the momentum (kg·m/s) of a {m} kg mass moving at {v} m/s.",
+        "expected": str(m * v),
+        "answer_kind": "Scalar",
+        "hint": "p = m·v",
+    }
+
+
+def t_projectile_velocity(rng: random.Random, i: int) -> dict:
+    u = rng.randint(5, 40)
+    return {
+        "id": f"gen-phys-projectile-{i}",
+        "title": "Velocity from Position",
+        "domain": "Symbolic",
+        "topic": "Physics",
+        "difficulty": "Medium",
+        "prompt": (
+            f"A ball thrown upward has height s(t) = {u}*t - 5*t^2 (metres, g = 10 m/s²).\n\n"
+            "Find its velocity v(t) = ds/dt."
+        ),
+        "expected": f"{u} - 10*t",
+        "answer_kind": "Scalar",
+        "hint": "differentiate term by term: d/dt[a*t] = a, d/dt[t^2] = 2*t",
+    }
+
+
+def t_shm_acceleration(rng: random.Random, i: int) -> dict:
+    a = rng.randint(2, 6)
+    w = rng.randint(2, 5)
+    return {
+        "id": f"gen-phys-shm-accel-{i}",
+        "title": "SHM Acceleration",
+        "domain": "Symbolic",
+        "topic": "Physics",
+        "difficulty": "Hard",
+        "prompt": (
+            f"A particle in simple harmonic motion has displacement x(t) = {a}*cos({w}*t).\n\n"
+            "Find its acceleration a(t) = d²x/dt²."
+        ),
+        "expected": f"-{a * w * w}*cos({w}*t)",
+        "answer_kind": "Scalar",
+        "hint": "differentiate twice; note a(t) = -ω²·x(t)",
+    }
+
+
+# ---- Engineering Math (circuits, statics, materials) ----------------------
+
+
+def t_ohms_law(rng: random.Random, i: int) -> dict:
+    cur = rng.randint(1, 15)
+    res = rng.randint(1, 30)
+    return {
+        "id": f"gen-eng-ohms-law-{i}",
+        "title": "Ohm's Law",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Easy",
+        "prompt": f"A current of {cur} A flows through a {res} Ω resistor. Find the voltage (V).",
+        "expected": str(cur * res),
+        "answer_kind": "Scalar",
+        "hint": "V = I·R",
+    }
+
+
+def t_power_dissipated(rng: random.Random, i: int) -> dict:
+    cur = rng.randint(1, 8)
+    res = rng.randint(1, 20)
+    return {
+        "id": f"gen-eng-power-{i}",
+        "title": "Resistive Power",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Medium",
+        "prompt": f"A current of {cur} A flows through a {res} Ω resistor. Find the power dissipated (W).",
+        "expected": str(cur * cur * res),
+        "answer_kind": "Scalar",
+        "hint": "P = I²·R",
+    }
+
+
+def t_resistors_series(rng: random.Random, i: int) -> dict:
+    rs = [rng.randint(1, 50) for _ in range(3)]
+    return {
+        "id": f"gen-eng-series-r-{i}",
+        "title": "Resistors in Series",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Easy",
+        "prompt": f"Find the total resistance (Ω) of {rs[0]} Ω, {rs[1]} Ω, and {rs[2]} Ω in series.",
+        "expected": str(sum(rs)),
+        "answer_kind": "Scalar",
+        "hint": "series resistances add: R = R1 + R2 + R3",
+    }
+
+
+def t_resistors_parallel(rng: random.Random, i: int) -> dict:
+    r1 = rng.randint(2, 12)
+    r2 = rng.randint(2, 12)
+    return {
+        "id": f"gen-eng-parallel-r-{i}",
+        "title": "Resistors in Parallel",
+        "domain": "Tensor",
+        "topic": "Engineering Math",
+        "difficulty": "Medium",
+        "prompt": (
+            f"Find the equivalent resistance (Ω) of {r1} Ω and {r2} Ω in parallel, as an exact fraction."
+        ),
+        "expected": frac(Fraction(r1 * r2, r1 + r2)),
+        "answer_kind": "Scalar",
+        "hint": "1/R = 1/R1 + 1/R2, so R = R1·R2/(R1 + R2)",
+    }
+
+
+def t_rc_time_constant(rng: random.Random, i: int) -> dict:
+    res = rng.randint(1, 20)
+    cap = rng.randint(1, 20)
+    return {
+        "id": f"gen-eng-rc-tau-{i}",
+        "title": "RC Time Constant",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Easy",
+        "prompt": (
+            f"An RC circuit has R = {res} kΩ and C = {cap} µF. Find the time constant (in ms)."
+        ),
+        "expected": str(res * cap),
+        "answer_kind": "Scalar",
+        "hint": "τ = R·C  (kΩ × µF gives ms)",
+    }
+
+
+def t_capacitor_energy(rng: random.Random, i: int) -> dict:
+    cap = 2 * rng.randint(1, 10)  # even, so (1/2)·C·V² is an integer
+    v = rng.randint(1, 12)
+    return {
+        "id": f"gen-eng-cap-energy-{i}",
+        "title": "Capacitor Energy",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Medium",
+        "prompt": f"Find the energy (J) stored in a {cap} F capacitor charged to {v} V.",
+        "expected": str((cap * v * v) // 2),
+        "answer_kind": "Scalar",
+        "hint": "E = (1/2)·C·V²",
+    }
+
+
+def t_torque(rng: random.Random, i: int) -> dict:
+    force = rng.randint(2, 50)
+    d = rng.randint(1, 20)
+    return {
+        "id": f"gen-eng-torque-{i}",
+        "title": "Moment of a Force",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Easy",
+        "prompt": (
+            f"A {force} N force acts perpendicular to a lever {d} m from the pivot. "
+            "Find the moment (N·m)."
+        ),
+        "expected": str(force * d),
+        "answer_kind": "Scalar",
+        "hint": "moment τ = F·d",
+    }
+
+
+def t_axial_stress(rng: random.Random, i: int) -> dict:
+    area = rng.randint(2, 10)
+    sigma = rng.randint(2, 20)
+    force = sigma * area  # chosen so σ = F/A is an integer
+    return {
+        "id": f"gen-eng-stress-{i}",
+        "title": "Axial Stress",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Medium",
+        "prompt": (
+            f"An axial force of {force} N acts over a cross-section of {area} mm². "
+            "Find the stress (in MPa, i.e. N/mm²)."
+        ),
+        "expected": str(sigma),
+        "answer_kind": "Scalar",
+        "hint": "σ = F/A",
+    }
+
+
+def t_hookes_law(rng: random.Random, i: int) -> dict:
+    k = rng.randint(2, 50)
+    x = rng.randint(1, 12)
+    return {
+        "id": f"gen-eng-hooke-{i}",
+        "title": "Hooke's Law",
+        "domain": "Exact",
+        "topic": "Engineering Math",
+        "difficulty": "Easy",
+        "prompt": f"A spring of stiffness {k} N/m is stretched {x} m. Find the restoring force (N).",
+        "expected": str(k * x),
+        "answer_kind": "Scalar",
+        "hint": "F = k·x",
+    }
+
+
+def t_impedance_series_rl(rng: random.Random, i: int) -> dict:
+    res = rng.randint(1, 20)
+    x = rng.randint(1, 20)  # inductive reactance X_L = ω·L
+    return {
+        "id": f"gen-eng-impedance-rl-{i}",
+        "title": "Series RL Impedance",
+        "domain": "Tensor",
+        "topic": "Engineering Math",
+        "difficulty": "Hard",
+        "prompt": (
+            f"A {res} Ω resistor is in series with an inductor of reactance X_L = {x} Ω.\n\n"
+            "Write the impedance Z = R + jX_L as `real imag`."
+        ),
+        "expected": f"{res} {x}",
+        "answer_kind": "Scalar",
+        "hint": "series impedances add: Z = R + jX_L → enter `R X_L`",
+    }
+
+
 TEMPLATES = [
     t_expand_binomial,
     t_power_derivative,
@@ -1170,6 +1511,27 @@ TEMPLATES = [
     t_ode_char_roots,
     t_ode_equilibrium,
     t_exp_growth,
+    # Physics
+    t_newton_second_law,
+    t_kinematics_velocity,
+    t_kinematics_displacement,
+    t_kinetic_energy,
+    t_gravitational_pe,
+    t_wave_speed,
+    t_momentum,
+    t_projectile_velocity,
+    t_shm_acceleration,
+    # Engineering Math
+    t_ohms_law,
+    t_power_dissipated,
+    t_resistors_series,
+    t_resistors_parallel,
+    t_rc_time_constant,
+    t_capacitor_energy,
+    t_torque,
+    t_axial_stress,
+    t_hookes_law,
+    t_impedance_series_rl,
 ]
 
 
@@ -1304,6 +1666,30 @@ FIXED = [
     _p("ode-exp-decay", "Exponential Decay", "Symbolic", "ODEs", "Easy",
        "Solve y' = -3*y with y(0) = 5. Give y(t).",
        "5*exp(-3*t)", "y(t) = y(0)·e^(k·t) with k = −3"),
+    # ---- Physics ----
+    _p("phys-half-life", "Counting Half-Lives", "Exact", "Physics", "Easy",
+       "A radioactive sample decays to 1/8 of its initial amount. How many half-lives have elapsed?",
+       "3", "after n half-lives a fraction (1/2)^n remains; (1/2)^3 = 1/8"),
+    _p("phys-thin-lens", "Thin-Lens Focal Length", "Tensor", "Physics", "Medium",
+       "An object 2 m from a thin lens forms an image 3 m away. Using 1/f = 1/u + 1/v, "
+       "find the focal length f (m) as an exact fraction.",
+       "6/5", "1/f = 1/2 + 1/3 = 5/6, so f = 6/5"),
+    _p("phys-shm-velocity", "SHM Velocity", "Symbolic", "Physics", "Hard",
+       "A particle in simple harmonic motion has displacement x(t) = 3*sin(2*t). "
+       "Find its velocity v(t) = dx/dt.",
+       "6*cos(2*t)", "chain rule: d/dt[sin(ω t)] = ω·cos(ω t)"),
+    # ---- Engineering Math ----
+    _p("eng-decibel-power", "Power Ratio in Decibels", "Exact", "Engineering Math", "Medium",
+       "An amplifier raises a signal's power by a factor of 1000. Express the gain in decibels "
+       "using 10·log₁₀(ratio).",
+       "30", "log₁₀(1000) = 3, so 10·3 = 30 dB"),
+    _p("eng-voltage-divider", "Voltage Divider", "Tensor", "Engineering Math", "Medium",
+       "A 5 V source drives R1 = 2 Ω and R2 = 2 Ω in series. Find the output voltage across R2, "
+       "V_out = V_in·R2/(R1 + R2), as an exact fraction.",
+       "5/2", "V_out = 5·2/(2 + 2) = 10/4 = 5/2"),
+    _p("eng-rc-discharge", "RC Discharge Rate", "Symbolic", "Engineering Math", "Medium",
+       "A discharging capacitor's voltage is V(t) = 10*exp(-t/2). Find the rate of change dV/dt.",
+       "-5*exp(-t/2)", "d/dt[a·exp(k·t)] = a·k·exp(k·t), here k = −1/2"),
 ]
 
 
@@ -1476,6 +1862,58 @@ RECAPS = {
     # Curated graph problem
     "graph-cycle-coloring": "The chromatic number is the fewest colours so adjacent vertices differ. A cycle Cₙ "
         "needs 2 colours if n is even and 3 if odd.",
+    # Physics
+    "phys-newton-2nd": "Newton's second law: the net force equals mass times acceleration, F = m·a. Force is in "
+        "newtons (N) when m is in kg and a in m/s².",
+    "phys-velocity": "For constant acceleration, velocity grows linearly: v = u + a·t — start speed plus "
+        "acceleration times elapsed time. One of the SUVAT equations.",
+    "phys-displacement": "With constant acceleration the distance covered is s = u·t + (1/2)·a·t²: the steady part "
+        "u·t plus the area of the velocity ramp. A SUVAT staple.",
+    "phys-ke": "Kinetic energy is the work needed to reach a speed: KE = (1/2)·m·v². It scales with the *square* of "
+        "speed, so doubling v quadruples the energy.",
+    "phys-pe": "Gravitational potential energy near the surface is PE = m·g·h — the work to lift a mass m through a "
+        "height h against gravity g (≈ 9.8, often 10, m/s²).",
+    "phys-wave-speed": "A wave's speed is frequency times wavelength: v = f·λ. It ties how often crests pass (f) to "
+        "how far apart they are (λ).",
+    "phys-momentum": "Linear momentum p = m·v measures 'quantity of motion'. It is conserved in collisions, which is "
+        "why it matters more than speed alone.",
+    "phys-projectile": "Velocity is the time-derivative of position: v(t) = ds/dt. Differentiate term by term — "
+        "d/dt[a·t] = a and d/dt[t²] = 2t — so s = u·t − 5t² gives v = u − 10t.",
+    "phys-shm-accel": "In simple harmonic motion x(t) = A·cos(ω t), differentiating twice gives acceleration "
+        "a = −A·ω²·cos(ω t) = −ω²·x — always pointing back toward equilibrium.",
+    "phys-half-life": "Each half-life halves the amount, so after n half-lives a fraction (1/2)ⁿ remains. Invert it: "
+        "1/8 = (1/2)³ means 3 half-lives.",
+    "phys-thin-lens": "The thin-lens equation 1/f = 1/u + 1/v links object distance u, image distance v, and focal "
+        "length f. Add the reciprocals, then invert for f.",
+    "phys-shm-velocity": "Velocity is the derivative of displacement. For x = A·sin(ω t), the chain rule gives "
+        "v = A·ω·cos(ω t): the speed peaks as the particle crosses equilibrium.",
+    # Engineering Math
+    "eng-ohms-law": "Ohm's law relates voltage, current, and resistance: V = I·R. It is the workhorse of circuit "
+        "analysis — volts equal amps times ohms.",
+    "eng-power": "Power dissipated in a resistor is P = I²·R (equivalently V²/R or V·I). It grows with the *square* "
+        "of current — why thick wires carry heavy loads.",
+    "eng-series-r": "Resistors in series share the same current and their resistances add: R = R₁ + R₂ + R₃. The "
+        "total always exceeds the largest one.",
+    "eng-parallel-r": "Resistors in parallel share the same voltage; conductances add, so 1/R = 1/R₁ + 1/R₂, giving "
+        "R = R₁·R₂/(R₁ + R₂) for two. The total is below the smallest one.",
+    "eng-rc-tau": "An RC circuit charges/discharges with time constant τ = R·C — the time to reach ~63%. Handily, "
+        "kΩ × µF gives milliseconds.",
+    "eng-cap-energy": "A charged capacitor stores energy E = (1/2)·C·V², analogous to (1/2)·k·x² for a spring. It "
+        "grows with the square of voltage.",
+    "eng-torque": "The moment (torque) of a perpendicular force about a pivot is τ = F·d — force times lever arm. "
+        "Longer levers multiply turning effect.",
+    "eng-stress": "Axial stress is force per unit area: σ = F/A. In N/mm² it reads directly as MPa; it normalizes "
+        "the load by cross-section, so it (not raw force) drives deformation.",
+    "eng-hooke": "Hooke's law: a spring's restoring force is proportional to its extension, F = k·x, with stiffness "
+        "k. Valid in the elastic (small-x) regime.",
+    "eng-impedance-rl": "In AC circuits, impedance generalizes resistance to complex numbers: a series R and "
+        "inductor give Z = R + jX_L, with reactance X_L = ω·L. Magnitude √(R² + X_L²) sets the current.",
+    "eng-decibel-power": "Decibels express ratios logarithmically: gain = 10·log₁₀(P_out/P_in) for power. A ×1000 "
+        "ratio is 30 dB; every ×10 adds 10 dB.",
+    "eng-voltage-divider": "Two series resistors split the source voltage in proportion: V_out = V_in·R₂/(R₁ + R₂). "
+        "The larger resistor drops the larger share.",
+    "eng-rc-discharge": "A discharging RC capacitor follows V(t) = V₀·exp(−t/τ). Differentiating, dV/dt = "
+        "−(V₀/τ)·exp(−t/τ): the rate is steepest at the start and decays with the voltage.",
 }
 
 # Aliases: fixed problems that share a concept with a template recap.
@@ -1541,6 +1979,25 @@ RECAPS_HARD = {
         "average of the squares minus the square of the average. Always ≥ 0; √Var (the standard deviation) restores "
         "the original units.\n\nExample — [1, 2, 3] equal-weight: μ = 2, E[X²] = 14/3, Var = 14/3 − 4 = 2/3.\n\nFor "
         "a sample, dividing by n−1 (Bessel) is unbiased. Reference: Wasserman, All of Statistics, §3.",
+    "phys-shm-accel": "Simple harmonic motion is x(t) = A·cos(ω t): a restoring force proportional to displacement. "
+        "Differentiate once for velocity v = −A·ω·sin(ω t), again for acceleration a = −A·ω²·cos(ω t) = −ω²·x — "
+        "always toward equilibrium, with magnitude set by ω².\n\n"
+        "Example — x(t) = 3·cos(2t): v = −6·sin(2t), a = −12·cos(2t) (= −4·x, since ω² = 4).\n\n"
+        "The defining relation a = −ω²·x is what makes the motion sinusoidal with angular frequency ω. "
+        "Reference: Kleppner & Kolenkow, An Introduction to Mechanics, ch. 11.",
+    "phys-shm-velocity": "Velocity is the time-derivative of displacement. For SHM x(t) = A·sin(ω t), the chain "
+        "rule gives v(t) = A·ω·cos(ω t): the speed is greatest (A·ω) as the particle passes through equilibrium "
+        "and zero at the turning points.\n\n"
+        "Example — x(t) = 3·sin(2t): v(t) = 6·cos(2t); peak speed 6 at t = 0.\n\n"
+        "Energy check: max KE = (1/2)m(Aω)² equals the max PE = (1/2)kA² since k = mω². "
+        "Reference: Kleppner & Kolenkow, An Introduction to Mechanics, ch. 11.",
+    "eng-impedance-rl": "In AC steady state, impedance Z = R + jX generalizes resistance to complex numbers. A "
+        "resistor contributes R (real); an inductor contributes a positive reactance X_L = ω·L (imaginary), a "
+        "capacitor a negative one X_C = −1/(ω·C). In series they add.\n\n"
+        "Example — R = 3 Ω in series with X_L = 4 Ω: Z = 3 + j4, magnitude |Z| = √(3² + 4²) = 5 Ω and phase "
+        "arctan(4/3) ≈ 53°, so the current lags the voltage.\n\n"
+        "The magnitude sets the current (I = V/|Z|); the phase sets the power factor. Reference: Irwin & Nelms, "
+        "Basic Engineering Circuit Analysis, ch. 8.",
 }
 
 
