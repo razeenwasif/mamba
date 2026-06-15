@@ -10,7 +10,8 @@ A one-page reference for keybindings, the CLI, and configuration.
 | `Ctrl-Q` / `Ctrl-C` | Quit |
 | `Ctrl-A` | Toggle the AI tutor panel |
 | `Ctrl-E` | Ask the tutor to explain the last wrong answer |
-| `Ctrl-G` | Ask the tutor to generate a fresh, similar practice problem |
+| `Ctrl-G` | Generate a fresh, similar problem and engine-cross-verify it |
+| `Ctrl-S` | Save the active generated problem into the bank |
 | `Ctrl-P` | Toggle the progress / stats overlay |
 | `/` | Open the fuzzy problem finder |
 | `t` | Cycle the topic filter (`all → topic → … → all`) |
@@ -67,13 +68,17 @@ editing a problem re-indexes automatically.
 | *(type)* | Compose a message |
 | `Enter` | Send |
 | `Ctrl-E` | Explain the last wrong answer |
-| `Ctrl-G` | Generate a similar practice problem to try |
 | `Esc` / `Tab` | Leave the input (panel stays open) |
 | `Ctrl-A` | Hide the panel |
 
-A `Ctrl-G` problem is a *tutor exercise* — the model poses it and grades it when
-you ask. Mamba's own engine still verifies the bank problems, so this never
-introduces an unchecked answer.
+### Verified problem generation (`Ctrl-G`)
+`Ctrl-G` asks the local model to **author** a new problem like the open one, then
+Mamba's own engine **cross-verifies** it: the answer must parse for its domain,
+and an *independent* self-solve must match it through the engine (algebraic
+equivalence, not string match). The result opens for you to attempt, badged
+`✓ cross-verified` or `⚠ unverified` (the model's two attempts disagreed —
+practice it, but don't trust the answer). `Ctrl-S` saves it into the bank;
+`Ctrl-G` again regenerates.
 
 ## Answer syntax cheatsheet
 

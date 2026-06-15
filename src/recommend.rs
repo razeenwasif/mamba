@@ -172,21 +172,22 @@ mod tests {
         NaiveDate::from_ymd_opt(2026, 6, d).unwrap()
     }
 
-    /// A scratch vault unique to this test process.
-    fn scratch() -> std::path::PathBuf {
-        let v = std::env::temp_dir().join(format!("mamba-recommend-{}", std::process::id()));
+    /// A scratch vault unique to this test (the `tag` keeps parallel tests from
+    /// stomping each other's directory).
+    fn scratch(tag: &str) -> std::path::PathBuf {
+        let v = std::env::temp_dir().join(format!("mamba-recommend-{}-{tag}", std::process::id()));
         let _ = std::fs::remove_dir_all(&v);
         v
     }
 
     #[test]
     fn empty_bank_has_no_recommendation() {
-        assert!(next(&[], &scratch(), day(15)).is_none());
+        assert!(next(&[], &scratch("empty"), day(15)).is_none());
     }
 
     #[test]
     fn an_overdue_review_beats_a_new_card() {
-        let vault = scratch();
+        let vault = scratch("overdue");
         let reviewed = problem("reviewed", "Algebra", Difficulty::Easy);
         let fresh = problem("fresh", "Algebra", Difficulty::Easy);
         // Solved once on the 1st → interval 1 day, so by the 15th it's 13d overdue.
@@ -212,7 +213,7 @@ mod tests {
 
     #[test]
     fn among_new_cards_the_weakest_topic_wins() {
-        let vault = scratch();
+        let vault = scratch("weakest");
         // Algebra: one of two solved (50% mastered). Calculus: zero of one (0%).
         let alg_done = problem("alg-done", "Algebra", Difficulty::Easy);
         let alg_new = problem("alg-new", "Algebra", Difficulty::Easy);
@@ -240,7 +241,7 @@ mod tests {
 
     #[test]
     fn nothing_due_suggests_getting_ahead() {
-        let vault = scratch();
+        let vault = scratch("ahead");
         let p = problem("solved", "Algebra", Difficulty::Easy);
         // Solved today → not due (interval 1 day), so the only suggestion is to
         // get ahead.

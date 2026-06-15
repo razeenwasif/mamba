@@ -390,12 +390,17 @@ fn run(terminal: &mut ratatui::DefaultTerminal, app: &mut App) -> anyhow::Result
         app.poll_verify();
         app.poll_agent();
         app.poll_search();
+        app.poll_generate();
 
         terminal.draw(|frame| ui::draw(frame, app))?;
 
-        // Poll faster while a worker is in flight (verification, tutor stream, or
-        // a semantic search) so output appears promptly; idle otherwise.
-        let timeout = if app.is_verifying() || app.agent_streaming || app.search_pending() {
+        // Poll faster while a worker is in flight (verification, tutor stream, a
+        // semantic search, or a generation run) so output appears promptly.
+        let timeout = if app.is_verifying()
+            || app.agent_streaming
+            || app.search_pending()
+            || app.gen_pending()
+        {
             POLL_BUSY
         } else {
             TICK_RATE

@@ -19,6 +19,7 @@ use ratatui::widgets::ListState;
 
 use crate::agent::{self, AgentEvent, ChatMessage};
 use crate::engine::{self, Verdict};
+use crate::generate;
 use crate::recommend;
 use crate::review;
 use crate::semantic;
@@ -222,6 +223,18 @@ pub struct App {
     /// A transient status line for the finder (indexing progress, an error, or a
     /// "press ↵ to search" hint in semantic mode).
     pub search_status: Option<String>,
+    /// The AI-generated problem currently being attempted, if any (*generated
+    /// mode*). It lives outside the bank until saved; while `Some` it is what
+    /// [`open_problem_ref`](App::open_problem_ref) returns.
+    pub generated: Option<Problem>,
+    /// Whether the active generated problem was cross-verified by the engine.
+    pub generated_verified: bool,
+    /// The one-line verdict/explanation for the active generated problem.
+    pub generated_note: Option<String>,
+    /// Receiver for an in-flight generation run, if any.
+    gen_rx: Option<Receiver<generate::GenEvent>>,
+    /// A transient status line for generation progress / errors.
+    pub gen_status: Option<String>,
     /// When `true`, the main loop tears down the terminal and exits.
     pub should_quit: bool,
 }
@@ -275,6 +288,11 @@ impl App {
             search_rx: None,
             semantic_done_query: None,
             search_status: None,
+            generated: None,
+            generated_verified: false,
+            generated_note: None,
+            gen_rx: None,
+            gen_status: None,
             should_quit: false,
         };
         if let Some(first) = app
@@ -311,7 +329,13 @@ impl App {
     }
 
     /// The problem currently open for attempting (what verifies and exports).
+    /// In *generated mode* this is the AI-authored problem held in
+    /// [`generated`](App::generated), which lives outside the bank; otherwise
+    /// it's the bank problem at [`open_problem`](App::open_problem).
     pub fn open_problem_ref(&self) -> Option<&Problem> {
+        if let Some(p) = &self.generated {
+            return Some(p);
+        }
         self.problems.get(self.open_problem?)
     }
 
@@ -336,9 +360,15 @@ impl App {
             self.ask_why_wrong();
             return;
         }
-        // Ctrl-G asks the tutor to generate a fresh, similar practice problem.
+        // Ctrl-G generates a fresh, similar problem and cross-verifies it with
+        // the engine before opening it to attempt.
         if key.code == KeyCode::Char('g') && ctrl {
-            self.generate_similar();
+            self.generate_verified();
+            return;
+        }
+        // Ctrl-S saves the active generated problem into the bank.
+        if key.code == KeyCode::Char('s') && ctrl {
+            self.save_generated();
             return;
         }
         // The tutor input owns the keyboard while it has focus (so `/`, `t`,
@@ -884,6 +914,9 @@ impl App {
     /// works from any source — the navigator cursor, the fuzzy finder, or the
     /// `n` recommendation — not just the current selection.
     fn open_index(&mut self, idx: usize) {
+        // Opening a bank problem leaves generated mode.
+        self.generated = None;
+        self.generated_note = None;
         self.open_problem = Some(idx);
         self.input.clear();
         self.verdict = None;
@@ -1162,26 +1195,139 @@ impl App {
         self.send_message(prompt);
     }
 
-    /// Asks the tutor to pose a fresh practice problem in the same vein as the
-    /// open one — wired to `Ctrl-G`. The model already has the problem in its
-    /// context, so the request is brief. Shows and focuses the panel; a no-op
-    /// when no problem is open or a reply is already streaming.
-    ///
-    /// The generated problem is a *tutor exercise*, not a bank problem: the
-    /// model poses it and (when asked) grades it, so Mamba's own engine-verified
-    /// problems stay the ground truth and this never adds an unverified answer.
-    fn generate_similar(&mut self) {
-        if self.agent_streaming || self.open_problem_ref().is_none() {
+    /// Generates a fresh problem in the vein of the open one and cross-verifies
+    /// it with the engine — wired to `Ctrl-G`. Spawns the off-thread pipeline
+    /// (see [`crate::generate`]); [`poll_generate`](App::poll_generate) opens the
+    /// result. A no-op when no problem is open or a run is already in flight.
+    fn generate_verified(&mut self) {
+        if self.gen_rx.is_some() {
             return;
         }
-        let prompt = "Generate ONE new practice problem in the same vein as the one I'm working \
-             on — same type, topic, and difficulty, but with different numbers or wording. Show \
-             me only the problem statement (no solution). I'll attempt it and then ask you to \
-             check my work."
-            .to_string();
-        self.agent_visible = true;
-        self.focus = Focus::Agent;
-        self.send_message(prompt);
+        let Some(reference) = self.open_problem_ref() else {
+            return;
+        };
+        let spec = generate::Spec {
+            topic: reference.topic.clone(),
+            domain: reference.domain,
+            difficulty: reference.difficulty,
+            reference_prompt: reference.prompt.clone(),
+            reference_expected: reference.expected.clone(),
+        };
+        self.gen_status = Some("✨ Generating a problem…".into());
+        self.gen_rx = Some(generate::generate(
+            self.agent_url.clone(),
+            self.agent_model.clone(),
+            spec,
+        ));
+    }
+
+    /// `true` while a generation run is in flight (drives the faster poll).
+    pub fn gen_pending(&self) -> bool {
+        self.gen_rx.is_some()
+    }
+
+    /// Drains a finished generation run: progress lines update the status, and a
+    /// completed problem is opened in *generated mode* for the user to attempt.
+    /// Called once per main-loop tick like the other pollers.
+    pub fn poll_generate(&mut self) {
+        let Some(rx) = &self.gen_rx else {
+            return;
+        };
+        loop {
+            match rx.try_recv() {
+                Ok(generate::GenEvent::Status(s)) => self.gen_status = Some(format!("✨ {s}")),
+                Ok(generate::GenEvent::Done {
+                    problem,
+                    verified,
+                    note,
+                }) => {
+                    self.open_generated(*problem, verified, note);
+                    self.gen_rx = None;
+                    return;
+                }
+                Ok(generate::GenEvent::Error(e)) => {
+                    self.gen_status = Some(format!("⚠ {e}"));
+                    self.gen_rx = None;
+                    return;
+                }
+                Err(TryRecvError::Empty) => return, // still working — next tick
+                Err(TryRecvError::Disconnected) => {
+                    self.gen_status = Some("⚠ the generator stopped unexpectedly".into());
+                    self.gen_rx = None;
+                    return;
+                }
+            }
+        }
+    }
+
+    /// Enters generated mode: makes `problem` the active (off-bank) problem,
+    /// resetting per-problem state exactly as opening a bank problem would.
+    fn open_generated(&mut self, problem: Problem, verified: bool, note: String) {
+        // Cancel any in-flight verification and clear the per-problem slate.
+        self.verify_job = None;
+        self.open_problem = None; // generated mode: no bank index
+        self.generated = Some(problem);
+        self.generated_verified = verified;
+        self.generated_note = Some(note);
+        self.gen_status = None;
+        self.input.clear();
+        self.verdict = None;
+        self.attempts = 0;
+        self.description_scroll = 0;
+        self.console_scroll = 0;
+        self.exported_to = None;
+        self.session_summary = None;
+        self.agent_messages.clear();
+        self.agent_input.clear();
+        self.agent_rx = None;
+        self.agent_streaming = false;
+        self.opened_at = Instant::now();
+        self.refresh_open_history();
+        self.focus = Focus::Input;
+    }
+
+    /// Saves the active generated problem into the bank: writes its JSON to the
+    /// problems directory and adds it to the live, sorted bank. Wired to
+    /// `Ctrl-S` while in generated mode. A no-op otherwise.
+    fn save_generated(&mut self) {
+        let Some(mut problem) = self.generated.clone() else {
+            return;
+        };
+        // Ensure a unique id (and thus filename) against the live bank.
+        let mut id = problem.id.clone();
+        let mut n = 2;
+        while self.problems.iter().any(|p| p.id == id) {
+            id = format!("{}-{n}", problem.id);
+            n += 1;
+        }
+        problem.id = id.clone();
+
+        let dir = match crate::storage::default_problems_path() {
+            Ok(d) => d,
+            Err(e) => {
+                self.gen_status = Some(format!("⚠ couldn't resolve the bank dir: {e}"));
+                return;
+            }
+        };
+        let path = dir.join(format!("{id}.json"));
+        let json = serde_json::to_string_pretty(&problem).unwrap_or_default();
+        match std::fs::write(&path, json + "\n") {
+            Ok(()) => {
+                // Add to the live bank (re-sorted so the navigator groups it).
+                self.problems.push(problem);
+                self.problems.sort_by(|a, b| {
+                    (a.domain, &a.topic, a.difficulty, &a.title).cmp(&(
+                        b.domain,
+                        &b.topic,
+                        b.difficulty,
+                        &b.title,
+                    ))
+                });
+                self.rebuild_nav();
+                self.generated_note = Some(format!("💾 Saved to the bank as {id}.json"));
+            }
+            Err(e) => self.gen_status = Some(format!("⚠ save failed: {e}")),
+        }
     }
 
     /// Drains any streamed tutor tokens into the last assistant message. Called
@@ -1608,17 +1754,40 @@ mod tests {
     }
 
     #[test]
-    fn generate_similar_seeds_a_tutor_request() {
+    fn generate_verified_starts_a_run_for_the_open_problem() {
         let mut a = app();
-        a.agent_url = "http://127.0.0.1:1".into(); // unreachable → worker fails fast
-        a.generate_similar();
-        assert!(a.agent_visible);
-        assert_eq!(a.focus, Focus::Agent);
-        assert!(
-            a.agent_messages
-                .iter()
-                .any(|m| m.role == "user" && m.content.contains("practice problem"))
+        a.agent_url = "http://127.0.0.1:1".into(); // unreachable → the worker errors out
+        assert!(a.generated.is_none());
+        a.generate_verified();
+        // A run is in flight (the worker thread owns the request); status set.
+        assert!(a.gen_pending());
+        assert!(a.gen_status.is_some());
+    }
+
+    #[test]
+    fn generated_mode_overrides_the_open_problem_and_clears_on_navigation() {
+        let mut a = app();
+        let made = problem(
+            "AI Gen",
+            Domain::Symbolic,
+            "x^2 - x - 6",
+            AnswerKind::Scalar,
         );
+        a.open_generated(made, true, "ok".into());
+
+        // The generated problem is now what verifies, not the bank one.
+        assert!(a.generated.is_some());
+        assert_eq!(
+            a.open_problem_ref().map(|p| p.title.clone()),
+            Some("AI Gen".to_string())
+        );
+        assert_eq!(a.focus, Focus::Input);
+        submit_blocking(&mut a, "(x-3)(x+2)");
+        assert_eq!(a.verdict, Some(Verdict::Correct));
+
+        // Opening a bank problem leaves generated mode.
+        a.open_index(0);
+        assert!(a.generated.is_none());
     }
 
     #[test]

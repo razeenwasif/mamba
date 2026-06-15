@@ -8,14 +8,14 @@ use std::fs;
 use std::path::Path;
 
 use anyhow::Context;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// The three mathematical domains Mamba can serve and verify. This is the
 /// **routing key**: [`crate::engine::verify`] matches on it to pick a
 /// pipeline, so adding a domain is a single new arm there plus a module.
 ///
 /// Serialized as a bare string in JSON (`"domain": "Symbolic"`).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Domain {
     /// Polynomial algebra & calculus. Answers are *expressions*, verified for
     /// algebraic equivalence by the symbolic pipeline (numeric probing).
@@ -43,7 +43,7 @@ impl std::fmt::Display for Domain {
 /// [`AnswerKind::Scalar`]; only the exact pipeline currently varies on it
 /// (plain integer vs. prime factorization), but the field is domain-agnostic
 /// so future pipelines can reuse it.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AnswerKind {
     /// A single value: an expression, a matrix/scalar, or one big integer.
     #[default]
@@ -55,7 +55,7 @@ pub enum AnswerKind {
 
 /// Problem difficulty. Variant order defines sort order (`Easy < Medium <
 /// Hard`), which the navigator relies on for grouping within a domain.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Difficulty {
     Easy,
     Medium,
@@ -73,7 +73,7 @@ impl std::fmt::Display for Difficulty {
 }
 
 /// A complete problem as loaded from a `problems/*.json` file.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Problem {
     /// Stable identifier (kebab-case), unique across the bank.
     pub id: String,

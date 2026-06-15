@@ -32,6 +32,7 @@ pub mod agent;
 pub mod app;
 pub mod config;
 pub mod engine;
+pub mod generate;
 pub mod recommend;
 pub mod review;
 pub mod semantic;

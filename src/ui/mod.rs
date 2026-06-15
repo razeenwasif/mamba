@@ -587,6 +587,27 @@ fn draw_description(frame: &mut Frame, app: &App, area: Rect) {
     let pal = theme::palette();
     let mut lines: Vec<Line> = Vec::new();
     if let Some(p) = app.open_problem_ref() {
+        // Banner for an AI-generated problem: verified vs unverified, plus the
+        // one-line note (and `^S to save` once it can join the bank).
+        if app.generated.is_some() {
+            let (badge, color) = if app.generated_verified {
+                (" ✨ AI-generated · ✓ cross-verified ", pal.green)
+            } else {
+                (" ✨ AI-generated · ⚠ unverified ", pal.yellow)
+            };
+            lines.push(Line::from(Span::styled(badge, theme::badge(color))));
+            if let Some(note) = &app.generated_note {
+                lines.push(Line::from(Span::styled(
+                    note.clone(),
+                    Style::default().fg(pal.subtext),
+                )));
+            }
+            lines.push(Line::from(Span::styled(
+                "^S save to bank · ^G regenerate",
+                Style::default().fg(pal.overlay),
+            )));
+            lines.push(Line::default());
+        }
         lines.push(Line::from(vec![
             Span::styled(
                 p.title.clone(),
@@ -641,6 +662,20 @@ fn draw_description(frame: &mut Frame, app: &App, area: Rect) {
 fn draw_console(frame: &mut Frame, app: &App, area: Rect) {
     let pal = theme::palette();
     let mut lines: Vec<Line> = Vec::new();
+
+    // A generation run's progress (or error) sits at the very top while active.
+    if let Some(status) = &app.gen_status {
+        let color = if status.starts_with('⚠') {
+            pal.red
+        } else {
+            pal.accent_deep
+        };
+        lines.push(Line::from(Span::styled(
+            status.clone(),
+            Style::default().fg(color).add_modifier(Modifier::BOLD),
+        )));
+        lines.push(Line::default());
+    }
 
     // A session result (or "nothing due") takes the top line until superseded.
     if let Some(summary) = &app.session_summary {

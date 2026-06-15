@@ -6,6 +6,24 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Verified problem generation (`Ctrl-G`).** A new `generate` module turns the
+  tutor into a trustworthy problem factory — the one move only a tool with *both*
+  an LLM and a verifier can make. The pipeline (off-thread, like the other
+  workers): the local model **authors** a problem and its answer as JSON in the
+  vein of the open one; the engine **parse-gates** the answer (must be valid
+  Mamba syntax for its domain, with retries); then the model **independently
+  re-solves** the problem and that solution is checked against the stated answer
+  *through the engine* (algebraic equivalence). The result opens in a new
+  *generated mode* to attempt, badged `✓ cross-verified` or `⚠ unverified`, and
+  `Ctrl-S` saves a keeper into the bank (JSON + the live, sorted navigator).
+
+### Changed
+- **`Ctrl-G` now generates an engine-verified problem** instead of seeding a
+  chat-only tutor exercise — it produces a real, attemptable, cross-checked
+  problem (see above). `Problem` and its enums gained `Serialize` so generated
+  problems can be written back to the bank.
+
 ## [0.5.0] — 2026-06-16
 
 Two new subject areas across all difficulties: Physics and Engineering Math push
