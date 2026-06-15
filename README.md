@@ -68,6 +68,7 @@ mamba --verify      # run every problem's canonical answer through the engine
 mamba solve <id> "<answer>"   # verify one answer from the shell (exit 0 iff correct)
 mamba review        # list the problems due for review (spaced repetition)
 mamba next          # recommend the single best problem to attempt next
+mamba stats         # print the progress dashboard (totals, streaks, mastery)
 ```
 
 Keys: `/` find (`Tab` toggles fuzzy ↔ semantic) · `n` next recommended problem ·
@@ -165,6 +166,22 @@ exact arithmetic (correct by construction) and emits it in Mamba syntax;
 - `MAMBA_OLLAMA_URL` — Ollama server URL (default `http://localhost:11434`).
 - `MAMBA_EMBED_MODEL` — semantic-search embedding model (default
   `nomic-embed-text`); vectors are cached in the data dir (`embeddings.json`).
+
+### Config file
+
+Rather than export the variables above each shell, set them once in
+`~/.config/mamba/config.toml` (every key optional):
+
+```toml
+vault        = "~/Notes/Mamba"
+theme        = "midnight"             # venom (default) · midnight · slate
+ollama_model = "gemma4:12b-it-qat"
+embed_model  = "nomic-embed-text"
+```
+
+Precedence is **environment variable > config file > built-in default**, so an
+explicit `MAMBA_*` in the shell always wins. A malformed file is reported and
+ignored, never fatal.
 
 ## Tests
 

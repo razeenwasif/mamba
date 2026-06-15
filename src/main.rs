@@ -32,6 +32,11 @@ const TICK_RATE: Duration = Duration::from_millis(100);
 const POLL_BUSY: Duration = Duration::from_millis(16);
 
 fn main() -> anyhow::Result<()> {
+    // Apply the optional config file first, before any threads spawn or any
+    // `MAMBA_*` resolver runs, so it can seed defaults the rest of startup reads.
+    // (Real env vars still win — see `config::apply`.)
+    mamba::config::apply();
+
     // Lightweight CLI handling *before* we touch the terminal, so `mamba
     // --version` and `mamba --help` work from any directory and are scriptable
     // (a TUI binary that only ever launches an alternate screen is impossible
@@ -85,6 +90,10 @@ fn main() -> anyhow::Result<()> {
         // `mamba next` — print the single adaptively-recommended problem to do
         // next (the same pick the in-TUI `n` key jumps to).
         Some("next") => return recommend_next(),
+        // `mamba stats` — print the progress dashboard (totals, streaks, per
+        // domain/difficulty, topic mastery, recent solves) the `Ctrl-P` overlay
+        // shows, to the shell.
+        Some("stats") => return print_stats(),
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
             print_help();
@@ -267,6 +276,82 @@ fn recommend_next() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Prints the progress dashboard to the shell: totals, streaks, per-domain and
+/// per-difficulty counts, a `solved/total` topic-mastery view (least-mastered
+/// first, like the `Ctrl-P` overlay), and the most recent solves. Reads the same
+/// vault + bank the TUI does.
+fn print_stats() -> anyhow::Result<()> {
+    use std::collections::{BTreeMap, HashMap};
+
+    /// Width of the topic-mastery bar.
+    const BAR: usize = 16;
+
+    let dir = storage::default_problems_path()?;
+    let problems = storage::problem::load_all(&dir)
+        .with_context(|| format!("loading problem bank from {}", dir.display()))?;
+    let vault = storage::default_vault_path()?;
+    let today = chrono::Local::now().date_naive();
+    let s = storage::progress::stats(&vault, today);
+
+    println!("🐍 Mamba progress\n");
+    println!(
+        "  {} / {} problems solved   ·   streak {} (longest {})",
+        s.total,
+        problems.len(),
+        s.current_streak,
+        s.longest_streak,
+    );
+
+    println!("\n  By domain");
+    for (d, n) in &s.by_domain {
+        println!("    {d:<9} {n}");
+    }
+    println!("\n  By difficulty");
+    for (d, n) in &s.by_difficulty {
+        println!("    {d:<7} {n}");
+    }
+
+    // Topic mastery: solved (from the vault) over total (from the bank).
+    let mut totals: BTreeMap<String, usize> = BTreeMap::new();
+    for p in &problems {
+        *totals.entry(p.topic.clone()).or_default() += 1;
+    }
+    let solved: HashMap<&str, usize> = s.by_topic.iter().map(|(t, c)| (t.as_str(), *c)).collect();
+    let mut rows: Vec<(String, usize, usize)> = totals
+        .into_iter()
+        .map(|(t, total)| {
+            let done = solved.get(t.as_str()).copied().unwrap_or(0);
+            (t, done, total)
+        })
+        .collect();
+    // Least-mastered first, so the next thing to study is at the top.
+    rows.sort_by(|a, b| {
+        let frac = |(_, done, total): &(String, usize, usize)| *done as f64 / *total as f64;
+        frac(a)
+            .partial_cmp(&frac(b))
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.0.cmp(&b.0))
+    });
+    println!("\n  Topic mastery (least mastered first)");
+    for (t, done, total) in &rows {
+        let filled = ((*done as f64 / *total as f64) * BAR as f64).round() as usize;
+        let bar = "█".repeat(filled) + &"░".repeat(BAR - filled);
+        println!("    {t:<22} {done:>2}/{total:<3}  {bar}");
+    }
+
+    println!("\n  Recently solved");
+    if s.recent.is_empty() {
+        println!("    (nothing yet — go solve one!)");
+    }
+    for r in &s.recent {
+        println!(
+            "    {}  {:<28} [{} · {}]",
+            r.date, r.title, r.domain, r.difficulty
+        );
+    }
+    Ok(())
+}
+
 /// Prints CLI usage, in-TUI key bindings, and the environment overrides.
 fn print_help() {
     println!(
@@ -275,7 +360,8 @@ fn print_help() {
          mamba [OPTIONS]\n    \
          mamba solve <problem-id> <answer>   Verify one answer (exit 0 iff correct)\n    \
          mamba review                        List the problems due for review\n    \
-         mamba next                          Recommend the next problem to attempt\n\n\
+         mamba next                          Recommend the next problem to attempt\n    \
+         mamba stats                         Print the progress dashboard\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \

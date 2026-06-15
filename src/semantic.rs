@@ -290,7 +290,8 @@ mod tests {
                     .into(),
             },
         ];
-        let cache = std::env::temp_dir().join(format!("mamba-embed-live-{}.json", std::process::id()));
+        let cache =
+            std::env::temp_dir().join(format!("mamba-embed-live-{}.json", std::process::id()));
         let _ = std::fs::remove_file(&cache);
 
         let rx = search(

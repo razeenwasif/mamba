@@ -7,6 +7,16 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`mamba stats` shell command.** Prints the progress dashboard the `Ctrl-P`
+  overlay shows — total solved out of the bank, current/longest day streak,
+  per-domain and per-difficulty counts, a `solved/total` topic-mastery view with
+  bars (least-mastered first), and the most recent solves — straight to the
+  terminal, reading the same vault as the TUI.
+- **Optional config file (`~/.config/mamba/config.toml`).** A new `config`
+  module reads persistent defaults for the vault, problem bank, theme, and Ollama
+  tutor/embedding models, so the `MAMBA_*` variables don't have to be exported
+  each shell. Precedence is environment variable > config file > built-in
+  default; a malformed file is reported and ignored, never fatal.
 - **Semantic problem search (`/` then `Tab`).** The finder now has two modes:
   the existing fuzzy character match, and a new *semantic* mode that ranks
   problems by **meaning** using local `nomic-embed-text` embeddings — so “rate of

@@ -21,6 +21,8 @@ fuzzy-matcher = "0.3"
 # --- Storage: declarative JSON problem bank + Markdown/YAML vault -----------
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Optional user config at ~/.config/mamba/config.toml (pure-Rust TOML parser).
+toml = "0.8"
 anyhow = "1"
 chrono = "0.4"
 dirs = "6"

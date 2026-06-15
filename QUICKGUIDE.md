@@ -95,6 +95,7 @@ mamba --verify [DIR]           # verify every problem's canonical answer
 mamba solve <id> "<answer>"    # verify one answer (exit 0 iff correct)
 mamba review                   # list the problems due for review
 mamba next                     # recommend the next problem to attempt
+mamba stats                    # print the progress dashboard
 ```
 
 ## Environment
@@ -107,3 +108,7 @@ mamba next                     # recommend the next problem to attempt
 | `MAMBA_OLLAMA_MODEL` | `gemma4:e2b-it-qat` | tutor model tag |
 | `MAMBA_OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
 | `MAMBA_EMBED_MODEL` | `nomic-embed-text` | semantic-search embedding model |
+
+Set any of these once in `~/.config/mamba/config.toml` (keys `vault`,
+`problems`, `theme`, `ollama_model`, `ollama_url`, `embed_model`) instead of
+exporting them. Precedence: **env var > config file > default**.
