@@ -91,8 +91,8 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
 /// vault via [`crate::storage::progress`].
 fn draw_stats_overlay(frame: &mut Frame, app: &App, area: Rect) {
     let pal = theme::palette();
-    let w = (area.width * 7 / 10).clamp(40, 74);
-    let h = (area.height * 8 / 10).clamp(12, 30);
+    let w = (area.width * 7 / 10).clamp(44, 74);
+    let h = (area.height * 9 / 10).clamp(12, 34);
     let popup = centered_rect(w, h, area);
 
     frame.render_widget(Clear, popup);
@@ -168,18 +168,46 @@ fn draw_stats_overlay(frame: &mut Frame, app: &App, area: Rect) {
                 9,
             ));
         }
-        if !stats.by_topic.is_empty() {
+        // Topic mastery: solved / total per topic (from the bank), with the
+        // least-mastered topics first — what to study next.
+        let mut totals: std::collections::HashMap<&str, usize> = std::collections::HashMap::new();
+        for p in &app.problems {
+            *totals.entry(p.topic.as_str()).or_default() += 1;
+        }
+        let solved: std::collections::HashMap<&str, usize> = stats
+            .by_topic
+            .iter()
+            .map(|(t, c)| (t.as_str(), *c))
+            .collect();
+        let mut mastery: Vec<(&str, usize, usize)> = totals
+            .iter()
+            .map(|(&t, &total)| (t, solved.get(t).copied().unwrap_or(0), total))
+            .collect();
+        mastery.sort_by(|a, b| {
+            let ratio = |(_, s, t): &(&str, usize, usize)| *s as f64 / *t as f64;
+            ratio(a)
+                .partial_cmp(&ratio(b))
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then(a.0.cmp(b.0))
+        });
+        if !mastery.is_empty() {
             lines.push(Line::default());
-            lines.push(section(" By topic"));
-            let tmax = stats.by_topic.iter().map(|(_, c)| *c).max().unwrap_or(0);
-            for (i, (label, count)) in stats.by_topic.iter().take(8).enumerate() {
-                lines.push(bar_line(label, *count, tmax, topic_color(i), 19));
+            lines.push(section(" Topic mastery"));
+            const SHOWN: usize = 9;
+            for (topic, s, total) in mastery.iter().take(SHOWN) {
+                lines.push(mastery_line(topic, *s, *total));
+            }
+            if mastery.len() > SHOWN {
+                lines.push(Line::from(Span::styled(
+                    format!("   … +{} more (mastered or near)", mastery.len() - SHOWN),
+                    Style::default().fg(pal.overlay),
+                )));
             }
         }
         if !stats.recent.is_empty() {
             lines.push(Line::default());
             lines.push(section(" Recently solved"));
-            for r in stats.recent.iter().take(6) {
+            for r in stats.recent.iter().take(3) {
                 lines.push(Line::from(vec![
                     Span::styled(
                         format!("  {}  ", r.date.format("%m-%d")),
@@ -243,18 +271,35 @@ fn bar_line(
     ])
 }
 
-/// A rotating accent for the (dynamic, uncoloured) topic bars.
-fn topic_color(i: usize) -> ratatui::style::Color {
-    let p = theme::palette();
-    [
-        p.accent,
-        p.blue,
-        p.teal,
-        p.green,
-        p.yellow,
-        p.accent_deep,
-        p.red,
-    ][i % 7]
+/// One topic-mastery row: `topic  solved/total` and a coverage bar (`█` filled,
+/// `░` remaining), coloured green when complete, yellow when started, dim when
+/// untouched.
+fn mastery_line(topic: &str, solved: usize, total: usize) -> Line<'static> {
+    const BAR: usize = 12;
+    let pal = theme::palette();
+    let filled = if total > 0 {
+        (solved * BAR / total).min(BAR)
+    } else {
+        0
+    };
+    let color = if total > 0 && solved >= total {
+        pal.green
+    } else if solved > 0 {
+        pal.yellow
+    } else {
+        pal.overlay
+    };
+    Line::from(vec![
+        Span::styled(
+            format!(" {topic:<19} {solved:>2}/{total:<3} "),
+            Style::default().fg(pal.subtext),
+        ),
+        Span::styled("█".repeat(filled), Style::default().fg(color)),
+        Span::styled(
+            "░".repeat(BAR.saturating_sub(filled)),
+            Style::default().fg(pal.surface1),
+        ),
+    ])
 }
 
 /// Domain accent by name (the overlay works from `&str` labels, not the enum).

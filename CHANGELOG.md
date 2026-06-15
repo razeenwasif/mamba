@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Per-topic mastery view in the `Ctrl-P` overlay.** The topic section now shows
+  `solved / total` coverage per topic (from the bank vs the vault) with a `█`/`░`
+  bar — green when complete, yellow when started, dim when untouched — sorted
+  **least-mastered first** so you can see what to study next.
 - **Signals & DSP, Linear Programming, and Hypothesis Testing topics** (bank
   124 → 159): convolution length & sequences, Nyquist frequency, radix-2 FFT
   stages; box-constrained LP minima, standard-form variable counts, objective

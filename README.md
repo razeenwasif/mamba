@@ -33,7 +33,8 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
   arbitrary-precision number theory with Miller–Rabin primality.
 - **A real study loop**: a `/` fuzzy finder, `t` topic filter, `r`
   spaced-repetition review, a `^P` progress overlay (streaks, per-domain /
-  per-difficulty / per-topic bars), and a per-problem attempt-history peek.
+  per-difficulty bars, and a `solved/total` **topic-mastery** view), and a
+  per-problem attempt-history peek.
 - **A local AI tutor** (`^A`): a streaming chat with a local
   [Ollama](https://ollama.com) model, scoped to the open problem — private,
   offline, no API keys.
