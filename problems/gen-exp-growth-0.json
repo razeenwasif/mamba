@@ -7,5 +7,6 @@
   "prompt": "Solve y' = -4*y with y(0) = 2. Give y(t).",
   "expected": "2*exp(-4*t)",
   "answer_kind": "Scalar",
-  "hint": "y(t) = y(0)·e^(k·t)"
+  "hint": "y(t) = y(0)·e^(k·t)",
+  "recap": "The ODE y' = k·y has solution y(t) = y(0)·exp(k·t): exponential growth when k > 0, decay when k < 0 — the rate of change is proportional to the amount."
 }

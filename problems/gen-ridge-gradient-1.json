@@ -7,5 +7,6 @@
   "prompt": "Ridge objective f(w) = (1/2)*(w - 9)^2 + (1/2)*w^2.\n\nFind f'(w).",
   "expected": "2*w - 9",
   "answer_kind": "Scalar",
-  "hint": "differentiate and combine like terms; format a*w - b"
+  "hint": "differentiate and combine like terms; format a*w - b",
+  "recap": "Ridge regression adds an L2 penalty: f(w) = (1/2)(w − t)^2 + (λ/2)w^2, so f'(w) = (1 + λ)w − t. The penalty shrinks weights toward zero."
 }

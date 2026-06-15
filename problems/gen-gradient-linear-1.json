@@ -7,5 +7,6 @@
   "prompt": "Find the gradient ∇f of the linear function:\n\n    f(x) = 2*x1 + 4*x2\n\nEnter it as a column vector (one component per row).",
   "expected": "2; 4",
   "answer_kind": "Scalar",
-  "hint": "∇(aᵀx) = a; one component per row, e.g. 2; -3"
+  "hint": "∇(aᵀx) = a; one component per row, e.g. 2; -3",
+  "recap": "For a linear function f(x) = aᵀx, the gradient is the constant vector ∇f = a — each partial ∂f/∂xⱼ is just aⱼ."
 }

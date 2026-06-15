@@ -7,5 +7,6 @@
   "prompt": "Multiply (5 + 5i)(-1 + -1i). Enter the result as `real imag`.",
   "expected": "0 -10",
   "answer_kind": "Scalar",
-  "hint": "(a+bi)(c+di) = (ac−bd) + (ad+bc)i"
+  "hint": "(a+bi)(c+di) = (ac−bd) + (ad+bc)i",
+  "recap": "Multiply complex numbers by distributing with i^2 = −1: (a + bi)(c + di) = (ac − bd) + (ad + bc)i."
 }

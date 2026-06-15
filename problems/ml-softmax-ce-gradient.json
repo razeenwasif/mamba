@@ -7,5 +7,6 @@
   "prompt": "For softmax + cross-entropy with logits z = [0, 0] and one-hot target y = [1, 0], the gradient is dL/dz = softmax(z) − y. Compute it as a column.",
   "expected": "-1/2; 1/2",
   "answer_kind": "Scalar",
-  "hint": "the famous result dL/dz = p − y, with p = [1/2, 1/2]"
+  "hint": "the famous result dL/dz = p − y, with p = [1/2, 1/2]",
+  "recap": "Softmax with cross-entropy has the famous gradient dL/dz = softmax(z) − y — predicted probabilities minus the one-hot truth."
 }

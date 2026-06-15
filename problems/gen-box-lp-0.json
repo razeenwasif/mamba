@@ -7,5 +7,6 @@
   "prompt": "Minimize  -3*x1 - 3*x2\nsubject to  0 ≤ x_j ≤ u_j  with  u = [3, 3].\n\nWhat is the minimum objective value?",
   "expected": "-18",
   "answer_kind": "Scalar",
-  "hint": "each x_j is at a bound: u_j if c_j < 0, else 0"
+  "hint": "each x_j is at a bound: u_j if c_j < 0, else 0",
+  "recap": "Minimizing c·x over a box 0 ≤ xⱼ ≤ uⱼ is solved coordinate-wise: xⱼ = uⱼ where cⱼ < 0, else 0. The optimum sits at a corner."
 }

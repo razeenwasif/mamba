@@ -7,5 +7,6 @@
   "prompt": "For a target y = 1, the cross-entropy loss is L = -ln(p) in the prediction p. Find dL/dp.",
   "expected": "-1/p",
   "answer_kind": "Scalar",
-  "hint": "for 0 < p < 1"
+  "hint": "for 0 < p < 1",
+  "recap": "For target y = 1 the loss is −ln(p) in the predicted probability p; dL/dp = −1/p is large when p is small (confidently wrong)."
 }

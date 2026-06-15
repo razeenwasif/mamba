@@ -7,5 +7,6 @@
   "prompt": "Minimize  -2*x1 + 3*x2  subject to  0 ≤ x1 ≤ 4, 0 ≤ x2 ≤ 5.\n\nWhat is the minimum objective value?",
   "expected": "-8",
   "answer_kind": "Scalar",
-  "hint": "x1 = 4 (its coefficient is negative), x2 = 0"
+  "hint": "x1 = 4 (its coefficient is negative), x2 = 0",
+  "recap": "Minimizing c·x over a box 0 ≤ xⱼ ≤ uⱼ is solved coordinate-wise: xⱼ = uⱼ where cⱼ < 0, else 0. The optimum sits at a corner."
 }

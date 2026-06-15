@@ -7,5 +7,6 @@
   "prompt": "Find the greatest common divisor:\n\n    gcd(1414, 8957)",
   "expected": "1",
   "answer_kind": "Scalar",
-  "hint": "the Euclidean algorithm; enter a single integer"
+  "hint": "the Euclidean algorithm; enter a single integer",
+  "recap": "The greatest common divisor comes from the Euclidean algorithm: gcd(a, b) = gcd(b, a mod b), repeated until the remainder is 0."
 }

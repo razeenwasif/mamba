@@ -7,5 +7,6 @@
   "prompt": "Find the eigenvalues of the triangular matrix:\n\n    [[-5, -4], [0, 0]]\n\nList them in increasing order (e.g. -1 3).",
   "expected": "-5 0",
   "answer_kind": "Scalar",
-  "hint": "the eigenvalues of a triangular matrix are its diagonal entries"
+  "hint": "the eigenvalues of a triangular matrix are its diagonal entries",
+  "recap": "The eigenvalues of a triangular matrix are simply its diagonal entries. In general they are the roots of det(A − λI) = 0."
 }

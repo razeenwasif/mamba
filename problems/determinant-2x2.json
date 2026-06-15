@@ -7,5 +7,6 @@
   "prompt": "Find the determinant of the matrix:\n\n    [[4, 7], [2, 6]]\n\nFor a 2×2 matrix [[a, b], [c, d]], det = ad − bc. Enter the scalar result.",
   "expected": "10",
   "answer_kind": "Scalar",
-  "hint": "the answer is a single number; the tensor pipeline treats it as a 1×1 matrix"
+  "hint": "the answer is a single number; the tensor pipeline treats it as a 1×1 matrix",
+  "recap": "For a 2×2 matrix [[a, b], [c, d]] the determinant is ad − bc. It scales signed area under the map and is nonzero exactly when the matrix is invertible."
 }

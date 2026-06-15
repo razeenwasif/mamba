@@ -7,5 +7,6 @@
   "prompt": "Write the transpose A^T of:\n\n    [[8, -9], [-7, 3], [-9, 6]]",
   "expected": "8 -7 -9; -9 3 6",
   "answer_kind": "Scalar",
-  "hint": "rows separated by ';', elements by spaces, e.g. 1 4; 2 5"
+  "hint": "rows separated by ';', elements by spaces, e.g. 1 4; 2 5",
+  "recap": "The transpose Aᵀ reflects a matrix across its diagonal: entry (i, j) ↦ (j, i), turning m×n into n×m. (AB)ᵀ = BᵀAᵀ."
 }

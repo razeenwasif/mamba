@@ -7,5 +7,6 @@
   "prompt": "Simplify the trigonometric expression to its simplest form:\n\n    sin²(x) + cos²(x)\n\nEnter the simplified result.",
   "expected": "1",
   "answer_kind": "Scalar",
-  "hint": "the Pythagorean identity — functions are written sin(x), cos(x)"
+  "hint": "the Pythagorean identity — functions are written sin(x), cos(x)",
+  "recap": "The Pythagorean identity sin^2(x) + cos^2(x) = 1 holds for every x (it's the unit circle's equation) and collapses many trig expressions to a constant."
 }

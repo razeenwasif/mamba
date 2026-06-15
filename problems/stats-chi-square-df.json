@@ -7,5 +7,6 @@
   "prompt": "A chi-square goodness-of-fit test is run over 6 categories. How many degrees of freedom?",
   "expected": "5",
   "answer_kind": "Scalar",
-  "hint": "df = k − 1 for k categories"
+  "hint": "df = k − 1 for k categories",
+  "recap": "A chi-square goodness-of-fit test over k categories has k − 1 degrees of freedom (the counts must sum to n)."
 }

@@ -7,5 +7,6 @@
   "prompt": "Compute the least non-negative residue:\n\n    4^183 mod 97",
   "expected": "33",
   "answer_kind": "Scalar",
-  "hint": "reduce the exponent with Fermat's little theorem; enter one integer"
+  "hint": "reduce the exponent with Fermat's little theorem; enter one integer",
+  "recap": "Modular exponentiation a^b mod m is computed by repeated squaring. Fermat's little theorem helps: if m is prime and gcd(a, m) = 1 then a^(m-1) ≡ 1, so reduce the exponent mod (m − 1) first."
 }

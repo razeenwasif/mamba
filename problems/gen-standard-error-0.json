@@ -7,5 +7,6 @@
   "prompt": "A sample of n = 49 observations has population σ = 23.\n\nFind the standard error SE = σ/√n as an exact fraction.",
   "expected": "23/7",
   "answer_kind": "Scalar",
-  "hint": "SE = σ/√n; √n is exact since n is a perfect square"
+  "hint": "SE = σ/√n; √n is exact since n is a perfect square",
+  "recap": "The standard error of the mean is SE = σ/√n: the sample mean's spread shrinks with √n, so quadrupling n halves the SE."
 }

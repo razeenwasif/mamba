@@ -7,5 +7,6 @@
   "prompt": "What is the chromatic number of the cycle graph C_5 (a pentagon)?",
   "expected": "3",
   "answer_kind": "Scalar",
-  "hint": "an odd cycle needs 3 colours; an even cycle needs 2"
+  "hint": "an odd cycle needs 3 colours; an even cycle needs 2",
+  "recap": "The chromatic number is the fewest colours so adjacent vertices differ. A cycle Cₙ needs 2 colours if n is even and 3 if odd."
 }

@@ -7,5 +7,6 @@
   "prompt": "How many ways to choose 8 items from 12 (order doesn't matter)?\n\n    C(12, 8)",
   "expected": "495",
   "answer_kind": "Scalar",
-  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer"
+  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer",
+  "recap": "C(n, k) = n!/(k!(n − k)!) counts unordered choices of k from n — the permutation count divided by k! because order doesn't matter."
 }

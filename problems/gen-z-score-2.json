@@ -7,5 +7,6 @@
   "prompt": "A value x = 5 comes from a distribution with mean μ = 4 and standard deviation σ = 2.\n\nFind the z-score (x − μ)/σ as an exact fraction.",
   "expected": "1/2",
   "answer_kind": "Scalar",
-  "hint": "z = (x − μ)/σ"
+  "hint": "z = (x − μ)/σ",
+  "recap": "A z-score (x − μ)/σ rescales a value to standard-deviation units from the mean: z = 0 is average, |z| = 2 is two SDs out."
 }

@@ -222,6 +222,7 @@ mod tests {
             expected: "x^2 - x - 6".into(),
             answer_kind: Default::default(),
             hint: None,
+            recap: None,
         }
     }
 

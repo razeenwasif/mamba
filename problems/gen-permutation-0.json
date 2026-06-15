@@ -7,5 +7,6 @@
   "prompt": "How many ordered arrangements of 5 items from 8?\n\n    P(8, 5)",
   "expected": "6720",
   "answer_kind": "Scalar",
-  "hint": "P(n, k) = n! / (n−k)!; enter one integer"
+  "hint": "P(n, k) = n! / (n−k)!; enter one integer",
+  "recap": "P(n, k) = n!/(n − k)! counts ordered arrangements of k items from n: n·(n−1)···(n−k+1)."
 }

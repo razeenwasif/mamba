@@ -7,5 +7,6 @@
   "prompt": "In a linear layer Y = X·W with X of shape [59×60] and W of shape [60×38], the weight gradient is dL/dW = Xᵀ·(dL/dY).\n\nWhat is its shape? Enter `rows cols`.",
   "expected": "60 38",
   "answer_kind": "Scalar",
-  "hint": "dL/dW has the same shape as W"
+  "hint": "dL/dW has the same shape as W",
+  "recap": "In Y = X·W, backprop gives dL/dW = Xᵀ·(dL/dY), which has the same shape as W. Gradients always match the shape of what they differentiate."
 }

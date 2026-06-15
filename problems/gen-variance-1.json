@@ -7,5 +7,6 @@
   "prompt": "X takes values [5, 6, -1] with relative weights [3, 3, 2].\n\nFind Var(X) = E[X²] − E[X]² as an exact fraction.",
   "expected": "519/64",
   "answer_kind": "Scalar",
-  "hint": "compute E[X²] and E[X] from the weights, then subtract the square"
+  "hint": "compute E[X²] and E[X] from the weights, then subtract the square",
+  "recap": "Var(X) = E[X^2] − E[X]^2 measures spread: the mean of the squares minus the square of the mean. It is always ≥ 0."
 }

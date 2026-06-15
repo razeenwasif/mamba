@@ -7,5 +7,6 @@
   "prompt": "A function is convex where its second derivative is ≥ 0. Compute:\n\n    d^2/dx^2 [ x^4 ]",
   "expected": "12*x^2",
   "answer_kind": "Scalar",
-  "hint": "differentiate twice"
+  "hint": "differentiate twice",
+  "recap": "A function is convex where f'' ≥ 0. For x^4, f'' = 12x^2 ≥ 0 everywhere, so it is convex."
 }

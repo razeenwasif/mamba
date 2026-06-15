@@ -7,5 +7,6 @@
   "prompt": "Find the determinant:\n\n    [[-7, 1], [6, 8]]",
   "expected": "-62",
   "answer_kind": "Scalar",
-  "hint": "for [[a,b],[c,d]], det = ad - bc"
+  "hint": "for [[a,b],[c,d]], det = ad - bc",
+  "recap": "For a 2×2 matrix [[a, b], [c, d]] the determinant is ad − bc. It scales signed area under the map and is nonzero exactly when the matrix is invertible."
 }

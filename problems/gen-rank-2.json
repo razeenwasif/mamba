@@ -7,5 +7,6 @@
   "prompt": "What is the rank of\n\n    [[3, 2], [0, -1]]?",
   "expected": "2",
   "answer_kind": "Scalar",
-  "hint": "a 2×2 has rank 2 if its determinant is nonzero"
+  "hint": "a 2×2 has rank 2 if its determinant is nonzero",
+  "recap": "The rank is the number of linearly independent rows (or columns). A 2×2 matrix has rank 2 when its determinant is nonzero, rank 1 if singular but nonzero, and rank 0 only when all entries vanish."
 }

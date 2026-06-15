@@ -7,5 +7,6 @@
   "prompt": "For the data matrix\n\n    X = [[1, 2], [3, 4]]\n\ncompute the Gram matrix X^T X.",
   "expected": "10 14; 14 20",
   "answer_kind": "Scalar",
-  "hint": "X^T X is symmetric; rows separated by ';'"
+  "hint": "X^T X is symmetric; rows separated by ';'",
+  "recap": "The Gram matrix XᵀX collects all pairwise inner products of X's columns; it is symmetric PSD and appears in least squares and kernels."
 }

@@ -7,5 +7,6 @@
   "prompt": "Find the trace of\n\n    [[3, -7, -7], [-7, -3, -2], [-8, 3, -9]]",
   "expected": "-9",
   "answer_kind": "Scalar",
-  "hint": "the trace is the sum of the diagonal (= sum of eigenvalues)"
+  "hint": "the trace is the sum of the diagonal (= sum of eigenvalues)",
+  "recap": "The trace of a square matrix is the sum of its diagonal entries. It equals the sum of the eigenvalues and is unchanged by similarity transforms."
 }

@@ -7,5 +7,6 @@
   "prompt": "Find the lower-triangular Cholesky factor L (positive diagonal) with L·Lᵀ = A:\n\n    A = [[16, 16], [16, 25]]",
   "expected": "4 0; 4 3",
   "answer_kind": "Scalar",
-  "hint": "L = [[l11, 0], [l21, l22]]: l11 = √A₁₁, l21 = A₂₁/l11, l22 = √(A₂₂ − l21²)"
+  "hint": "L = [[l11, 0], [l21, l22]]: l11 = √A₁₁, l21 = A₂₁/l11, l22 = √(A₂₂ − l21²)",
+  "recap": "A symmetric positive-definite A factors uniquely as A = L·Lᵀ with L lower-triangular, positive diagonal. Solve row by row: l₁₁ = √A₁₁, l₂₁ = A₂₁/l₁₁, l₂₂ = √(A₂₂ − l₂₁^2)."
 }

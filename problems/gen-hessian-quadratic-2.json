@@ -7,5 +7,6 @@
   "prompt": "Find the Hessian of:\n\n    f(x1, x2) = 4*x1^2 - 3*x1*x2 + 1*x2^2",
   "expected": "8 -3; -3 2",
   "answer_kind": "Scalar",
-  "hint": "the matrix of second partials; rows separated by ';', e.g. 2 1; 1 4"
+  "hint": "the matrix of second partials; rows separated by ';', e.g. 2 1; 1 4",
+  "recap": "The Hessian H(i, j) = ∂^2f/∂xᵢ∂xⱼ is the matrix of second partials. For a quadratic it is constant; a function is convex where its Hessian is positive semidefinite."
 }

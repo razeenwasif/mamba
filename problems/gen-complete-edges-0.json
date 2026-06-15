@@ -7,5 +7,6 @@
   "prompt": "How many edges does the complete graph K_7 have?",
   "expected": "21",
   "answer_kind": "Scalar",
-  "hint": "C(n, 2) = n(n−1)/2"
+  "hint": "C(n, 2) = n(n−1)/2",
+  "recap": "The complete graph K_n joins every pair of its n vertices, giving C(n, 2) = n(n − 1)/2 edges — the most a simple graph can have."
 }

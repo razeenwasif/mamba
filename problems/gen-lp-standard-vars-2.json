@@ -7,5 +7,6 @@
   "prompt": "An LP has 5 decision variables and 6 inequality (≤) constraints.\n\nConverting to standard form (adding slack variables), how many variables in total?",
   "expected": "11",
   "answer_kind": "Scalar",
-  "hint": "one slack per ≤-constraint: n + m"
+  "hint": "one slack per ≤-constraint: n + m",
+  "recap": "Standard form turns each ≤-constraint into an equality with one nonnegative slack variable. With n decision variables and m constraints, the total is n + m."
 }

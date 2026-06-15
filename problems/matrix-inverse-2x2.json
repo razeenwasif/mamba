@@ -7,5 +7,6 @@
   "prompt": "Find the inverse of the matrix:\n\n    [[4, 7], [2, 6]]\n\nFor [[a, b], [c, d]], the inverse is (1 / (ad − bc)) · [[d, −b], [−c, a]]. Enter exact fractions — they are checked exactly.",
   "expected": "3/5 -7/10; -1/5 2/5",
   "answer_kind": "Scalar",
-  "hint": "rows separated by ';', fractions like 3/5; equivalent fractions (6/10) are accepted"
+  "hint": "rows separated by ';', fractions like 3/5; equivalent fractions (6/10) are accepted",
+  "recap": "For [[a, b], [c, d]] with det = ad − bc ≠ 0, the inverse is (1/det)·[[d, −b], [−c, a]]: swap the diagonal, negate the off-diagonal, divide by the determinant."
 }

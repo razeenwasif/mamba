@@ -7,5 +7,6 @@
   "prompt": "A log-likelihood contains ln(x). Find:\n\n    d/dx [ ln(x) ]",
   "expected": "1/x",
   "answer_kind": "Scalar",
-  "hint": "for x > 0"
+  "hint": "for x > 0",
+  "recap": "Log-likelihoods are built from ln; the basic derivative d/dx ln(x) = 1/x (x > 0) underlies maximum-likelihood gradients."
 }

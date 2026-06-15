@@ -19,6 +19,7 @@ fn problem(id: &str, title: &str, domain: Domain, difficulty: Difficulty) -> Pro
         expected: "1".into(),
         answer_kind: AnswerKind::Scalar,
         hint: None,
+        recap: None,
     }
 }
 

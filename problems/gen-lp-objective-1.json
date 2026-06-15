@@ -7,5 +7,6 @@
   "prompt": "For c = [-1, 1] and the feasible point x = [6, 2], compute the objective c·x.",
   "expected": "-4",
   "answer_kind": "Scalar",
-  "hint": "c·x = Σ cⱼ·xⱼ"
+  "hint": "c·x = Σ cⱼ·xⱼ",
+  "recap": "An LP objective at a point is the dot product c·x = Σ cⱼxⱼ; for a bounded LP the optimum is attained at a vertex of the feasible region."
 }

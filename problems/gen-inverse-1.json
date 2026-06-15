@@ -7,5 +7,6 @@
   "prompt": "Find the inverse:\n\n    [[1, -5], [-5, -1]]\n\nEnter exact fractions.",
   "expected": "1/26 -5/26; -5/26 -1/26",
   "answer_kind": "Scalar",
-  "hint": "inverse of [[a,b],[c,d]] is (1/(ad-bc))*[[d,-b],[-c,a]]; use fractions"
+  "hint": "inverse of [[a,b],[c,d]] is (1/(ad-bc))*[[d,-b],[-c,a]]; use fractions",
+  "recap": "For [[a, b], [c, d]] with det = ad − bc ≠ 0, the inverse is (1/det)·[[d, −b], [−c, a]]: swap the diagonal, negate the off-diagonal, divide by the determinant."
 }

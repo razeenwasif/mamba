@@ -7,5 +7,6 @@
   "prompt": "A one-sample t-test uses n = 58 observations.\n\nHow many degrees of freedom?",
   "expected": "57",
   "answer_kind": "Scalar",
-  "hint": "df = n − 1"
+  "hint": "df = n − 1",
+  "recap": "A one-sample t-test estimates the variance from the data, costing one degree of freedom, so df = n − 1."
 }

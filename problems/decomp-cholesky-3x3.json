@@ -7,5 +7,6 @@
   "prompt": "Find the lower-triangular Cholesky factor L (positive diagonal) with L·Lᵀ = A:\n\n    A = [[4, 2, 2], [2, 10, 4], [2, 4, 6]]",
   "expected": "2 0 0; 1 3 0; 1 1 2",
   "answer_kind": "Scalar",
-  "hint": "solve row by row: l11 = 2, then the first column, then l22, …"
+  "hint": "solve row by row: l11 = 2, then the first column, then l22, …",
+  "recap": "A symmetric positive-definite A factors uniquely as A = L·Lᵀ with L lower-triangular, positive diagonal. Solve row by row: l₁₁ = √A₁₁, l₂₁ = A₂₁/l₁₁, l₂₂ = √(A₂₂ − l₂₁^2)."
 }

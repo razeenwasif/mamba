@@ -7,5 +7,6 @@
   "prompt": "Differentiate with respect to x:\n\n    d/dx [ 8x^4 ]",
   "expected": "32*x^3",
   "answer_kind": "Scalar",
-  "hint": "power rule: d/dx[a*x^n] = a*n*x^(n-1)"
+  "hint": "power rule: d/dx[a*x^n] = a*n*x^(n-1)",
+  "recap": "The power rule: d/dx[a·x^n] = a·n·x^(n-1) — multiply by the exponent, then drop it by one. It differentiates every polynomial term."
 }

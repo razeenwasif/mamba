@@ -7,5 +7,6 @@
   "prompt": "Two fair dice are rolled. What is P(sum = 2)?\n\nGive an exact fraction.",
   "expected": "1/36",
   "answer_kind": "Scalar",
-  "hint": "favorable outcomes over 36; reduce the fraction"
+  "hint": "favorable outcomes over 36; reduce the fraction",
+  "recap": "For two fair dice the 36 ordered outcomes are equally likely, so P(sum = s) = (pairs summing to s)/36 — peaking at s = 7."
 }

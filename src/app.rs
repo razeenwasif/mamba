@@ -132,6 +132,9 @@ pub struct App {
     verify_job: Option<VerifyJob>,
     /// How many answers have been submitted for the open problem.
     pub attempts: u32,
+    /// Whether the problem's recap (preliminary reading) is shown in the
+    /// description pane. Toggled with `g`; on by default.
+    pub show_recap: bool,
     /// Vertical scroll offset of the description pane, in lines.
     pub description_scroll: u16,
     /// Vertical scroll offset of the console pane, in lines.
@@ -193,6 +196,7 @@ impl App {
             verdict: None,
             verify_job: None,
             attempts: 0,
+            show_recap: true,
             description_scroll: 0,
             console_scroll: 0,
             vault_path,
@@ -318,6 +322,13 @@ impl App {
         // `r` toggles spaced-repetition review mode (also non-input only).
         if key.code == KeyCode::Char('r') && !ctrl {
             self.toggle_review();
+            return;
+        }
+
+        // `g` toggles the recap (preliminary reading) in the description pane.
+        if key.code == KeyCode::Char('g') && !ctrl {
+            self.show_recap = !self.show_recap;
+            self.description_scroll = 0;
             return;
         }
 
@@ -982,6 +993,7 @@ mod tests {
             expected: expected.into(),
             answer_kind: kind,
             hint: None,
+            recap: None,
         }
     }
 

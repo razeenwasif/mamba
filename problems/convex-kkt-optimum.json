@@ -7,5 +7,6 @@
   "prompt": "Minimize (1/2)*x^2 subject to x ≥ 1. By the KKT conditions, what is the optimal x?",
   "expected": "1",
   "answer_kind": "Scalar",
-  "hint": "the constraint is active at the optimum"
+  "hint": "the constraint is active at the optimum",
+  "recap": "The KKT conditions extend Lagrange multipliers to inequalities. For min (1/2)x^2 s.t. x ≥ 1 the constraint is active, so x* = 1."
 }

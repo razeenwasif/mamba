@@ -7,5 +7,6 @@
   "prompt": "Find the least common multiple:\n\n    lcm(47, 41)",
   "expected": "1927",
   "answer_kind": "Scalar",
-  "hint": "lcm(a, b) = a*b / gcd(a, b); enter a single integer"
+  "hint": "lcm(a, b) = a*b / gcd(a, b); enter a single integer",
+  "recap": "The least common multiple satisfies lcm(a, b)·gcd(a, b) = a·b, so lcm = a·b / gcd(a, b)."
 }

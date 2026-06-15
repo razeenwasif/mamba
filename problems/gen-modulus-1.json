@@ -7,5 +7,6 @@
   "prompt": "Find the modulus |-3 + -4i|.",
   "expected": "5",
   "answer_kind": "Scalar",
-  "hint": "|a + bi| = √(a² + b²)"
+  "hint": "|a + bi| = √(a² + b²)",
+  "recap": "The modulus |a + bi| = √(a^2 + b^2) is the distance from the origin in the complex plane (Pythagoras), and is multiplicative: |zw| = |z||w|."
 }

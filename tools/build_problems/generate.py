@@ -1310,6 +1310,193 @@ FIXED = [
 # --------------------------------------------------------------------------
 
 
+# --------------------------------------------------------------------------
+# Recaps — short preliminary reading per concept, injected by problem id.
+# Keyed by the template concept (the `gen-<concept>-N` id minus the index) or by
+# a fixed problem's full id. Shown in the description pane (toggle: `g`).
+# --------------------------------------------------------------------------
+
+RECAPS = {
+    # Algebra & calculus
+    "expand-binomial": "To expand (x + a)(x + b), distribute every pair (FOIL): "
+        "x^2 + (a + b)x + ab. The linear coefficient is the sum of a and b; the constant is their product.",
+    "power-derivative": "The power rule: d/dx[a·x^n] = a·n·x^(n-1) — multiply by the exponent, then drop it by one. "
+        "It differentiates every polynomial term.",
+    # Linear algebra
+    "determinant": "For a 2×2 matrix [[a, b], [c, d]] the determinant is ad − bc. It scales signed area under the "
+        "map and is nonzero exactly when the matrix is invertible.",
+    "transpose": "The transpose Aᵀ reflects a matrix across its diagonal: entry (i, j) ↦ (j, i), turning m×n into "
+        "n×m. (AB)ᵀ = BᵀAᵀ.",
+    "inverse": "For [[a, b], [c, d]] with det = ad − bc ≠ 0, the inverse is (1/det)·[[d, −b], [−c, a]]: swap the "
+        "diagonal, negate the off-diagonal, divide by the determinant.",
+    "trace": "The trace of a square matrix is the sum of its diagonal entries. It equals the sum of the "
+        "eigenvalues and is unchanged by similarity transforms.",
+    "rank": "The rank is the number of linearly independent rows (or columns). A 2×2 matrix has rank 2 when its "
+        "determinant is nonzero, rank 1 if singular but nonzero, and rank 0 only when all entries vanish.",
+    "cholesky": "A symmetric positive-definite A factors uniquely as A = L·Lᵀ with L lower-triangular, positive "
+        "diagonal. Solve row by row: l₁₁ = √A₁₁, l₂₁ = A₂₁/l₁₁, l₂₂ = √(A₂₂ − l₂₁^2).",
+    "eigenvalues": "The eigenvalues of a triangular matrix are simply its diagonal entries. In general they are the "
+        "roots of det(A − λI) = 0.",
+    "linear-system": "A 2×2 system A·x = b is solved by Cramer's rule: each xⱼ = det(Aⱼ)/det(A), where Aⱼ replaces "
+        "column j of A with b. It needs det(A) ≠ 0.",
+    # Number theory
+    "factorization": "Every integer > 1 factors uniquely into primes (Fundamental Theorem of Arithmetic). "
+        "Trial-divide by 2, 3, 5, … up to √n; write the result as prime powers, e.g. 360 = 2^3 · 3^2 · 5.",
+    "modexp": "Modular exponentiation a^b mod m is computed by repeated squaring. Fermat's little theorem helps: if "
+        "m is prime and gcd(a, m) = 1 then a^(m-1) ≡ 1, so reduce the exponent mod (m − 1) first.",
+    "gcd": "The greatest common divisor comes from the Euclidean algorithm: gcd(a, b) = gcd(b, a mod b), repeated "
+        "until the remainder is 0.",
+    "lcm": "The least common multiple satisfies lcm(a, b)·gcd(a, b) = a·b, so lcm = a·b / gcd(a, b).",
+    "modinverse": "The modular inverse of a (mod m) is the x with a·x ≡ 1 (mod m). It exists iff gcd(a, m) = 1; the "
+        "extended Euclidean algorithm finds it.",
+    # Machine learning
+    "gradient-linear": "For a linear function f(x) = aᵀx, the gradient is the constant vector ∇f = a — each partial "
+        "∂f/∂xⱼ is just aⱼ.",
+    "hessian-quadratic": "The Hessian H(i, j) = ∂^2f/∂xᵢ∂xⱼ is the matrix of second partials. For a quadratic it is "
+        "constant; a function is convex where its Hessian is positive semidefinite.",
+    "ridge-gradient": "Ridge regression adds an L2 penalty: f(w) = (1/2)(w − t)^2 + (λ/2)w^2, so "
+        "f'(w) = (1 + λ)w − t. The penalty shrinks weights toward zero.",
+    "matmul-grad-shape": "In Y = X·W, backprop gives dL/dW = Xᵀ·(dL/dY), which has the same shape as W. Gradients "
+        "always match the shape of what they differentiate.",
+    "attention-shape": "Scaled dot-product attention: scores Q·Kᵀ/√d are [n×m]; softmax over the m keys; times "
+        "V [m×d] gives output [n×d] — the queries' shape.",
+    "gd-step": "Gradient descent updates x ← x − α·∇f(x). For f = x^2, ∇f = 2x, so one step gives (1 − 2α)x. The "
+        "step size α sets how far you descend.",
+    "conv-output": "A 1-D convolution output length is floor((L − K + 2P)/S) + 1: padding P grows it, stride S "
+        "shrinks it.",
+    "layernorm-mean": "The mean μ = (Σ xᵢ)/n is the data's balance point. LayerNorm subtracts it so each layer's "
+        "activations are centered.",
+    "layernorm-var": "The biased variance σ^2 = (Σ xᵢ^2)/n − μ^2 is the mean squared deviation from the mean. "
+        "LayerNorm divides by √(σ^2 + ε) to unit-scale.",
+    "linear-params": "A dense layer ℝ^a → ℝ^b has a·b weights plus b biases, i.e. a·b + b learnable parameters.",
+    "conv-params": "A Conv2D with C_in channels, C_out filters and a K×K kernel has C_in·K·K weights + 1 bias per "
+        "filter, times C_out: C_out·(C_in·K^2 + 1).",
+    # Convex optimization
+    "psd-check": "A symmetric 2×2 [[a, b], [b, c]] is positive semidefinite iff a ≥ 0, c ≥ 0 and ac − b^2 ≥ 0. PSD "
+        "matrices are exactly the Hessians of convex quadratics.",
+    "lagrangian": "For min f(x) s.t. g(x) = 0, the Lagrangian is L = f + λg, and ∂L/∂x = 0 is a necessary (KKT) "
+        "condition. Here ∂/∂x[a·x^2 + λ(x − c)] = 2a·x + λ.",
+    "box-lp": "Minimizing c·x over a box 0 ≤ xⱼ ≤ uⱼ is solved coordinate-wise: xⱼ = uⱼ where cⱼ < 0, else 0. The "
+        "optimum sits at a corner.",
+    "lp-standard-vars": "Standard form turns each ≤-constraint into an equality with one nonnegative slack "
+        "variable. With n decision variables and m constraints, the total is n + m.",
+    "lp-objective": "An LP objective at a point is the dot product c·x = Σ cⱼxⱼ; for a bounded LP the optimum is "
+        "attained at a vertex of the feasible region.",
+    # Probability & statistics
+    "combination": "C(n, k) = n!/(k!(n − k)!) counts unordered choices of k from n — the permutation count divided "
+        "by k! because order doesn't matter.",
+    "permutation": "P(n, k) = n!/(n − k)! counts ordered arrangements of k items from n: n·(n−1)···(n−k+1).",
+    "factorial": "n! = n·(n−1)···1 is the number of orderings of n distinct items, with 0! = 1; it outgrows any "
+        "exponential.",
+    "dice-sum": "For two fair dice the 36 ordered outcomes are equally likely, so P(sum = s) = (pairs summing to "
+        "s)/36 — peaking at s = 7.",
+    "expected-value": "The expected value E[X] = Σ pᵢxᵢ is the probability-weighted average — the long-run mean. "
+        "With weights wᵢ, E[X] = (Σ wᵢxᵢ)/(Σ wᵢ).",
+    "variance": "Var(X) = E[X^2] − E[X]^2 measures spread: the mean of the squares minus the square of the mean. "
+        "It is always ≥ 0.",
+    "z-score": "A z-score (x − μ)/σ rescales a value to standard-deviation units from the mean: z = 0 is average, "
+        "|z| = 2 is two SDs out.",
+    "standard-error": "The standard error of the mean is SE = σ/√n: the sample mean's spread shrinks with √n, so "
+        "quadrupling n halves the SE.",
+    "t-test-df": "A one-sample t-test estimates the variance from the data, costing one degree of freedom, so "
+        "df = n − 1.",
+    # Signals & DSP
+    "conv-length": "Linearly convolving signals of lengths M and N gives length M + N − 1 — the supports add minus "
+        "the one shared sample.",
+    "nyquist": "The Nyquist frequency is half the sampling rate, f_s/2. By the sampling theorem, only frequencies "
+        "below it are representable; higher ones alias.",
+    "fft-stages": "A radix-2 FFT of size N = 2^k splits into log₂(N) = k stages of butterflies, giving "
+        "O(N log N) instead of O(N^2).",
+    "convolution": "Linear convolution y[n] = Σ x[k]·h[n − k] slides one signal across the other, multiplying and "
+        "summing — how an LTI system's output is built from its impulse response.",
+    # Graph theory
+    "complete-edges": "The complete graph K_n joins every pair of its n vertices, giving C(n, 2) = n(n − 1)/2 "
+        "edges — the most a simple graph can have.",
+    "cayley": "Cayley's formula counts the labelled spanning trees of K_n as n^(n-2); the count grows explosively "
+        "with n.",
+    "walks": "Powers of the adjacency matrix count walks: (A^k)[i][j] is the number of length-k walks from i to j, "
+        "so A^2 gives length-2 walk counts.",
+    # Complex numbers
+    "complex-mul": "Multiply complex numbers by distributing with i^2 = −1: (a + bi)(c + di) = (ac − bd) + "
+        "(ad + bc)i.",
+    "power-of-i": "Powers of i cycle with period 4: i = i, i^2 = −1, i^3 = −i, i^4 = 1, then repeat — so i^n depends "
+        "only on n mod 4.",
+    "modulus": "The modulus |a + bi| = √(a^2 + b^2) is the distance from the origin in the complex plane "
+        "(Pythagoras), and is multiplicative: |zw| = |z||w|.",
+    # ODEs
+    "ode-roots": "A linear ODE y'' + b·y' + c·y = 0 has characteristic equation r^2 + b·r + c = 0; its roots give "
+        "the exponential modes e^(r·t).",
+    "ode-equilibrium": "An equilibrium of y' = f(y) is where f(y) = 0. For y' = a·y + b it is y* = −b/a — the value "
+        "the system settles toward when a < 0.",
+    "exp-growth": "The ODE y' = k·y has solution y(t) = y(0)·exp(k·t): exponential growth when k > 0, decay when "
+        "k < 0 — the rate of change is proportional to the amount.",
+    # Curated ML problems
+    "ml-sigmoid-derivative": "The logistic sigmoid σ(x) = 1/(1 + exp(−x)) squashes ℝ into (0, 1). Its derivative is "
+        "self-referential: σ'(x) = σ(x)(1 − σ(x)), maximal (1/4) at x = 0.",
+    "ml-tanh-derivative": "tanh(x) maps ℝ into (−1, 1) and has derivative 1 − tanh(x)^2. Like the sigmoid it "
+        "saturates for large |x|, which can slow learning.",
+    "ml-softplus-derivative": "Softplus ln(1 + exp(x)) is a smooth ReLU; its derivative is exactly the sigmoid "
+        "1/(1 + exp(−x)).",
+    "ml-mse-gradient": "Mean-squared error L = (1/2)(y − x)^2 has gradient dL/dx = x − y (prediction minus target); "
+        "descending it moves the prediction toward the target.",
+    "ml-bce-logit-gradient": "With a sigmoid output p = σ(z) and binary cross-entropy, the gradient w.r.t. the logit "
+        "collapses to dL/dz = p − y.",
+    "ml-log-likelihood-derivative": "Log-likelihoods are built from ln; the basic derivative d/dx ln(x) = 1/x "
+        "(x > 0) underlies maximum-likelihood gradients.",
+    "ml-l2-gradient": "An L2 penalty R(w) = (λ/2)w^2 has gradient λw — weight decay, a force toward zero "
+        "proportional to the weight.",
+    "ml-gram-matrix": "The Gram matrix XᵀX collects all pairwise inner products of X's columns; it is symmetric "
+        "PSD and appears in least squares and kernels.",
+    "ml-softmax-jacobian": "Softmax s has Jacobian J(i, j) = sᵢ(δᵢⱼ − sⱼ): diagonal sᵢ(1 − sᵢ), off-diagonal −sᵢsⱼ. "
+        "At equal logits s = (1/2, 1/2).",
+    "ml-softmax-ce-gradient": "Softmax with cross-entropy has the famous gradient dL/dz = softmax(z) − y — predicted "
+        "probabilities minus the one-hot truth.",
+    # Curated convex / DL problems
+    "convex-quartic-second-derivative": "A function is convex where f'' ≥ 0. For x^4, f'' = 12x^2 ≥ 0 everywhere, so "
+        "it is convex.",
+    "convex-log-barrier-gradient": "Interior-point methods replace x > 0 by the barrier −ln(x), which blows up at "
+        "the boundary; its gradient is −1/x.",
+    "convex-exp-derivative": "exp is convex (second derivative > 0) and is its own derivative: d/dx exp(x) = exp(x).",
+    "convex-negentropy-derivative": "Negative entropy x·ln(x) (x > 0) is convex; by the product rule its derivative "
+        "is ln(x) + 1.",
+    "convex-kkt-optimum": "The KKT conditions extend Lagrange multipliers to inequalities. For min (1/2)x^2 s.t. "
+        "x ≥ 1 the constraint is active, so x* = 1.",
+    "dl-cross-entropy-derivative": "For target y = 1 the loss is −ln(p) in the predicted probability p; dL/dp = −1/p "
+        "is large when p is small (confidently wrong).",
+    "dl-batchnorm-normalize": "BatchNorm standardizes activations as (x − μ)/√(σ^2 + ε) using the batch statistics, "
+        "then scales and shifts.",
+    # Curated probability / statistics problems
+    "prob-bayes-disease": "Bayes' rule updates beliefs: P(D|+) = P(+|D)P(D)/P(+). A rare condition makes most "
+        "positives false — the base-rate effect.",
+    "prob-three-coins": "For 'at least one' events use the complement: P(≥1 head) = 1 − P(all tails).",
+    "stats-chi-square-df": "A chi-square goodness-of-fit test over k categories has k − 1 degrees of freedom (the "
+        "counts must sum to n).",
+    "stats-two-sample-df": "A pooled two-sample t-test estimates one variance from both groups, costing two "
+        "degrees of freedom: df = n₁ + n₂ − 2.",
+    # Curated graph problem
+    "graph-cycle-coloring": "The chromatic number is the fewest colours so adjacent vertices differ. A cycle Cₙ "
+        "needs 2 colours if n is even and 3 if odd.",
+}
+
+# Aliases: fixed problems that share a concept with a template recap.
+RECAPS["convex-hessian-quadratic"] = RECAPS["hessian-quadratic"]
+RECAPS["convex-gradient-linear"] = RECAPS["gradient-linear"]
+RECAPS["stats-sample-mean"] = RECAPS["layernorm-mean"]
+RECAPS["dsp-convolution"] = RECAPS["convolution"]
+RECAPS["dsp-nyquist-cd"] = RECAPS["nyquist"]
+RECAPS["lp-box-min"] = RECAPS["box-lp"]
+RECAPS["decomp-cholesky-3x3"] = RECAPS["cholesky"]
+RECAPS["complex-i-cubed"] = RECAPS["power-of-i"]
+RECAPS["ode-exp-decay"] = RECAPS["exp-growth"]
+
+
+def recap_for(problem_id: str) -> str | None:
+    """Looks up a problem's recap by its concept key (the id minus the `gen-`
+    prefix and trailing index for templates; the full id for fixed problems)."""
+    key = problem_id[4:].rsplit("-", 1)[0] if problem_id.startswith("gen-") else problem_id
+    return RECAPS.get(key)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Mamba problem JSON files.")
     parser.add_argument("--count", type=int, default=3, help="problems per template")
@@ -1325,7 +1512,15 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
     rng = random.Random(args.seed)
 
+    missing_recaps: set[str] = set()
+
     def write(problem: dict) -> None:
+        if not problem.get("recap"):
+            recap = recap_for(problem["id"])
+            if recap:
+                problem["recap"] = recap
+            else:
+                missing_recaps.add(problem["id"])
         path = args.out / f"{problem['id']}.json"
         path.write_text(json.dumps(problem, indent=2, ensure_ascii=False) + "\n")
 
@@ -1341,6 +1536,8 @@ def main() -> None:
         f"generated {written} problems "
         f"({len(FIXED)} curated + {len(TEMPLATES)} templates × {args.count}) → {args.out}"
     )
+    if missing_recaps:
+        print(f"⚠ {len(missing_recaps)} problem(s) without a recap:", ", ".join(sorted(missing_recaps)))
     print("verify them with:  mamba --verify", args.out)
 
 

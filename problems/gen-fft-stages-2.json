@@ -7,5 +7,6 @@
   "prompt": "A radix-2 FFT has size N = 16.\n\nHow many butterfly stages does it use?",
   "expected": "4",
   "answer_kind": "Scalar",
-  "hint": "log₂(N) stages"
+  "hint": "log₂(N) stages",
+  "recap": "A radix-2 FFT of size N = 2^k splits into log₂(N) = k stages of butterflies, giving O(N log N) instead of O(N^2)."
 }

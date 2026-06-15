@@ -108,6 +108,7 @@ mod tests {
             expected: expected.into(),
             answer_kind,
             hint: None,
+            recap: None,
         }
     }
 

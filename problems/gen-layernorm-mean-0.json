@@ -7,5 +7,6 @@
   "prompt": "Compute the mean μ of the activations\n\n    x = [2, 5, -6]",
   "expected": "1/3",
   "answer_kind": "Scalar",
-  "hint": "μ = (Σ xᵢ) / n; an exact fraction or a decimal is accepted"
+  "hint": "μ = (Σ xᵢ) / n; an exact fraction or a decimal is accepted",
+  "recap": "The mean μ = (Σ xᵢ)/n is the data's balance point. LayerNorm subtracts it so each layer's activations are centered."
 }

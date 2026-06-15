@@ -7,5 +7,6 @@
   "prompt": "Differentiate the tanh activation:\n\n    d/dx [ tanh(x) ]",
   "expected": "1 - tanh(x)^2",
   "answer_kind": "Scalar",
-  "hint": "a standard identity in terms of tanh(x)"
+  "hint": "a standard identity in terms of tanh(x)",
+  "recap": "tanh(x) maps ℝ into (−1, 1) and has derivative 1 − tanh(x)^2. Like the sigmoid it saturates for large |x|, which can slow learning."
 }

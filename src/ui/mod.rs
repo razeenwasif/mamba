@@ -569,6 +569,21 @@ fn draw_description(frame: &mut Frame, app: &App, area: Rect) {
         lines.push(Line::default());
         // Render ASCII formula markers (^, _, [[…]]) into typeset math.
         lines.extend(formula::render(&p.prompt));
+
+        // Preliminary reading: a recap of the subject matter (toggle with `g`).
+        if let Some(recap) = p.recap.as_deref().filter(|_| app.show_recap) {
+            lines.push(Line::default());
+            lines.push(Line::from(Span::styled(
+                "📖 Recap",
+                Style::default()
+                    .fg(pal.accent_deep)
+                    .add_modifier(Modifier::BOLD),
+            )));
+            lines.push(Line::default());
+            for line in formula::render(recap) {
+                lines.push(line.style(Style::default().fg(pal.subtext)));
+            }
+        }
     } else {
         lines.push(Line::from("No problems found — see README for setup."));
     }
@@ -834,9 +849,9 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
         ("/", "find"),
         ("t", "topic"),
         ("r", "review"),
+        ("g", "recap"),
         ("^A", "tutor"),
         ("^P", "stats"),
-        ("esc", "nav"),
         ("^Q", "quit"),
     ] {
         spans.extend(theme::key_hint(key, action));

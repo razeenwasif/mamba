@@ -7,5 +7,6 @@
   "prompt": "Find the equilibrium of y' = 4*y + 4 (the y with y' = 0), as an exact fraction.",
   "expected": "-1",
   "answer_kind": "Scalar",
-  "hint": "set a·y + b = 0 and solve for y"
+  "hint": "set a·y + b = 0 and solve for y",
+  "recap": "An equilibrium of y' = f(y) is where f(y) = 0. For y' = a·y + b it is y* = −b/a — the value the system settles toward when a < 0."
 }

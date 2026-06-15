@@ -7,5 +7,6 @@
   "prompt": "A Conv2D has 7 input channels, 11 filters, and a 3×3 kernel (with a bias per filter).\n\nHow many learnable parameters does it have?",
   "expected": "704",
   "answer_kind": "Scalar",
-  "hint": "each filter: C_in·K·K weights + 1 bias; times C_out filters"
+  "hint": "each filter: C_in·K·K weights + 1 bias; times C_out filters",
+  "recap": "A Conv2D with C_in channels, C_out filters and a K×K kernel has C_in·K·K weights + 1 bias per filter, times C_out: C_out·(C_in·K^2 + 1)."
 }

@@ -7,5 +7,6 @@
   "prompt": "Is the symmetric matrix\n\n    [[1, 0], [0, 2]]\n\npositive semidefinite? Answer 1 for yes, 0 for no.",
   "expected": "1",
   "answer_kind": "Scalar",
-  "hint": "2×2 symmetric is PSD iff a ≥ 0, c ≥ 0, and ac − b² ≥ 0"
+  "hint": "2×2 symmetric is PSD iff a ≥ 0, c ≥ 0, and ac − b² ≥ 0",
+  "recap": "A symmetric 2×2 [[a, b], [b, c]] is positive semidefinite iff a ≥ 0, c ≥ 0 and ac − b^2 ≥ 0. PSD matrices are exactly the Hessians of convex quadratics."
 }

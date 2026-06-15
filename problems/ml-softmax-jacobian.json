@@ -7,5 +7,6 @@
   "prompt": "The softmax Jacobian is J(i,j) = s_i*(δ(i,j) − s_j). At logits z = [0, 0] (so s = [1/2, 1/2]), compute J.",
   "expected": "1/4 -1/4; -1/4 1/4",
   "answer_kind": "Scalar",
-  "hint": "diagonal: s_i*(1−s_i); off-diagonal: −s_i*s_j; exact fractions"
+  "hint": "diagonal: s_i*(1−s_i); off-diagonal: −s_i*s_j; exact fractions",
+  "recap": "Softmax s has Jacobian J(i, j) = sᵢ(δᵢⱼ − sⱼ): diagonal sᵢ(1 − sᵢ), off-diagonal −sᵢsⱼ. At equal logits s = (1/2, 1/2)."
 }

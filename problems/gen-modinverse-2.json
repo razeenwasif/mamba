@@ -7,5 +7,6 @@
   "prompt": "Find the modular inverse of 23 modulo 31\n(the x in [0, 31) with 23*x ≡ 1 (mod 31)).",
   "expected": "27",
   "answer_kind": "Scalar",
-  "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)"
+  "hint": "use the extended Euclidean algorithm; enter one integer in [0, m)",
+  "recap": "The modular inverse of a (mod m) is the x with a·x ≡ 1 (mod m). It exists iff gcd(a, m) = 1; the extended Euclidean algorithm finds it."
 }

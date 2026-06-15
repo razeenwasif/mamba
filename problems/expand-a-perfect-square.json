@@ -7,5 +7,6 @@
   "prompt": "Expand the binomial square into a polynomial in two variables:\n\n    (x + y)^2\n\nAny algebraically-equivalent form is accepted — the symbolic pipeline probes over both x and y.",
   "expected": "x^2 + 2*x*y + y^2",
   "answer_kind": "Scalar",
-  "hint": "use * between variables: write 2*x*y, not 2xy  (powers with ^, e.g. x^2)"
+  "hint": "use * between variables: write 2*x*y, not 2xy  (powers with ^, e.g. x^2)",
+  "recap": "(x + y)^2 = x^2 + 2xy + y^2 — a perfect-square trinomial whose middle term is twice the product of the two terms."
 }

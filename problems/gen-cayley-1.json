@@ -7,5 +7,6 @@
   "prompt": "By Cayley's formula, how many labelled spanning trees does K_13 have?",
   "expected": "1792160394037",
   "answer_kind": "Scalar",
-  "hint": "Cayley's formula: n^(n−2)"
+  "hint": "Cayley's formula: n^(n−2)",
+  "recap": "Cayley's formula counts the labelled spanning trees of K_n as n^(n-2); the count grows explosively with n."
 }

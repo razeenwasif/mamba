@@ -7,5 +7,6 @@
   "prompt": "Compute the biased (1/n) variance σ² of the activations\n\n    x = [5, -2, 0]\n\n(σ² = (1/n)·Σ (xᵢ − μ)²)",
   "expected": "26/3",
   "answer_kind": "Scalar",
-  "hint": "σ² = (Σ xᵢ²)/n − μ²; an exact fraction or a decimal is accepted"
+  "hint": "σ² = (Σ xᵢ²)/n − μ²; an exact fraction or a decimal is accepted",
+  "recap": "The biased variance σ^2 = (Σ xᵢ^2)/n − μ^2 is the mean squared deviation from the mean. LayerNorm divides by √(σ^2 + ε) to unit-scale."
 }

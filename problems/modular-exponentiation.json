@@ -7,5 +7,6 @@
   "prompt": "Compute the modular power:\n\n    7^128 mod 13\n\nReduce to its least non-negative residue. (Hint: Fermat's little theorem says 7^12 ≡ 1 (mod 13), so reduce the exponent mod 12 first.)",
   "expected": "3",
   "answer_kind": "Scalar",
-  "hint": "enter a single whole number in the range 0 .. 12"
+  "hint": "enter a single whole number in the range 0 .. 12",
+  "recap": "Modular exponentiation a^b mod m is computed by repeated squaring. Fermat's little theorem helps: if m is prime and gcd(a, m) = 1 then a^(m-1) ≡ 1, so reduce the exponent mod (m − 1) first."
 }

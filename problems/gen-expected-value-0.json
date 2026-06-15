@@ -7,5 +7,6 @@
   "prompt": "A random variable X takes values [2, 0, -1] with relative weights [4, 1, 4].\n\nFind E[X] as an exact fraction.",
   "expected": "4/9",
   "answer_kind": "Scalar",
-  "hint": "E[X] = Σ wᵢ·vᵢ / Σ wᵢ"
+  "hint": "E[X] = Σ wᵢ·vᵢ / Σ wᵢ",
+  "recap": "The expected value E[X] = Σ pᵢxᵢ is the probability-weighted average — the long-run mean. With weights wᵢ, E[X] = (Σ wᵢxᵢ)/(Σ wᵢ)."
 }

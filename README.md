@@ -66,9 +66,9 @@ mamba review        # list the problems due for review (spaced repetition)
 ```
 
 Keys: `/` fuzzy-find · `t` cycle topic filter · `r` spaced-repetition review ·
-`^A` AI tutor · `⇥` cycle focus · `↵` open/submit · `j`/`k` navigate & scroll ·
-`^P` progress/stats overlay · `esc` return to navigator · `^Q` quit. The sidebar
-groups problems by topic within each domain.
+`g` toggle the recap · `^A` AI tutor · `⇥` cycle focus · `↵` open/submit ·
+`j`/`k` navigate & scroll · `^P` progress/stats overlay · `esc` return to
+navigator · `^Q` quit. The sidebar groups problems by topic within each domain.
 
 Tutor shortcuts: after a wrong answer, `^E` asks the tutor to explain it; and an
 answer that starts with `?` is sent to the tutor as a question (a bare `?` asks

@@ -7,5 +7,6 @@
   "prompt": "BatchNorm normalizes with (x − μ)/√(σ² + ε). For x = 2, μ = 1, σ² = 4, ε = 0, compute it.",
   "expected": "1/2",
   "answer_kind": "Scalar",
-  "hint": "√4 = 2, so (2 − 1)/2"
+  "hint": "√4 = 2, so (2 − 1)/2",
+  "recap": "BatchNorm standardizes activations as (x − μ)/√(σ^2 + ε) using the batch statistics, then scales and shifts."
 }

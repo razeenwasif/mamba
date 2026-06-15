@@ -4,6 +4,16 @@ All notable changes to Mamba are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims
 to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Per-problem recap (preliminary reading).** Every problem now carries a short
+  recap of its subject matter — the key formula and idea — shown in the
+  description pane under `📖 Recap` and toggled with `g` (on by default). Recaps
+  are authored per concept in the generator (`RECAPS`, injected by problem id)
+  and on the hand-authored bootstrap problems; a new optional `recap` field on
+  the problem schema.
+
 ## [0.3.0] — 2026-06-15
 
 Bigger bank, sharper study tools: a `mamba review` shell command, a per-topic

@@ -48,6 +48,10 @@ fn renders_navigator_and_stats_overlay() {
         main.contains("Machine Learning") || main.contains("Algebra"),
         "expected a topic sub-header"
     );
+    assert!(
+        main.contains("Recap"),
+        "expected the recap (shown by default)"
+    );
 
     // Stats overlay: open it with a snapshot and confirm the dashboard paints.
     app.stats = Some(progress::stats(&vault, day));

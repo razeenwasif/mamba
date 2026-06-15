@@ -7,5 +7,6 @@
   "prompt": "For the adjacency matrix\n\n    A = [[0, 0, 0], [0, 0, 1], [0, 1, 0]]\n\ncompute A² (entry (i,j) counts walks of length 2).",
   "expected": "0 0 0; 0 1 0; 0 0 1",
   "answer_kind": "Scalar",
-  "hint": "A² is the matrix product of A with itself"
+  "hint": "A² is the matrix product of A with itself",
+  "recap": "Powers of the adjacency matrix count walks: (A^k)[i][j] is the number of length-k walks from i to j, so A^2 gives length-2 walk counts."
 }

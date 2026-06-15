@@ -7,5 +7,6 @@
   "prompt": "How many ways to choose 2 items from 17 (order doesn't matter)?\n\n    C(17, 2)",
   "expected": "136",
   "answer_kind": "Scalar",
-  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer"
+  "hint": "C(n, k) = n! / (k!·(n−k)!); enter one integer",
+  "recap": "C(n, k) = n!/(k!(n − k)!) counts unordered choices of k from n — the permutation count divided by k! because order doesn't matter."
 }

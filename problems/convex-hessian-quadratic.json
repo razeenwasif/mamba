@@ -7,5 +7,6 @@
   "prompt": "Find the Hessian of:\n\n    f(x1, x2) = x1^2 + x1*x2 + 2*x2^2",
   "expected": "2 1; 1 4",
   "answer_kind": "Scalar",
-  "hint": "the matrix of second partials"
+  "hint": "the matrix of second partials",
+  "recap": "The Hessian H(i, j) = ∂^2f/∂xᵢ∂xⱼ is the matrix of second partials. For a quadratic it is constant; a function is convex where its Hessian is positive semidefinite."
 }

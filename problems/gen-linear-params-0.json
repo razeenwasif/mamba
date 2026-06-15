@@ -7,5 +7,6 @@
   "prompt": "A linear layer maps ℝ^193 → ℝ^108 (with a bias).\n\nHow many learnable parameters does it have?",
   "expected": "20952",
   "answer_kind": "Scalar",
-  "hint": "weights a·b plus b biases"
+  "hint": "weights a·b plus b biases",
+  "recap": "A dense layer ℝ^a → ℝ^b has a·b weights plus b biases, i.e. a·b + b learnable parameters."
 }

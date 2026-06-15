@@ -7,5 +7,6 @@
   "prompt": "How many ordered arrangements of 4 items from 7?\n\n    P(7, 4)",
   "expected": "840",
   "answer_kind": "Scalar",
-  "hint": "P(n, k) = n! / (n−k)!; enter one integer"
+  "hint": "P(n, k) = n! / (n−k)!; enter one integer",
+  "recap": "P(n, k) = n!/(n − k)! counts ordered arrangements of k items from n: n·(n−1)···(n−k+1)."
 }

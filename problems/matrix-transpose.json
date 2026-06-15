@@ -7,5 +7,6 @@
   "prompt": "Write the transpose A^T of:\n\n    [[1, 2, 3], [4, 5, 6]]\n\nThe transpose swaps rows and columns, giving a 3×2 matrix.",
   "expected": "1 4; 2 5; 3 6",
   "answer_kind": "Scalar",
-  "hint": "rows separated by ';', elements by spaces or commas, e.g. 1 4; 2 5; 3 6"
+  "hint": "rows separated by ';', elements by spaces or commas, e.g. 1 4; 2 5; 3 6",
+  "recap": "The transpose Aᵀ reflects a matrix across its diagonal: entry (i, j) ↦ (j, i), turning m×n into n×m. (AB)ᵀ = BᵀAᵀ."
 }

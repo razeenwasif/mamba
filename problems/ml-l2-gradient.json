@@ -7,5 +7,6 @@
   "prompt": "The L2 (ridge) penalty is R(w) = (lambda/2)*w^2. Find dR/dw.",
   "expected": "lambda*w",
   "answer_kind": "Scalar",
-  "hint": "treat lambda as a constant; write lambda*w"
+  "hint": "treat lambda as a constant; write lambda*w",
+  "recap": "An L2 penalty R(w) = (λ/2)w^2 has gradient λw — weight decay, a force toward zero proportional to the weight."
 }

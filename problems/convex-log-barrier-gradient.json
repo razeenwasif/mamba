@@ -7,5 +7,6 @@
   "prompt": "The log-barrier for x > 0 is φ(x) = -ln(x). Find φ'(x).",
   "expected": "-1/x",
   "answer_kind": "Scalar",
-  "hint": "for x > 0"
+  "hint": "for x > 0",
+  "recap": "Interior-point methods replace x > 0 by the barrier −ln(x), which blows up at the boundary; its gradient is −1/x."
 }

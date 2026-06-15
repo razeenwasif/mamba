@@ -7,5 +7,6 @@
   "prompt": "With a sigmoid output and logit z, the binary cross-entropy gradient simplifies to σ(z) − y. Write σ(z) − y in terms of z and y.",
   "expected": "1/(1+exp(-z)) - y",
   "answer_kind": "Scalar",
-  "hint": "σ(z) = 1/(1+exp(-z))"
+  "hint": "σ(z) = 1/(1+exp(-z))",
+  "recap": "With a sigmoid output p = σ(z) and binary cross-entropy, the gradient w.r.t. the logit collapses to dL/dz = p − y."
 }

@@ -7,5 +7,6 @@
   "prompt": "Find the prime factorization of:\n\n    549250",
   "expected": "2 * 5^3 * 13^3",
   "answer_kind": "Factorization",
-  "hint": "format like 2^3 * 3^2 * 5"
+  "hint": "format like 2^3 * 3^2 * 5",
+  "recap": "Every integer > 1 factors uniquely into primes (Fundamental Theorem of Arithmetic). Trial-divide by 2, 3, 5, … up to √n; write the result as prime powers, e.g. 360 = 2^3 · 3^2 · 5."
 }

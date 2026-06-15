@@ -7,5 +7,6 @@
   "prompt": "For the Lagrangian\n\n    L(x, lambda) = 4*x^2 + lambda*(x - 6)\n\nwrite the stationarity condition ∂L/∂x (as an expression in x and lambda).",
   "expected": "8*x + lambda",
   "answer_kind": "Scalar",
-  "hint": "differentiate L with respect to x; the constant term drops out"
+  "hint": "differentiate L with respect to x; the constant term drops out",
+  "recap": "For min f(x) s.t. g(x) = 0, the Lagrangian is L = f + λg, and ∂L/∂x = 0 is a necessary (KKT) condition. Here ∂/∂x[a·x^2 + λ(x − c)] = 2a·x + λ."
 }

@@ -7,5 +7,6 @@
   "prompt": "Squared error for one sample (x is the prediction, y the target):\n\n    L = (1/2)*(y - x)^2\n\nFind dL/dx.",
   "expected": "x - y",
   "answer_kind": "Scalar",
-  "hint": "chain rule — mind the sign"
+  "hint": "chain rule — mind the sign",
+  "recap": "Mean-squared error L = (1/2)(y − x)^2 has gradient dL/dx = x − y (prediction minus target); descending it moves the prediction toward the target."
 }

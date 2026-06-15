@@ -100,6 +100,10 @@ pub struct Problem {
     /// e.g. `"rows separated by ';', e.g. 1 2; 3 4"`.
     #[serde(default)]
     pub hint: Option<String>,
+    /// Optional preliminary reading — a short recap of the subject matter shown
+    /// in the description pane (toggle with `g`). May use ASCII formula markers.
+    #[serde(default)]
+    pub recap: Option<String>,
 }
 
 /// Loads every `*.json` problem in `dir`, sorted by (domain, difficulty,

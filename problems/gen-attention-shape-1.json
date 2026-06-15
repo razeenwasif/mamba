@@ -7,5 +7,6 @@
   "prompt": "Scaled dot-product attention with Q [8×51], K [32×51], V [32×51]:\n\n    softmax(Q·Kᵀ / √d)·V\n\nWhat is the output shape? Enter `rows cols`.",
   "expected": "8 51",
   "answer_kind": "Scalar",
-  "hint": "scores are [n×m]; multiplying by V [m×d] gives [n×d]"
+  "hint": "scores are [n×m]; multiplying by V [m×d] gives [n×d]",
+  "recap": "Scaled dot-product attention: scores Q·Kᵀ/√d are [n×m]; softmax over the m keys; times V [m×d] gives output [n×d] — the queries' shape."
 }

@@ -7,5 +7,6 @@
   "prompt": "Compute the linear convolution of\n\n    x = [1, 4, -2]\n    h = [2, 0]\n\nEnter the result as a space-separated row.",
   "expected": "2 8 -4 0",
   "answer_kind": "Scalar",
-  "hint": "y[n] = Σ x[k]·h[n−k]; length is len(x)+len(h)−1"
+  "hint": "y[n] = Σ x[k]·h[n−k]; length is len(x)+len(h)−1",
+  "recap": "Linear convolution y[n] = Σ x[k]·h[n − k] slides one signal across the other, multiplying and summing — how an LTI system's output is built from its impulse response."
 }

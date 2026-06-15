@@ -7,5 +7,6 @@
   "prompt": "A disease affects 1% of people. A test is 90% sensitive (P(+|D) = 9/10) with a 10% false-positive rate (P(+|¬D) = 1/10). Given a positive test, find P(D|+) as an exact fraction.",
   "expected": "1/12",
   "answer_kind": "Scalar",
-  "hint": "P(D|+) = P(+|D)P(D) / P(+); the base rate dominates"
+  "hint": "P(D|+) = P(+|D)P(D) / P(+); the base rate dominates",
+  "recap": "Bayes' rule updates beliefs: P(D|+) = P(+|D)P(D)/P(+). A rare condition makes most positives false — the base-rate effect."
 }

@@ -7,5 +7,6 @@
   "prompt": "Negative entropy is f(x) = x*ln(x) for x > 0. Find f'(x).",
   "expected": "ln(x) + 1",
   "answer_kind": "Scalar",
-  "hint": "product rule"
+  "hint": "product rule",
+  "recap": "Negative entropy x·ln(x) (x > 0) is convex; by the product rule its derivative is ln(x) + 1."
 }

@@ -7,5 +7,6 @@
   "prompt": "Expand into standard form:\n\n    (x + 8)(x + 7)",
   "expected": "x^2 + 15*x + 56",
   "answer_kind": "Scalar",
-  "hint": "use ^ for powers and * for products, e.g. x^2 - x - 6"
+  "hint": "use ^ for powers and * for products, e.g. x^2 - x - 6",
+  "recap": "To expand (x + a)(x + b), distribute every pair (FOIL): x^2 + (a + b)x + ab. The linear coefficient is the sum of a and b; the constant is their product."
 }

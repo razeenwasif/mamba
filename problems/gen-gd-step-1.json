@@ -7,5 +7,6 @@
   "prompt": "Gradient descent on f(x) = x^2 (so ∇f = 2x).\n\nFrom x_k = 2 with step size α = 1/2, compute the next iterate x_k − α·∇f(x_k).",
   "expected": "0",
   "answer_kind": "Scalar",
-  "hint": "x_k − α·2·x_k; an exact fraction or a decimal is accepted"
+  "hint": "x_k − α·2·x_k; an exact fraction or a decimal is accepted",
+  "recap": "Gradient descent updates x ← x − α·∇f(x). For f = x^2, ∇f = 2x, so one step gives (1 − 2α)x. The step size α sets how far you descend."
 }

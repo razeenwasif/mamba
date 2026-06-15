@@ -7,5 +7,6 @@
   "prompt": "Differentiate with respect to x:\n\n    d/dx [ 3x^2 ]\n\nEnter the derivative as an expression in x.",
   "expected": "6*x",
   "answer_kind": "Scalar",
-  "hint": "the power rule: d/dx[a·xⁿ] = a·n·xⁿ⁻¹  →  enter like 6x or 6*x"
+  "hint": "the power rule: d/dx[a·xⁿ] = a·n·xⁿ⁻¹  →  enter like 6x or 6*x",
+  "recap": "The power rule: d/dx[a·x^n] = a·n·x^(n-1) — multiply by the exponent, then drop it by one. It differentiates every polynomial term."
 }

@@ -7,5 +7,6 @@
   "prompt": "Find the mean of the sample\n\n    [2, 4, 4, 4, 5, 5, 7, 9]",
   "expected": "5",
   "answer_kind": "Scalar",
-  "hint": "sum the values and divide by the count"
+  "hint": "sum the values and divide by the count",
+  "recap": "The mean μ = (Σ xᵢ)/n is the data's balance point. LayerNorm subtracts it so each layer's activations are centered."
 }

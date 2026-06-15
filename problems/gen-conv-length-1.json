@@ -7,5 +7,6 @@
   "prompt": "Two finite signals of length 54 and 53 are linearly convolved.\n\nWhat is the length of the result?",
   "expected": "106",
   "answer_kind": "Scalar",
-  "hint": "M + N − 1"
+  "hint": "M + N − 1",
+  "recap": "Linearly convolving signals of lengths M and N gives length M + N − 1 — the supports add minus the one shared sample."
 }

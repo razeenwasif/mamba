@@ -7,5 +7,6 @@
   "prompt": "Compute the factorial:\n\n    23!",
   "expected": "25852016738884976640000",
   "answer_kind": "Scalar",
-  "hint": "n! = n·(n−1)···1; enter the full integer"
+  "hint": "n! = n·(n−1)···1; enter the full integer",
+  "recap": "n! = n·(n−1)···1 is the number of orderings of n distinct items, with 0! = 1; it outgrows any exponential."
 }

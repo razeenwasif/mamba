@@ -7,5 +7,6 @@
   "prompt": "A 1-D convolution has input length L = 49, kernel K = 3, padding P = 3, stride S = 3.\n\nOutput length = floor((L − K + 2P) / S) + 1. Compute it.",
   "expected": "18",
   "answer_kind": "Scalar",
-  "hint": "floor division; enter one integer"
+  "hint": "floor division; enter one integer",
+  "recap": "A 1-D convolution output length is floor((L − K + 2P)/S) + 1: padding P grows it, stride S shrinks it."
 }
