@@ -4,7 +4,11 @@ All notable changes to Mamba are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims
 to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] — 2026-06-15
+
+The first tagged release. A single-binary terminal math practice engine with a
+multi-domain verification engine, a 124-problem bank, a spaced-repetition study
+loop, a Markdown vault, and a problem generator.
 
 ### Added
 - **`mamba solve <id> <answer>` subcommand.** Verify a single problem's answer
@@ -72,14 +76,6 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Authored as a curated `FIXED` set plus three new parametrized generator
   templates (linear-form gradient, quadratic Hessian, ridge gradient); the
   generator default count is now 3. All 56 problems pass `mamba --verify`.
-
-### Changed
-- **Tensor cells widened to arbitrary precision.** Exact matrix cells now use
-  `BigRational` (`Ratio<BigInt>`) instead of `Ratio<i64>`, so no numerator or
-  denominator can ever overflow — fractions of any size compare exactly. Resolves
-  the accepted limitation noted in [ADR 0004](docs/adr/0004-rational-tensor-cells.md).
-
-### Added
 - **Rolling progress dashboard.** On every correct answer, after the per-problem
   note is written, Mamba (re)renders `_progress.md` in the vault: total solved, a
   breakdown by domain and by difficulty, current and longest day streaks, and the
@@ -144,9 +140,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `clean`, and `help` targets — `make install` is the after-every-feature
   command.
 
-## [0.1.0] — 2026-06-14
+### Changed
+- **Tensor cells widened to arbitrary precision.** Exact matrix cells use
+  `BigRational` (`Ratio<BigInt>`) instead of `Ratio<i64>`, so no numerator or
+  denominator can ever overflow — fractions of any size compare exactly (resolves
+  the limitation noted in [ADR 0004](docs/adr/0004-rational-tensor-cells.md)).
 
-### Added
+### Foundation (initial scaffold)
 - **Universal Routing Engine** (`engine::verify`): a total `match` over the
   problem `Domain` dispatching to one of three specialized pipelines, each
   returning a uniform `Verdict` (`Correct` | `Incorrect` | `ParseError`).

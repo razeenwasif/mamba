@@ -19,7 +19,26 @@ so even a slow check never freezes the UI — the console shows `Verifying…` w
 input, scrolling, and quit stay live.
 
 Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-math-routing.md)
-· [ADR 0002 — Off-thread Verification](docs/adr/0002-off-thread-verification.md).
+· [ADR 0002 — Off-thread Verification](docs/adr/0002-off-thread-verification.md)
+· [ADR 0003 — Multivariate Symbolic](docs/adr/0003-multivariate-symbolic-probing.md)
+· [ADR 0004 — Rational Tensor Cells](docs/adr/0004-rational-tensor-cells.md).
+
+## Highlights
+
+- **124+ problems** across Algebra, Calculus, Trigonometry, Linear Algebra,
+  Number Theory, **Machine Learning, Convex Optimization, Deep Learning,
+  Probability, and Statistics** — all verified end-to-end by `mamba --verify`.
+- **Mathematical verification, not string matching**: multivariate algebraic
+  equivalence (incl. `exp`/`ln`/trig), exact `BigRational` matrices, and
+  arbitrary-precision number theory with Miller–Rabin primality.
+- **A real study loop**: a `/` fuzzy finder, `t` topic filter, `r`
+  spaced-repetition review, a `^P` progress overlay (streaks, per-domain /
+  per-difficulty / per-topic bars), and a per-problem attempt-history peek.
+- **A Markdown vault**: each solve writes a note (with a `## History` table) and
+  refreshes a rolling `_progress.md` dashboard — local-first, Obsidian-ready.
+- **Batteries included**: a pure-Python generator (`make gen`) mass-authors
+  problems with answers correct by construction, plus a scriptable
+  `mamba solve <id> <answer>`.
 
 ## Install (run `mamba` from anywhere)
 
