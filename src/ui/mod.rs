@@ -69,9 +69,161 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
     draw_input(frame, app, input_bar);
     draw_footer(frame, app, footer);
 
-    // The fuzzy finder floats over everything, Spotlight-style.
+    // A modal overlay floats over everything (the two are mutually exclusive).
     if app.search_active {
         draw_search_overlay(frame, app, frame.area());
+    } else if app.stats_visible {
+        draw_stats_overlay(frame, app, frame.area());
+    }
+}
+
+/// The progress/stats overlay (`Ctrl-P`): a centered panel with totals, streaks,
+/// per-domain and per-difficulty bars, and recent solves — computed from the
+/// vault via [`crate::storage::progress`].
+fn draw_stats_overlay(frame: &mut Frame, app: &App, area: Rect) {
+    let pal = theme::palette();
+    let w = (area.width * 7 / 10).clamp(40, 74);
+    let h = (area.height * 8 / 10).clamp(12, 30);
+    let popup = centered_rect(w, h, area);
+
+    frame.render_widget(Clear, popup);
+    let block = Block::default()
+        .title(Span::styled(
+            "  📈  Progress  ",
+            Style::default()
+                .fg(pal.accent_deep)
+                .add_modifier(Modifier::BOLD),
+        ))
+        .title_bottom(Span::styled(
+            "  ^P / esc close  ",
+            Style::default().fg(pal.overlay),
+        ))
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .border_style(Style::default().fg(pal.accent))
+        .style(Style::default().bg(pal.base));
+    let inner = block.inner(popup);
+    frame.render_widget(block, popup);
+
+    let Some(stats) = &app.stats else {
+        return;
+    };
+
+    let mut lines: Vec<Line> = Vec::new();
+    if stats.total == 0 {
+        lines.push(Line::from(Span::styled(
+            " No solves yet — answer a problem to start a streak.",
+            Style::default().fg(pal.overlay),
+        )));
+    } else {
+        lines.push(Line::from(vec![
+            Span::styled(
+                format!(" {} solved", stats.total),
+                Style::default().fg(pal.text).add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                format!("    🔥 streak {}", stats.current_streak),
+                Style::default().fg(pal.green),
+            ),
+            Span::styled(
+                format!("    best {}", stats.longest_streak),
+                Style::default().fg(pal.subtext),
+            ),
+        ]));
+        lines.push(Line::default());
+        lines.push(section(" By domain"));
+        let dmax = stats.by_domain.iter().map(|(_, c)| *c).max().unwrap_or(0);
+        for (label, count) in &stats.by_domain {
+            lines.push(bar_line(label, *count, dmax, domain_color_by_name(label)));
+        }
+        lines.push(Line::default());
+        lines.push(section(" By difficulty"));
+        let fmax = stats
+            .by_difficulty
+            .iter()
+            .map(|(_, c)| *c)
+            .max()
+            .unwrap_or(0);
+        for (label, count) in &stats.by_difficulty {
+            lines.push(bar_line(
+                label,
+                *count,
+                fmax,
+                difficulty_color_by_name(label),
+            ));
+        }
+        if !stats.recent.is_empty() {
+            lines.push(Line::default());
+            lines.push(section(" Recently solved"));
+            for r in &stats.recent {
+                lines.push(Line::from(vec![
+                    Span::styled(
+                        format!("  {}  ", r.date.format("%m-%d")),
+                        Style::default().fg(pal.overlay),
+                    ),
+                    Span::styled(r.title.clone(), Style::default().fg(pal.text)),
+                    Span::styled(
+                        format!("  · {}", r.domain),
+                        Style::default().fg(domain_color_by_name(&r.domain)),
+                    ),
+                ]));
+            }
+        }
+    }
+
+    frame.render_widget(
+        Paragraph::new(lines)
+            .style(Style::default().bg(pal.base))
+            .wrap(Wrap { trim: false }),
+        inner,
+    );
+}
+
+/// A bold section label inside the stats overlay.
+fn section(label: &str) -> Line<'static> {
+    Line::from(Span::styled(
+        label.to_string(),
+        Style::default()
+            .fg(theme::palette().subtext)
+            .add_modifier(Modifier::BOLD),
+    ))
+}
+
+/// One labelled count with a proportional bar (longest count fills `BAR`).
+fn bar_line(label: &str, count: usize, max: usize, color: ratatui::style::Color) -> Line<'static> {
+    const BAR: usize = 22;
+    let pal = theme::palette();
+    let filled = if max > 0 {
+        (count * BAR).div_ceil(max)
+    } else {
+        0
+    };
+    Line::from(vec![
+        Span::styled(
+            format!(" {label:<9} {count:>3}  "),
+            Style::default().fg(pal.subtext),
+        ),
+        Span::styled("█".repeat(filled), Style::default().fg(color)),
+    ])
+}
+
+/// Domain accent by name (the overlay works from `&str` labels, not the enum).
+fn domain_color_by_name(name: &str) -> ratatui::style::Color {
+    let p = theme::palette();
+    match name {
+        "Tensor" => p.blue,
+        "Exact" => p.teal,
+        _ => p.accent, // Symbolic
+    }
+}
+
+/// Difficulty accent by name.
+fn difficulty_color_by_name(name: &str) -> ratatui::style::Color {
+    let p = theme::palette();
+    match name {
+        "Medium" => p.yellow,
+        "Hard" => p.red,
+        _ => p.green, // Easy
     }
 }
 
@@ -253,16 +405,22 @@ fn draw_navigator(frame: &mut Frame, app: &mut App, area: Rect) {
         .nav_rows
         .iter()
         .map(|row| match row {
-            NavRow::Header(domain) => ListItem::new(Line::from(Span::styled(
+            NavRow::DomainHeader(domain) => ListItem::new(Line::from(Span::styled(
                 format!("◆ {domain}"),
                 Style::default()
                     .fg(pal.accent_deep)
                     .add_modifier(Modifier::BOLD),
             ))),
+            NavRow::TopicHeader(topic) => ListItem::new(Line::from(Span::styled(
+                format!("  {topic}"),
+                Style::default()
+                    .fg(pal.subtext)
+                    .add_modifier(Modifier::ITALIC),
+            ))),
             NavRow::Problem(i) => {
                 let prob = &app.problems[*i];
                 ListItem::new(Line::from(vec![
-                    Span::raw("   "),
+                    Span::raw("    "),
                     Span::styled("● ", Style::default().fg(difficulty_color(prob.difficulty))),
                     Span::styled(prob.title.clone(), Style::default().fg(pal.text)),
                 ]))
@@ -441,6 +599,7 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
         ("/", "find"),
         ("⇥", "focus"),
         ("↵", "submit"),
+        ("^P", "stats"),
         ("esc", "nav"),
         ("^Q", "quit"),
     ] {

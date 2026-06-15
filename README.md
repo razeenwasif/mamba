@@ -41,7 +41,8 @@ mamba --verify      # run every problem's canonical answer through the engine
 ```
 
 Keys: `/` fuzzy-find a problem · `⇥` cycle focus · `↵` open/submit · `j`/`k`
-navigate & scroll · `esc` return to navigator · `^Q` quit.
+navigate & scroll · `^P` progress/stats overlay · `esc` return to navigator ·
+`^Q` quit. The sidebar groups problems by topic within each domain.
 
 ### From a checkout, without installing
 

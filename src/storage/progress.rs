@@ -101,14 +101,80 @@ fn parse_note(content: &str) -> Option<Note> {
     })
 }
 
-/// Renders the dashboard Markdown from the aggregated notes.
-fn render(notes: &[Note], today: NaiveDate) -> String {
-    let dates: BTreeSet<NaiveDate> = notes.iter().map(|n| n.date).collect();
-    let current = current_streak(&dates, today);
-    let longest = longest_streak(&dates);
+/// Aggregated solve statistics — the shared shape behind both the Markdown
+/// dashboard and the in-TUI stats overlay.
+#[derive(Debug, Clone)]
+pub struct Stats {
+    /// Total solved problems (one per per-problem note).
+    pub total: usize,
+    /// Counts per domain, in canonical order.
+    pub by_domain: Vec<(&'static str, usize)>,
+    /// Counts per difficulty, in canonical order.
+    pub by_difficulty: Vec<(&'static str, usize)>,
+    /// Consecutive-day streak ending today/yesterday.
+    pub current_streak: u32,
+    /// Longest consecutive-day streak ever.
+    pub longest_streak: u32,
+    /// The most recent solves, newest first.
+    pub recent: Vec<RecentSolve>,
+}
 
-    let mut out = String::new();
-    out.push_str(&format!(
+/// One row of the "recently solved" list.
+#[derive(Debug, Clone)]
+pub struct RecentSolve {
+    pub date: NaiveDate,
+    pub title: String,
+    pub domain: String,
+    pub difficulty: String,
+}
+
+/// Scans `vault` and returns aggregated [`Stats`] — the entry point for the
+/// in-TUI stats overlay.
+pub fn stats(vault: &Path, today: NaiveDate) -> Stats {
+    aggregate(&scan(vault), today)
+}
+
+/// Aggregates parsed notes into [`Stats`] (pure; the unit of testing).
+fn aggregate(notes: &[Note], today: NaiveDate) -> Stats {
+    let dates: BTreeSet<NaiveDate> = notes.iter().map(|n| n.date).collect();
+    let by_domain = DOMAINS
+        .iter()
+        .map(|&d| (d, notes.iter().filter(|n| n.domain == d).count()))
+        .collect();
+    let by_difficulty = DIFFICULTIES
+        .iter()
+        .map(|&d| (d, notes.iter().filter(|n| n.difficulty == d).count()))
+        .collect();
+
+    let mut ordered: Vec<&Note> = notes.iter().collect();
+    // Most recent first; ties broken by title for a stable, readable order.
+    ordered.sort_by(|a, b| b.date.cmp(&a.date).then(a.title.cmp(&b.title)));
+    let recent = ordered
+        .into_iter()
+        .take(RECENT)
+        .map(|n| RecentSolve {
+            date: n.date,
+            title: n.title.clone(),
+            domain: n.domain.clone(),
+            difficulty: n.difficulty.clone(),
+        })
+        .collect();
+
+    Stats {
+        total: notes.len(),
+        by_domain,
+        by_difficulty,
+        current_streak: current_streak(&dates, today),
+        longest_streak: longest_streak(&dates),
+        recent,
+    }
+}
+
+/// Renders the dashboard Markdown from aggregated stats.
+fn render(notes: &[Note], today: NaiveDate) -> String {
+    let s = aggregate(notes, today);
+
+    let mut out = format!(
         "---\n\
          title: Mamba Progress\n\
          updated: {}\n\
@@ -117,37 +183,31 @@ fn render(notes: &[Note], today: NaiveDate) -> String {
          # 🐍 Mamba Progress\n\n\
          **{} solved** · current streak **{}** · longest **{}**\n\n",
         today.format("%Y-%m-%d"),
-        notes.len(),
-        current,
-        longest,
-    ));
+        s.total,
+        s.current_streak,
+        s.longest_streak,
+    );
 
     out.push_str("## By domain\n\n");
-    for d in DOMAINS {
-        let n = notes.iter().filter(|note| note.domain == d).count();
+    for (d, n) in &s.by_domain {
         out.push_str(&format!("- {d:<9} {n}\n"));
     }
-
     out.push_str("\n## By difficulty\n\n");
-    for d in DIFFICULTIES {
-        let n = notes.iter().filter(|note| note.difficulty == d).count();
+    for (d, n) in &s.by_difficulty {
         out.push_str(&format!("- {d:<7} {n}\n"));
     }
 
     out.push_str("\n## Recently solved\n\n");
-    let mut recent: Vec<&Note> = notes.iter().collect();
-    // Most recent first; ties broken by title for a stable, readable order.
-    recent.sort_by(|a, b| b.date.cmp(&a.date).then(a.title.cmp(&b.title)));
-    if recent.is_empty() {
+    if s.recent.is_empty() {
         out.push_str("- (nothing yet)\n");
     }
-    for note in recent.into_iter().take(RECENT) {
+    for r in &s.recent {
         out.push_str(&format!(
             "- {}  {}  [{} · {}]\n",
-            note.date.format("%Y-%m-%d"),
-            note.title,
-            note.domain,
-            note.difficulty,
+            r.date.format("%Y-%m-%d"),
+            r.title,
+            r.domain,
+            r.difficulty,
         ));
     }
 

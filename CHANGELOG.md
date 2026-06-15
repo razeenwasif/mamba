@@ -7,6 +7,15 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **In-TUI progress overlay (`Ctrl-P`).** A modal, centered overlay shows live
+  all-time progress computed from the vault (via the shared `progress` stats
+  API): total solved, per-domain and per-difficulty bars, current/longest
+  streak, and recent solves. `Esc`/`q`/`^P` close it.
+- **Topic sub-grouping in the navigator.** With the bank now at 68 problems, the
+  sidebar groups problems by **topic within each domain** (e.g. Machine
+  Learning, Convex Optimization, Number Theory under their domains), so they are
+  browseable, not just findable via `/`. The bank now sorts by
+  (domain, topic, difficulty, title).
 - **More generator templates** (bank 56 → 68): least common multiple, modular
   inverse (`pow(a, -1, m)`), eigenvalues of a triangular matrix, and solving a
   2×2 linear system by Cramer's rule (exact-fraction solutions). All pass

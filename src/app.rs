@@ -68,12 +68,15 @@ impl Focus {
     }
 }
 
-/// One row of the navigation tree: either a non-selectable domain header or a
-/// selectable problem (an index into [`App::problems`]).
+/// One row of the navigation tree: a non-selectable domain header, a
+/// non-selectable topic sub-header, or a selectable problem (an index into
+/// [`App::problems`]). Selection skips both header kinds.
 #[derive(Debug, Clone)]
 pub enum NavRow {
-    /// A domain group header. Selection skips over these.
-    Header(String),
+    /// A top-level domain group header (`Symbolic`, `Tensor`, `Exact`).
+    DomainHeader(String),
+    /// A second-level topic header within a domain (`Machine Learning`, …).
+    TopicHeader(String),
     /// A selectable problem, stored as an index into [`App::problems`].
     Problem(usize),
 }
@@ -128,6 +131,11 @@ pub struct App {
     pub opened_at: Instant,
     /// Vault file written by the most recent correct answer, if any.
     pub exported_to: Option<PathBuf>,
+    /// Whether the progress/stats overlay is shown (toggle: `Ctrl-P`). Modal:
+    /// it floats over the panes and owns the keyboard while open.
+    pub stats_visible: bool,
+    /// Stats snapshot, recomputed from the vault each time the overlay opens.
+    pub stats: Option<progress::Stats>,
     /// When `true`, the main loop tears down the terminal and exits.
     pub should_quit: bool,
 }
@@ -156,6 +164,8 @@ impl App {
             vault_path,
             opened_at: Instant::now(),
             exported_to: None,
+            stats_visible: false,
+            stats: None,
             should_quit: false,
         };
         if let Some(first) = app
@@ -180,7 +190,7 @@ impl App {
         } else {
             match self.nav_rows.get(self.nav_state.selected()?)? {
                 NavRow::Problem(i) => Some(*i),
-                NavRow::Header(_) => None,
+                _ => None,
             }
         }
     }
@@ -204,6 +214,20 @@ impl App {
         // -- Global bindings (work regardless of focus) -------------------
         if (key.code == KeyCode::Char('q') || key.code == KeyCode::Char('c')) && ctrl {
             self.should_quit = true;
+            return;
+        }
+
+        // Ctrl-P toggles the progress/stats overlay from anywhere.
+        if key.code == KeyCode::Char('p') && ctrl {
+            self.toggle_stats();
+            return;
+        }
+        // The stats overlay is modal: Esc or q closes it, and it consumes every
+        // other key so stray input never leaks to the panes behind it.
+        if self.stats_visible {
+            if matches!(key.code, KeyCode::Esc | KeyCode::Char('q')) {
+                self.stats_visible = false;
+            }
             return;
         }
 
@@ -270,6 +294,7 @@ impl App {
     /// Opens the finder with an empty query (all problems listed).
     fn enter_search(&mut self) {
         self.search_active = true;
+        self.stats_visible = false; // the two modals are mutually exclusive
         self.search_query.clear();
         self.focus = Focus::Navigator;
         self.recompute_filter();
@@ -517,6 +542,19 @@ impl App {
         self.verify_job.is_some()
     }
 
+    /// Shows or hides the progress overlay, recomputing the snapshot from the
+    /// vault on open. Closes the fuzzy finder so the two modals never overlap.
+    fn toggle_stats(&mut self) {
+        if self.stats_visible {
+            self.stats_visible = false;
+        } else {
+            let today = Local::now().date_naive();
+            self.stats = Some(progress::stats(&self.vault_path, today));
+            self.search_active = false;
+            self.stats_visible = true;
+        }
+    }
+
     /// Writes the accepted answer into the Markdown vault, recording any
     /// failure as a [`Verdict::Incorrect`] so a silent data-loss never hides
     /// behind a green check. `opened_at` is the captured open-time of the
@@ -544,17 +582,24 @@ impl App {
     }
 }
 
-/// Flattens the problem bank into navigator rows, inserting a header row
-/// whenever the domain changes. Assumes `problems` is sorted by domain first —
+/// Flattens the problem bank into navigator rows, inserting a domain header
+/// when the domain changes and a topic sub-header when the topic changes within
+/// a domain. Assumes `problems` is sorted by (domain, topic, …) —
 /// [`crate::storage::problem::load_all`] guarantees this.
 fn build_nav_rows(problems: &[Problem]) -> Vec<NavRow> {
-    let mut rows = Vec::with_capacity(problems.len() + 4);
+    let mut rows = Vec::with_capacity(problems.len() + 16);
     let mut last_domain: Option<String> = None;
+    let mut last_topic: Option<String> = None;
     for (i, p) in problems.iter().enumerate() {
         let domain = p.domain.to_string();
         if last_domain.as_deref() != Some(domain.as_str()) {
-            rows.push(NavRow::Header(domain.clone()));
+            rows.push(NavRow::DomainHeader(domain.clone()));
             last_domain = Some(domain);
+            last_topic = None; // topics restart within each new domain
+        }
+        if last_topic.as_deref() != Some(p.topic.as_str()) {
+            rows.push(NavRow::TopicHeader(p.topic.clone()));
+            last_topic = Some(p.topic.clone());
         }
         rows.push(NavRow::Problem(i));
     }
@@ -615,15 +660,22 @@ mod tests {
     }
 
     #[test]
-    fn nav_rows_insert_one_header_per_domain_run() {
+    fn nav_rows_insert_one_domain_and_topic_header_per_run() {
         let a = app();
-        let headers = a
+        let domain_headers = a
             .nav_rows
             .iter()
-            .filter(|r| matches!(r, NavRow::Header(_)))
+            .filter(|r| matches!(r, NavRow::DomainHeader(_)))
             .count();
-        assert_eq!(headers, 3); // Symbolic, Tensor, Exact
-        assert!(matches!(a.nav_rows[0], NavRow::Header(_)));
+        assert_eq!(domain_headers, 3); // Symbolic, Tensor, Exact
+        // Each of the three (all topic "X") gets one topic sub-header too.
+        let topic_headers = a
+            .nav_rows
+            .iter()
+            .filter(|r| matches!(r, NavRow::TopicHeader(_)))
+            .count();
+        assert_eq!(topic_headers, 3);
+        assert!(matches!(a.nav_rows[0], NavRow::DomainHeader(_)));
         // First selectable row is auto-opened.
         assert_eq!(a.open_problem, Some(0));
     }
@@ -631,14 +683,14 @@ mod tests {
     #[test]
     fn selection_skips_headers_in_both_directions() {
         let mut a = app();
-        // Rows: [H(Symbolic), P0, H(Tensor), P1, H(Exact), P2]; starts on P0=1.
-        assert_eq!(a.nav_state.selected(), Some(1));
+        // Rows: [DH, TH, P0=2, DH, TH, P1=5, DH, TH, P2=8].
+        assert_eq!(a.nav_state.selected(), Some(2));
         a.select_adjacent(1);
-        assert_eq!(a.nav_state.selected(), Some(3)); // skipped the Tensor header
+        assert_eq!(a.nav_state.selected(), Some(5)); // skipped a domain + topic header
         a.select_adjacent(-1);
-        assert_eq!(a.nav_state.selected(), Some(1));
+        assert_eq!(a.nav_state.selected(), Some(2));
         a.select_adjacent(-1); // top edge — unchanged
-        assert_eq!(a.nav_state.selected(), Some(1));
+        assert_eq!(a.nav_state.selected(), Some(2));
     }
 
     #[test]
