@@ -57,9 +57,10 @@ pub fn export(
         .and_then(|v| NaiveDate::parse_from_str(v, "%Y-%m-%d").ok())
         .or(prior_last);
 
-    // Grade the review from the outcome: a first-try solve is Good, a
-    // multi-attempt solve is Hard (a lapse — Again — is recorded by record_lapse).
-    let grade = fsrs::grade_for_solve(attempts);
+    // Grade the review from the outcome: a fast first-try solve is Easy, any
+    // other first-try Good, a multi-attempt Hard (a lapse — Again — is recorded
+    // by record_lapse).
+    let grade = fsrs::grade_for_solve(attempts, time_spent.as_secs());
     let memory = match prior_memory {
         Some(m) => {
             let elapsed = prior_reviewed.map_or(0, |d| (solved_on - d).num_days().max(0)) as f64;

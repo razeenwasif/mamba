@@ -200,13 +200,14 @@ mod tests {
         let vault = scratch("overdue");
         let reviewed = problem("reviewed", "Algebra", Difficulty::Easy);
         let fresh = problem("fresh", "Algebra", Difficulty::Easy);
-        // Solved once on the 1st → interval 1 day, so by the 15th it's 13d overdue.
+        // Solved once on the 1st with a slower-than-Easy time → a Good first
+        // review (a short FSRS interval), so by the 15th it is overdue.
         vault::export(
             &vault,
             &reviewed,
             "x",
             1,
-            std::time::Duration::from_secs(1),
+            std::time::Duration::from_secs(60),
             day(1),
             None,
         )

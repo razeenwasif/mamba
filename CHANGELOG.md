@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **FSRS “Easy” grade for fast solves.** A first-try solve completed within 20 s
+  now grades `Easy` (strong, quick recall) instead of `Good`, earning a longer
+  interval — completing the grade signal (Easy / Good / Hard / Again) the
+  scheduler derives from the verified outcome and solve time.
 - **Configurable FSRS target retention** (`MAMBA_RETENTION` / `retention` in
   `config.toml`, default `0.9`, clamped to `0.70–0.97`). Higher retention →
   shorter intervals (study more, forget less); lower → longer intervals. Applied

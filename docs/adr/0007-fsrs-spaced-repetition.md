@@ -24,10 +24,10 @@ per-user weight optimisation.**
   Recall probability follows a power forgetting curve
   `R(t) = (1 + FACTOR·t/S)^DECAY`; the next interval is the `t` at which `R`
   falls to the target retention (0.9). Elapsed-time-aware and per-card.
-- **Grades from the verified outcome.** A first-try solve is `Good`, a
-  multi-attempt solve `Hard`, and leaving a previously-solved card unsolved is a
-  lapse (`Again`) — so the scheduler is driven by Mamba's *real* verdicts, not
-  self-assessment.
+- **Grades from the verified outcome.** A *fast* first-try solve is `Easy`, any
+  other first-try `Good`, a multi-attempt solve `Hard`, and leaving a
+  previously-solved card unsolved a lapse (`Again`) — so the scheduler is driven
+  by Mamba's *real* verdicts and timing, not self-assessment.
 - **State in note frontmatter** (`stability`/`difficulty_fsrs`/`reviewed`/`due`),
   per [ADR 0006] — no database. `due` is the authoritative next-review date,
   recomputed on every solve *and* lapse.
@@ -63,6 +63,7 @@ per-user weight optimisation.**
 - **Default weights aren't validated against the user** until `mamba optimize`
   runs (which needs a meaningful review history); the defaults are a sensible
   prior in the meantime.
-- **`Easy` is not yet produced** (no "too easy" path), and the optimiser is a
-  best-effort numerical fit, not the reference trainer — acceptable for a
-  single-user tool, and revisitable.
+- **The `Easy` threshold is a flat 20 s** rather than difficulty-relative —
+  conservative (it under-grades rather than over-grades), and revisitable. The
+  optimiser is a best-effort numerical fit, not the reference trainer —
+  acceptable for a single-user tool.

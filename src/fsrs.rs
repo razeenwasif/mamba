@@ -28,9 +28,10 @@ use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 
-/// How a graded review went. Mamba derives this from the verified outcome and
-/// the attempt count (a first-try solve is `Good`, a multi-try solve is `Hard`,
-/// a lapse is `Again`); `Easy` is reserved for a future "too easy" signal.
+/// How a graded review went. Mamba derives this from the verified outcome, the
+/// attempt count, and the solve time: a *fast* first-try solve is `Easy`, any
+/// other first-try is `Good`, a multi-attempt solve is `Hard`, and leaving a
+/// known card unsolved is `Again`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Grade {
     Again = 1,
@@ -184,11 +185,20 @@ fn review_memory(w: &Weights, mem: Memory, grade: Grade, elapsed: f64) -> Memory
     }
 }
 
-/// The grade a *solve* earns: a first-try solve is Good, a multi-attempt solve
-/// is Hard. (A lapse — Again — comes from leaving a known card unsolved.)
-pub fn grade_for_solve(attempts: u32) -> Grade {
+/// A first-try solve completed within this many seconds counts as `Easy`
+/// (strong, quick recall) rather than `Good`.
+pub const EASY_SECONDS: u64 = 20;
+
+/// The grade a *solve* earns from its outcome: a fast first-try solve is `Easy`,
+/// any other first-try solve `Good`, and a multi-attempt solve `Hard`. (A lapse
+/// — `Again` — comes from leaving a known card unsolved.)
+pub fn grade_for_solve(attempts: u32, seconds: u64) -> Grade {
     if attempts <= 1 {
-        Grade::Good
+        if seconds <= EASY_SECONDS {
+            Grade::Easy
+        } else {
+            Grade::Good
+        }
     } else {
         Grade::Hard
     }
@@ -354,6 +364,20 @@ mod tests {
             difficulty: 9.0,
         };
         assert!(weak.interval(DEFAULT_RETENTION) >= 1);
+    }
+
+    #[test]
+    fn solve_grade_reflects_attempts_and_speed() {
+        // Fast first try → Easy; slower first try → Good; retries → Hard.
+        assert_eq!(grade_for_solve(1, 5), Grade::Easy);
+        assert_eq!(grade_for_solve(1, EASY_SECONDS), Grade::Easy); // boundary
+        assert_eq!(grade_for_solve(1, EASY_SECONDS + 1), Grade::Good);
+        assert_eq!(grade_for_solve(3, 2), Grade::Hard); // speed can't rescue retries
+        // Easy earns a longer initial interval than Good.
+        assert!(
+            Memory::init(Grade::Easy).interval(DEFAULT_RETENTION)
+                > Memory::init(Grade::Good).interval(DEFAULT_RETENTION)
+        );
     }
 
     #[test]

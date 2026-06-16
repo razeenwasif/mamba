@@ -1070,12 +1070,14 @@ impl App {
                     self.export_solution(&job.problem, &job.answer, job.opened_at);
                     self.mark_session_solved();
                     // Log the graded review for FSRS optimisation (a generated
-                    // problem isn't a bank card, so it isn't logged).
+                    // problem isn't a bank card, so it isn't logged). Same grade
+                    // the vault recorded — derived from attempts + solve time.
                     if self.generated.is_none() {
+                        let seconds = job.opened_at.elapsed().as_secs();
                         review_log::append(
                             &job.problem.id,
                             Local::now().date_naive(),
-                            fsrs::grade_for_solve(self.attempts),
+                            fsrs::grade_for_solve(self.attempts, seconds),
                         );
                     }
                 }
