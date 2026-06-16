@@ -15,6 +15,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Clear, List, ListItem, Paragraph, Wrap};
 
 use crate::app::{App, Focus, NavRow};
+use crate::curriculum;
 use crate::engine::Verdict;
 use crate::storage::problem::{Difficulty, Domain};
 
@@ -190,12 +191,31 @@ fn draw_stats_overlay(frame: &mut Frame, app: &App, area: Rect) {
                 .unwrap_or(std::cmp::Ordering::Equal)
                 .then(a.0.cmp(b.0))
         });
+        // Curriculum lock state: a topic is "met" once a third of its problems
+        // are solved; one is locked until all its prerequisites are met.
+        let met = |topic: &str| -> bool {
+            match (
+                solved.get(topic).copied().unwrap_or(0),
+                totals.get(topic).copied().unwrap_or(0),
+            ) {
+                (_, 0) => true,
+                (s, t) => s as f64 / t as f64 >= curriculum::MET_THRESHOLD,
+            }
+        };
+        let lock_note = |topic: &str| -> Option<String> {
+            match curriculum::missing_prerequisites(topic, met).as_slice() {
+                [] => None,
+                [one] => Some(one.clone()),
+                [first, rest @ ..] => Some(format!("{first} +{}", rest.len())),
+            }
+        };
+
         if !mastery.is_empty() {
             lines.push(Line::default());
-            lines.push(section(" Topic mastery"));
+            lines.push(section(" Topic mastery  (🔒 = prereqs unmet)"));
             const SHOWN: usize = 9;
             for (topic, s, total) in mastery.iter().take(SHOWN) {
-                lines.push(mastery_line(topic, *s, *total));
+                lines.push(mastery_line(topic, *s, *total, lock_note(topic)));
             }
             if mastery.len() > SHOWN {
                 lines.push(Line::from(Span::styled(
@@ -273,8 +293,9 @@ fn bar_line(
 
 /// One topic-mastery row: `topic  solved/total` and a coverage bar (`█` filled,
 /// `░` remaining), coloured green when complete, yellow when started, dim when
-/// untouched.
-fn mastery_line(topic: &str, solved: usize, total: usize) -> Line<'static> {
+/// untouched. `lock` is the curriculum note (the unmet prerequisite) when the
+/// topic is still locked, rendered as a trailing `🔒` badge.
+fn mastery_line(topic: &str, solved: usize, total: usize, lock: Option<String>) -> Line<'static> {
     const BAR: usize = 12;
     let pal = theme::palette();
     let filled = (solved * BAR).checked_div(total).unwrap_or(0).min(BAR);
@@ -285,7 +306,7 @@ fn mastery_line(topic: &str, solved: usize, total: usize) -> Line<'static> {
     } else {
         pal.overlay
     };
-    Line::from(vec![
+    let mut spans = vec![
         Span::styled(
             format!(" {topic:<19} {solved:>2}/{total:<3} "),
             Style::default().fg(pal.subtext),
@@ -295,7 +316,14 @@ fn mastery_line(topic: &str, solved: usize, total: usize) -> Line<'static> {
             "░".repeat(BAR.saturating_sub(filled)),
             Style::default().fg(pal.surface1),
         ),
-    ])
+    ];
+    if let Some(note) = lock {
+        spans.push(Span::styled(
+            format!("  🔒 {note}"),
+            Style::default().fg(pal.overlay),
+        ));
+    }
+    Line::from(spans)
 }
 
 /// Domain accent by name (the overlay works from `&str` labels, not the enum).

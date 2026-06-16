@@ -56,8 +56,9 @@ Design rationale (`docs/adr/`): [0001 — Universal Math Routing](docs/adr/0001-
   problem”** (`mamba next`) that blends due-ness, topic mastery, difficulty, and
   a **prerequisite curriculum** (`mamba path` — it won't push you into Deep
   Learning before Machine Learning), a `^P` progress overlay (streaks,
-  per-domain / per-difficulty bars, and a `solved/total` **topic-mastery** view),
-  and a per-problem attempt-history peek.
+  per-domain / per-difficulty bars, and a `solved/total` **topic-mastery** view
+  with `🔒` badges on topics whose prerequisites are unmet), and a per-problem
+  attempt-history peek.
 - **A local AI tutor** (`^A`): a streaming chat with a local
   [Ollama](https://ollama.com) model, scoped to the open problem — private,
   offline, no API keys.

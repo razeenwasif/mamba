@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Curriculum lock badges in the `^P` overlay.** The topic-mastery view now
+  shows a `🔒` badge (naming the blocking prerequisite) on topics whose
+  curriculum prerequisites aren't met yet — surfacing in the TUI what `mamba
+  path` shows in the shell.
 - **FSRS “Easy” grade for fast solves.** A first-try solve completed within 20 s
   now grades `Easy` (strong, quick recall) instead of `Good`, earning a longer
   interval — completing the grade signal (Easy / Good / Hard / Again) the

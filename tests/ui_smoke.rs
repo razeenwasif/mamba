@@ -65,6 +65,12 @@ fn renders_navigator_and_stats_overlay() {
         "expected the mastery section"
     );
     assert!(overlay.contains("solved"), "expected the totals line");
+    // With only a few solves, most topics are locked behind prerequisites, so
+    // the curriculum lock badge appears in the mastery rows.
+    assert!(
+        overlay.contains('🔒'),
+        "expected a curriculum lock badge on a locked topic"
+    );
 
     // The AI tutor panel renders in its right-hand column when visible.
     app.stats_visible = false;

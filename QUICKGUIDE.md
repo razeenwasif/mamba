@@ -62,6 +62,10 @@ editing a problem re-indexes automatically.
 |-----|--------|
 | `Esc` / `q` / `Ctrl-P` | Close |
 
+Shows streaks, per-domain / per-difficulty counts, and a topic-mastery view; a
+`🔒` badge marks topics whose curriculum prerequisites aren't met yet (with the
+blocking prerequisite named). The full ordered path is `mamba path`.
+
 ### Tutor panel (`Ctrl-A`)
 | Key | Action |
 |-----|--------|
