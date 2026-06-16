@@ -6,6 +6,20 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-06-16
+
+Scheduling and project hygiene: FSRS gains lapse capture and per-user
+optimization, the curriculum is overridable, and the project gets CI and
+caught-up architecture records.
+
+### Added
+- **Continuous integration.** A GitHub Actions workflow enforces the same gates
+  as the local loop on every push and PR — `cargo fmt --check`, `cargo clippy -D
+  warnings`, `cargo test`, and `mamba --verify` over the whole bank. The codebase
+  is clippy-clean under `-D warnings`.
+- **Architecture decision records 0006–0008** documenting the storage decision
+  (vault as source of truth, no database), FSRS scheduling, and the MCP server.
+
 ### Changed
 - **The default tutor model is now `gemma4:12b-it-qat`** (was `gemma4:e2b-it-qat`)
   — a more capable model for better hints, explanations, and generated problems.

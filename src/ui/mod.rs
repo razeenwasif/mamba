@@ -277,11 +277,7 @@ fn bar_line(
 fn mastery_line(topic: &str, solved: usize, total: usize) -> Line<'static> {
     const BAR: usize = 12;
     let pal = theme::palette();
-    let filled = if total > 0 {
-        (solved * BAR / total).min(BAR)
-    } else {
-        0
-    };
+    let filled = (solved * BAR).checked_div(total).unwrap_or(0).min(BAR);
     let color = if total > 0 && solved >= total {
         pal.green
     } else if solved > 0 {

@@ -183,15 +183,16 @@ fn update_frontmatter(content: &str, updates: &[(&str, String)]) -> String {
             out.push('\n');
             continue;
         }
-        if in_frontmatter && seen_open {
-            if let Some((key, value)) = updates.iter().find_map(|(k, v)| {
+        if in_frontmatter
+            && seen_open
+            && let Some((key, value)) = updates.iter().find_map(|(k, v)| {
                 line.strip_prefix(k)
                     .and_then(|r| r.strip_prefix(':'))
                     .map(|_| (*k, v))
-            }) {
-                out.push_str(&format!("{key}: {value}\n"));
-                continue;
-            }
+            })
+        {
+            out.push_str(&format!("{key}: {value}\n"));
+            continue;
         }
         out.push_str(line);
         out.push('\n');
@@ -257,6 +258,7 @@ fn extract_history_rows(content: &str) -> Vec<String> {
 
 /// Renders the full note: YAML frontmatter, the problem statement, the latest
 /// accepted answer, and the accumulated solve history.
+#[allow(clippy::too_many_arguments)] // a private renderer; bundling would obscure
 fn render_note(
     problem: &Problem,
     answer: &str,

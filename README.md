@@ -1,5 +1,7 @@
 # 🐍 Mamba
 
+[![CI](https://github.com/razeenwasif/mamba/actions/workflows/ci.yml/badge.svg)](https://github.com/razeenwasif/mamba/actions/workflows/ci.yml)
+
 A local, single-binary, terminal-based **mathematics practice engine**. Browse
 problems, type an answer, and have it *mathematically verified* — then archive
 solves as Markdown notes in a local vault. Sibling tool to [`~/Kata`](../Kata).
@@ -18,10 +20,14 @@ Verification runs on a **worker thread** (delivered back over an `mpsc` channel)
 so even a slow check never freezes the UI — the console shows `Verifying…` while
 input, scrolling, and quit stay live.
 
-Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-math-routing.md)
-· [ADR 0002 — Off-thread Verification](docs/adr/0002-off-thread-verification.md)
-· [ADR 0003 — Multivariate Symbolic](docs/adr/0003-multivariate-symbolic-probing.md)
-· [ADR 0004 — Rational Tensor Cells](docs/adr/0004-rational-tensor-cells.md).
+Design rationale (`docs/adr/`): [0001 — Universal Math Routing](docs/adr/0001-universal-math-routing.md)
+· [0002 — Off-thread Verification](docs/adr/0002-off-thread-verification.md)
+· [0003 — Multivariate Symbolic](docs/adr/0003-multivariate-symbolic-probing.md)
+· [0004 — Rational Tensor Cells](docs/adr/0004-rational-tensor-cells.md)
+· [0005 — Local AI Tutor](docs/adr/0005-local-ai-tutor-via-ollama.md)
+· [0006 — Vault as Source of Truth](docs/adr/0006-vault-as-source-of-truth.md)
+· [0007 — FSRS Scheduling](docs/adr/0007-fsrs-spaced-repetition.md)
+· [0008 — MCP Server](docs/adr/0008-mcp-server.md).
 
 ## Highlights
 
@@ -144,6 +150,10 @@ edit  →  update docs (README + CHANGELOG)  →  make test  →  make install  
 
 `make install` after each feature keeps the on-PATH `mamba` current. `make help`
 lists all targets (`install`, `build`, `test`, `run`, `check`, `fmt`, `clean`).
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) enforces
+the same gates on every push and PR: `cargo fmt --check`, `cargo clippy -D
+warnings`, `cargo test`, and `mamba --verify` over the whole bank.
 
 ## How verification works
 

@@ -136,7 +136,7 @@ pub fn topo_order(topics: &[String]) -> Vec<String> {
             .cloned()
             .collect();
         if ready.is_empty() {
-            ordered.extend(remaining.drain(..)); // cycle — emit the rest as-is
+            ordered.append(&mut remaining); // cycle — emit the rest as-is
             break;
         }
         for t in &ready {

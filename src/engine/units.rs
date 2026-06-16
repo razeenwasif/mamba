@@ -24,8 +24,8 @@ impl Dim {
     /// Adds `k ×` another dimension, component-wise (for `*`, `/`, and `^`).
     fn add_scaled(self, other: Dim, k: i32) -> Dim {
         let mut d = self.0;
-        for i in 0..5 {
-            d[i] += k * other.0[i];
+        for (di, oi) in d.iter_mut().zip(other.0) {
+            *di += k * oi;
         }
         Dim(d)
     }

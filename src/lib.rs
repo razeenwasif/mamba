@@ -24,7 +24,7 @@
 //!
 //! * [`app`]     — the single source of truth for application state.
 //! * [`engine`]  — the **Universal Router**: dispatches a user's answer string
-//!                 to the pipeline matching the problem's [`storage::problem::Domain`].
+//!   to the pipeline matching the problem's [`storage::problem::Domain`].
 //! * [`storage`] — problem-bank loading and the Markdown vault exporter.
 //! * [`ui`]      — stateless rendering of [`app::App`] into a [`ratatui::Frame`].
 
