@@ -6,6 +6,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **The default tutor model is now `gemma4:12b-it-qat`** (was `gemma4:e2b-it-qat`)
+  — a more capable model for better hints, explanations, and generated problems.
+  Set `MAMBA_OLLAMA_MODEL` (or `ollama_model` in the config file) to a lighter tag
+  for faster replies on modest hardware.
+
 ### Added
 - **Curriculum override file.** The prerequisite DAG behind `mamba next` and
   `mamba path` can now be customised in `~/.config/mamba/curriculum.toml` — a

@@ -7,7 +7,7 @@
 //!
 //! Configuration (both optional):
 //! * `MAMBA_OLLAMA_URL`   — server base URL (default `http://localhost:11434`)
-//! * `MAMBA_OLLAMA_MODEL` — model tag (default `gemma4:e2b-it-qat`)
+//! * `MAMBA_OLLAMA_MODEL` — model tag (default `gemma4:12b-it-qat`)
 //!
 //! [Ollama]: https://ollama.com
 
@@ -56,9 +56,11 @@ pub enum AgentEvent {
 }
 
 /// The model tag to use, from `MAMBA_OLLAMA_MODEL` or the default. The default
-/// is a light, fast model for snappy hints; override for a larger one.
+/// is a capable mid-size model for solid hints and explanations; set
+/// `MAMBA_OLLAMA_MODEL` to a lighter tag (e.g. `gemma4:e2b-it-qat`) for snappier
+/// replies on modest hardware.
 pub fn default_model() -> String {
-    std::env::var("MAMBA_OLLAMA_MODEL").unwrap_or_else(|_| "gemma4:e2b-it-qat".to_string())
+    std::env::var("MAMBA_OLLAMA_MODEL").unwrap_or_else(|_| "gemma4:12b-it-qat".to_string())
 }
 
 /// The server base URL, from `MAMBA_OLLAMA_URL` or the default.

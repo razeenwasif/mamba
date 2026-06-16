@@ -117,7 +117,7 @@ mamba optimize                 # tune FSRS scheduling to your review history
 | `MAMBA_PROBLEMS` | `./problems` or the data dir | problem-bank directory |
 | `MAMBA_VAULT` | `~/OnyxVault/Mamba` | Markdown export vault |
 | `MAMBA_THEME` | `venom` | `venom` · `midnight` · `slate` |
-| `MAMBA_OLLAMA_MODEL` | `gemma4:e2b-it-qat` | tutor model tag |
+| `MAMBA_OLLAMA_MODEL` | `gemma4:12b-it-qat` | tutor model tag |
 | `MAMBA_OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
 | `MAMBA_EMBED_MODEL` | `nomic-embed-text` | semantic-search embedding model |
 

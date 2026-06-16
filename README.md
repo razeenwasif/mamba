@@ -211,7 +211,8 @@ exact arithmetic (correct by construction) and emits it in Mamba syntax;
 - `MAMBA_PROBLEMS` — override the problem-bank directory.
 - `MAMBA_VAULT` — override the export vault (default `~/OnyxVault/Mamba`).
 - `MAMBA_THEME` — `venom` (default), `midnight`, or `slate`.
-- `MAMBA_OLLAMA_MODEL` — tutor model tag (default `gemma4:e2b-it-qat`).
+- `MAMBA_OLLAMA_MODEL` — tutor model tag (default `gemma4:12b-it-qat`; set a
+  lighter tag like `gemma4:e2b-it-qat` for faster replies on modest hardware).
 - `MAMBA_OLLAMA_URL` — Ollama server URL (default `http://localhost:11434`).
 - `MAMBA_EMBED_MODEL` — semantic-search embedding model (default
   `nomic-embed-text`); vectors are cached in the data dir (`embeddings.json`).
