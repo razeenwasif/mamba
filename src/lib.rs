@@ -31,6 +31,7 @@
 pub mod agent;
 pub mod app;
 pub mod config;
+pub mod curriculum;
 pub mod engine;
 pub mod fsrs;
 pub mod generate;

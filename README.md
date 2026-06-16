@@ -47,9 +47,11 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
   **FSRS** spaced-repetition review (modern stability/difficulty scheduling, not
   a fixed ladder), an `s` **study session** over the due queue (with a
   live progress HUD and an end-of-session summary), an `n` **adaptive “next
-  problem”** (`mamba next`) that blends due-ness, topic mastery, and difficulty,
-  a `^P` progress overlay (streaks, per-domain / per-difficulty bars, and a
-  `solved/total` **topic-mastery** view), and a per-problem attempt-history peek.
+  problem”** (`mamba next`) that blends due-ness, topic mastery, difficulty, and
+  a **prerequisite curriculum** (`mamba path` — it won't push you into Deep
+  Learning before Machine Learning), a `^P` progress overlay (streaks,
+  per-domain / per-difficulty bars, and a `solved/total` **topic-mastery** view),
+  and a per-problem attempt-history peek.
 - **A local AI tutor** (`^A`): a streaming chat with a local
   [Ollama](https://ollama.com) model, scoped to the open problem — private,
   offline, no API keys.
@@ -84,6 +86,7 @@ mamba solve <id> "<answer>"   # verify one answer from the shell (exit 0 iff cor
 mamba review        # list the problems due for review (spaced repetition)
 mamba next          # recommend the single best problem to attempt next
 mamba stats         # print the progress dashboard (totals, streaks, mastery)
+mamba path          # print the curriculum (topics in prerequisite order)
 ```
 
 Keys: `/` find (`Tab` toggles fuzzy ↔ semantic) · `n` next recommended problem ·

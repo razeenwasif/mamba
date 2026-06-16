@@ -94,6 +94,9 @@ fn main() -> anyhow::Result<()> {
         // domain/difficulty, topic mastery, recent solves) the `Ctrl-P` overlay
         // shows, to the shell.
         Some("stats") => return print_stats(),
+        // `mamba path` — print the curriculum (topics in prerequisite order,
+        // with mastery and lock status).
+        Some("path") => return print_path(),
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
             print_help();
@@ -355,6 +358,62 @@ fn print_stats() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Prints the curriculum: every topic in prerequisite (topological) order with
+/// its `solved/total` mastery bar and a lock status — locked topics name the
+/// prerequisites they're still waiting on. See [`mamba::curriculum`].
+fn print_path() -> anyhow::Result<()> {
+    use std::collections::BTreeMap;
+
+    /// Width of the mastery bar.
+    const BAR: usize = 16;
+
+    let dir = storage::default_problems_path()?;
+    let problems = storage::problem::load_all(&dir)
+        .with_context(|| format!("loading problem bank from {}", dir.display()))?;
+    let vault = storage::default_vault_path()?;
+
+    // Per-topic solved/total: a problem counts as solved with ≥1 vault solve.
+    let mut total: BTreeMap<String, usize> = BTreeMap::new();
+    let mut solved: BTreeMap<String, usize> = BTreeMap::new();
+    for p in &problems {
+        *total.entry(p.topic.clone()).or_default() += 1;
+        if storage::vault::history(&vault, p).is_some_and(|h| h.solves >= 1) {
+            *solved.entry(p.topic.clone()).or_default() += 1;
+        }
+    }
+    let met = |topic: &str| -> bool {
+        match (
+            solved.get(topic).copied().unwrap_or(0),
+            total.get(topic).copied().unwrap_or(0),
+        ) {
+            (_, 0) => true,
+            (s, t) => s as f64 / t as f64 >= mamba::curriculum::MET_THRESHOLD,
+        }
+    };
+
+    let topics: Vec<String> = total.keys().cloned().collect();
+    println!("🐍 Mamba curriculum  (prerequisite order)\n");
+    for topic in mamba::curriculum::topo_order(&topics) {
+        let t = total[&topic];
+        let s = solved.get(&topic).copied().unwrap_or(0);
+        let frac = s as f64 / t as f64;
+        let filled = (frac * BAR as f64).round() as usize;
+        let bar = "█".repeat(filled) + &"░".repeat(BAR - filled);
+        let missing = mamba::curriculum::missing_prerequisites(&topic, met);
+        let status = if !missing.is_empty() {
+            format!("🔒 needs {}", missing.join(", "))
+        } else if s >= t {
+            "✓ mastered".to_string()
+        } else if s > 0 {
+            "🔓 in progress".to_string()
+        } else {
+            "🔓 ready".to_string()
+        };
+        println!("  {topic:<22} {s:>2}/{t:<3}  {bar}  {status}");
+    }
+    Ok(())
+}
+
 /// Prints CLI usage, in-TUI key bindings, and the environment overrides.
 fn print_help() {
     println!(
@@ -364,7 +423,8 @@ fn print_help() {
          mamba solve <problem-id> <answer>   Verify one answer (exit 0 iff correct)\n    \
          mamba review                        List the problems due for review\n    \
          mamba next                          Recommend the next problem to attempt\n    \
-         mamba stats                         Print the progress dashboard\n\n\
+         mamba stats                         Print the progress dashboard\n    \
+         mamba path                          Print the curriculum (topic prerequisites)\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \

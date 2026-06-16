@@ -7,6 +7,14 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Prerequisite curriculum.** A new `curriculum` module encodes a topic
+  prerequisite DAG (Algebra → Calculus → ODEs; Machine Learning → Deep Learning;
+  …). A topic *unlocks* once a third of each prerequisite's problems are solved,
+  and `mamba next` now prefers unlocked topics over locked ones — so it won't
+  push you into Deep Learning before Machine Learning — while never dead-ending
+  (a locked topic is deprioritised, not hidden). `mamba path` prints the whole
+  curriculum in prerequisite order with each topic's mastery bar and lock status
+  (`🔒 needs Machine Learning`).
 - **FSRS spaced-repetition scheduling.** A new `fsrs` module implements the
   Free Spaced Repetition Scheduler (v4.5): each card learns a *stability* and
   *difficulty*, and the next interval follows a power forgetting curve — so

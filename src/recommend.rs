@@ -21,6 +21,7 @@ use std::path::Path;
 
 use chrono::NaiveDate;
 
+use crate::curriculum;
 use crate::review;
 use crate::storage::problem::Problem;
 use crate::storage::vault::{self, ProblemHistory};
@@ -86,6 +87,16 @@ pub fn next(problems: &[Problem], vault: &Path, today: NaiveDate) -> Option<Pick
         }
     };
 
+    // Curriculum: a topic is "met" once a third of its problems are solved; a
+    // topic is locked until all its prerequisites are met. Locked topics are
+    // deprioritised (so you build foundations first) but never hidden.
+    let met = |topic: &str| -> bool {
+        mastery
+            .get(topic)
+            .is_none_or(|&(s, t)| t == 0 || s as f64 / t as f64 >= curriculum::MET_THRESHOLD)
+    };
+    let locked = |topic: &str| -> u8 { (!curriculum::is_unlocked(topic, met)) as u8 };
+
     let due: Vec<usize> = (0..problems.len())
         .filter(|&i| review::is_due(histories[i].as_ref(), today))
         .collect();
@@ -101,16 +112,18 @@ pub fn next(problems: &[Problem], vault: &Path, today: NaiveDate) -> Option<Pick
 
     // Sort key (ascending → best first):
     //   1. most overdue first (reviews before new cards) — skipped when ahead
-    //   2. weakest topic first
-    //   3. easiest difficulty first
-    //   4. unsolved before solved (matters mainly in "ahead" mode)
-    //   5. title, for a stable, deterministic tiebreak
+    //   2. unlocked topics before locked ones (curriculum order)
+    //   3. weakest topic first
+    //   4. easiest difficulty first
+    //   5. unsolved before solved (matters mainly in "ahead" mode)
+    //   6. title, for a stable, deterministic tiebreak
     let key = |i: usize| {
         let h = histories[i].as_ref();
         let solved = h.is_some_and(|h| h.solves >= 1);
         let overdue = if ahead { 0 } else { overdue_days(h, today) };
         (
             -overdue,
+            locked(&problems[i].topic),
             weakness(&problems[i].topic),
             problems[i].difficulty,
             solved as u8,
@@ -263,6 +276,19 @@ mod tests {
         let pick = next(std::slice::from_ref(&p), &vault, day(15)).expect("a pick");
         assert_eq!(pick.index, 0);
         assert!(pick.reason.contains("ahead of schedule"), "{}", pick.reason);
+        let _ = std::fs::remove_dir_all(&vault);
+    }
+
+    #[test]
+    fn curriculum_deprioritises_a_locked_topic() {
+        let vault = scratch("locked");
+        // Deep Learning is locked (needs Machine Learning); Algebra is a root.
+        let dl = problem("dl", "Deep Learning", Difficulty::Easy);
+        let alg = problem("alg", "Algebra", Difficulty::Easy);
+        // Empty vault: both are new and equally weak, so the unlocked root wins.
+        let pick = next(&[dl, alg], &vault, day(15)).expect("a pick");
+        assert_eq!(pick.index, 1, "should pick the unlocked Algebra problem");
+        assert!(pick.reason.contains("Algebra"), "{}", pick.reason);
         let _ = std::fs::remove_dir_all(&vault);
     }
 }

@@ -105,6 +105,7 @@ mamba solve <id> "<answer>"    # verify one answer (exit 0 iff correct)
 mamba review                   # list the problems due for review
 mamba next                     # recommend the next problem to attempt
 mamba stats                    # print the progress dashboard
+mamba path                     # print the curriculum (topic prerequisites)
 ```
 
 ## Environment
