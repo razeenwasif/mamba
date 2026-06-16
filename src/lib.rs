@@ -35,6 +35,7 @@ pub mod curriculum;
 pub mod engine;
 pub mod fsrs;
 pub mod generate;
+pub mod mcp;
 pub mod recommend;
 pub mod review;
 pub mod semantic;

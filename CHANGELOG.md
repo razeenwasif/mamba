@@ -7,6 +7,15 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **MCP server (`mamba mcp`).** Mamba now speaks the Model Context Protocol over
+  stdio, exposing its verification engine and bank as tools so *other* AI agents
+  can check math against a real engine — "Mamba as a verification backend". Tools:
+  `verify` (algebraic/matrix/exact equivalence with unit + near-miss diagnostics),
+  `solve` (against a bank problem by id), `get_problem` (without leaking the
+  answer), `list_problems`, and `recommend_next`. The JSON-RPC protocol surface
+  (`initialize`/`tools/list`/`tools/call`/`ping`) is hand-rolled over
+  stdin/stdout — no async runtime, no network, no SDK dependency. Register with
+  `claude mcp add mamba -- mamba mcp`.
 - **Prerequisite curriculum.** A new `curriculum` module encodes a topic
   prerequisite DAG (Algebra → Calculus → ODEs; Machine Learning → Deep Learning;
   …). A topic *unlocks* once a third of each prerequisite's problems are solved,

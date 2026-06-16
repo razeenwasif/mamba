@@ -59,8 +59,12 @@ Design rationale: [ADR 0001 — Universal Math Routing](docs/adr/0001-universal-
   Mamba's own engine *cross-verifies* it — an independent self-solve must match
   the answer through the engine before you see it. The one trick only a tool with
   both an LLM and a verifier can pull off; `^S` saves a keeper into the bank.
-- **A Markdown vault**: each solve writes a note (with a `## History` table) and
-  refreshes a rolling `_progress.md` dashboard — local-first, Obsidian-ready.
+- **A Markdown vault**: each solve writes a note (with a `## History` table and
+  FSRS scheduling state) and refreshes a rolling `_progress.md` dashboard —
+  local-first, Obsidian-ready, and the single source of truth (no database).
+- **An MCP server** (`mamba mcp`): expose the verification engine over the Model
+  Context Protocol so *other* AI agents can check their math against a real
+  engine — Mamba as a verification backend.
 - **Batteries included**: a pure-Python generator (`make gen`) mass-authors
   problems with answers correct by construction, plus a scriptable
   `mamba solve <id> <answer>`.
@@ -87,6 +91,7 @@ mamba review        # list the problems due for review (spaced repetition)
 mamba next          # recommend the single best problem to attempt next
 mamba stats         # print the progress dashboard (totals, streaks, mastery)
 mamba path          # print the curriculum (topics in prerequisite order)
+mamba mcp           # run an MCP server exposing the verification engine (stdio)
 ```
 
 Keys: `/` find (`Tab` toggles fuzzy ↔ semantic) · `n` next recommended problem ·
@@ -105,6 +110,22 @@ instead of being verified.
 Full reference — keys, CLI, answer syntax, and config — is in
 [**QUICKGUIDE.md**](QUICKGUIDE.md), which is also embedded in the tutor's
 context, so you can just ask it "which key opens the stats overlay?".
+
+### Use Mamba as an MCP server
+
+`mamba mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io)
+over stdio, so any MCP client can use Mamba's *real* verification engine as a
+tool — submit a math answer and get a genuine verdict, not an LLM's guess:
+
+```sh
+claude mcp add mamba -- mamba mcp     # register with Claude Code
+```
+
+Tools: `verify` (check an answer against an expected one — algebraic
+equivalence, matrix, or exact integer, with unit and near-miss diagnostics),
+`solve` (verify against a bank problem by id), `get_problem`, `list_problems`,
+and `recommend_next`. No async runtime, no network — the protocol is hand-rolled
+over stdin/stdout.
 
 ### From a checkout, without installing
 

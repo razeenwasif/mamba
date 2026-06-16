@@ -106,6 +106,7 @@ mamba review                   # list the problems due for review
 mamba next                     # recommend the next problem to attempt
 mamba stats                    # print the progress dashboard
 mamba path                     # print the curriculum (topic prerequisites)
+mamba mcp                      # run an MCP server (verification engine as a tool)
 ```
 
 ## Environment

@@ -97,6 +97,9 @@ fn main() -> anyhow::Result<()> {
         // `mamba path` — print the curriculum (topics in prerequisite order,
         // with mastery and lock status).
         Some("path") => return print_path(),
+        // `mamba mcp` — run an MCP server over stdio, exposing the verification
+        // engine and bank as tools for other AI agents.
+        Some("mcp") => return mamba::mcp::serve(),
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
             print_help();
@@ -424,7 +427,8 @@ fn print_help() {
          mamba review                        List the problems due for review\n    \
          mamba next                          Recommend the next problem to attempt\n    \
          mamba stats                         Print the progress dashboard\n    \
-         mamba path                          Print the curriculum (topic prerequisites)\n\n\
+         mamba path                          Print the curriculum (topic prerequisites)\n    \
+         mamba mcp                           Run an MCP server (verification engine as a tool)\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \
