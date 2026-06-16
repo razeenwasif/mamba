@@ -7,6 +7,10 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Three more MCP tools** — `due` (problems due for review, most-overdue first),
+  `stats` (totals, streaks, per-domain/difficulty/topic counts), and
+  `curriculum` (every topic in prerequisite order with mastery and lock state) —
+  rounding out the coaching surface alongside `verify`/`solve`/`recommend_next`.
 - **Curriculum lock badges in the `^P` overlay.** The topic-mastery view now
   shows a `🔒` badge (naming the blocking prerequisite) on topics whose
   curriculum prerequisites aren't met yet — surfacing in the TUI what `mamba

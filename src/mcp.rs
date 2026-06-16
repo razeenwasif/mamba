@@ -19,7 +19,7 @@ use serde_json::{Value, json};
 use crate::engine;
 use crate::recommend;
 use crate::storage::problem::{AnswerKind, Difficulty, Domain, Problem};
-use crate::{review, storage};
+use crate::{curriculum, review, storage};
 
 /// The MCP protocol version we default to when the client doesn't pin one.
 const PROTOCOL_VERSION: &str = "2025-06-18";
@@ -156,6 +156,24 @@ fn tool_specs() -> Value {
             "name": "recommend_next",
             "description": "Recommend the single best problem to attempt next (spaced repetition + topic mastery + curriculum).",
             "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "due",
+            "description": "List the problems due for review now (FSRS spaced repetition), most-overdue first.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {"limit": {"type": "integer", "description": "Max results (default 50)."}}
+            }
+        },
+        {
+            "name": "stats",
+            "description": "Progress summary: total solved, day streaks, and per-domain / per-difficulty / per-topic counts.",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "curriculum",
+            "description": "The topic prerequisite path: every topic in dependency order with its solved/total mastery and whether it's unlocked.",
+            "inputSchema": {"type": "object", "properties": {}}
         }
     ])
 }
@@ -170,6 +188,9 @@ fn call_tool(name: &str, args: &Value, bank: &[Problem], vault: Option<&std::pat
         "get_problem" => tool_get_problem(args, bank),
         "list_problems" => tool_list_problems(args, bank),
         "recommend_next" => tool_recommend(bank, vault),
+        "due" => tool_due(args, bank, vault),
+        "stats" => tool_stats(bank, vault),
+        "curriculum" => tool_curriculum(bank, vault),
         other => Err(format!("unknown tool: {other}")),
     };
     match result {
@@ -340,6 +361,100 @@ fn tool_recommend(bank: &[Problem], vault: Option<&std::path::Path>) -> Result<V
     }))
 }
 
+fn tool_due(
+    args: &Value,
+    bank: &[Problem],
+    vault: Option<&std::path::Path>,
+) -> Result<Value, String> {
+    let vault = vault.ok_or("no vault configured")?;
+    let today = Local::now().date_naive();
+    let limit = args.get("limit").and_then(Value::as_u64).unwrap_or(50) as usize;
+
+    let mut due: Vec<(&Problem, i64)> = bank
+        .iter()
+        .filter_map(|p| {
+            let history = storage::vault::history(vault, p);
+            review::is_due(history.as_ref(), today)
+                .then(|| (p, review::overdue_days(history.as_ref(), today)))
+        })
+        .collect();
+    // Most overdue first; ties by title for a stable order.
+    due.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.title.cmp(&b.0.title)));
+
+    let items: Vec<Value> = due
+        .iter()
+        .take(limit)
+        .map(|(p, overdue)| {
+            json!({
+                "id": p.id,
+                "title": p.title,
+                "topic": p.topic,
+                "domain": p.domain.to_string(),
+                "difficulty": p.difficulty.to_string(),
+                "overdue_days": overdue,
+            })
+        })
+        .collect();
+    Ok(json!({"count": items.len(), "due": items}))
+}
+
+fn tool_stats(_bank: &[Problem], vault: Option<&std::path::Path>) -> Result<Value, String> {
+    let vault = vault.ok_or("no vault configured")?;
+    let s = storage::progress::stats(vault, Local::now().date_naive());
+    let pairs = |v: &[(&str, usize)]| -> Vec<Value> {
+        v.iter()
+            .map(|(k, n)| json!({"label": k, "solved": n}))
+            .collect()
+    };
+    Ok(json!({
+        "total_solved": s.total,
+        "current_streak": s.current_streak,
+        "longest_streak": s.longest_streak,
+        "by_domain": pairs(&s.by_domain),
+        "by_difficulty": pairs(&s.by_difficulty),
+        "by_topic": s.by_topic.iter().map(|(t, n)| json!({"topic": t, "solved": n})).collect::<Vec<_>>(),
+    }))
+}
+
+fn tool_curriculum(bank: &[Problem], vault: Option<&std::path::Path>) -> Result<Value, String> {
+    use std::collections::BTreeMap;
+    let vault = vault.ok_or("no vault configured")?;
+
+    let mut total: BTreeMap<String, usize> = BTreeMap::new();
+    let mut solved: BTreeMap<String, usize> = BTreeMap::new();
+    for p in bank {
+        *total.entry(p.topic.clone()).or_default() += 1;
+        if storage::vault::history(vault, p).is_some_and(|h| h.solves >= 1) {
+            *solved.entry(p.topic.clone()).or_default() += 1;
+        }
+    }
+    let met = |topic: &str| -> bool {
+        match (
+            solved.get(topic).copied().unwrap_or(0),
+            total.get(topic).copied().unwrap_or(0),
+        ) {
+            (_, 0) => true,
+            (s, t) => s as f64 / t as f64 >= curriculum::MET_THRESHOLD,
+        }
+    };
+
+    let topics: Vec<String> = total.keys().cloned().collect();
+    let items: Vec<Value> = curriculum::topo_order(&topics)
+        .into_iter()
+        .map(|t| {
+            let missing = curriculum::missing_prerequisites(&t, met);
+            json!({
+                "topic": t,
+                "solved": solved.get(&t).copied().unwrap_or(0),
+                "total": total[&t],
+                "unlocked": missing.is_empty(),
+                "missing_prerequisites": missing,
+            })
+        })
+        .collect();
+    Ok(json!({"topics": items}))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -459,5 +574,41 @@ mod tests {
             !text.contains("x^2 - x - 6"),
             "must not leak the answer: {text}"
         );
+    }
+
+    #[test]
+    fn coaching_tools_are_listed_and_need_a_vault() {
+        let names: Vec<String> = tool_specs()
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| t["name"].as_str().unwrap().to_string())
+            .collect();
+        for tool in ["due", "stats", "curriculum"] {
+            assert!(names.contains(&tool.to_string()), "missing tool {tool}");
+            // Without a vault they fail gracefully (isError), never panic.
+            assert_eq!(call_tool(tool, &json!({}), &[], None)["isError"], true);
+        }
+    }
+
+    #[test]
+    fn curriculum_tool_reports_topo_order_and_locks() {
+        let dir = std::env::temp_dir().join(format!("mamba-mcp-cur-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let bank = vec![
+            problem("a", Domain::Symbolic, "Algebra", "x"),
+            problem("c", Domain::Symbolic, "Calculus", "x"),
+        ];
+        let out = call_tool("curriculum", &json!({}), &bank, Some(&dir));
+        let v: Value = serde_json::from_str(out["content"][0]["text"].as_str().unwrap()).unwrap();
+        let topics = v["topics"].as_array().unwrap();
+        // Algebra (a root) precedes Calculus, and is unlocked; Calculus is locked.
+        assert_eq!(topics[0]["topic"], "Algebra");
+        assert_eq!(topics[0]["unlocked"], true);
+        let calc = topics.iter().find(|t| t["topic"] == "Calculus").unwrap();
+        assert_eq!(calc["unlocked"], false);
+        assert_eq!(calc["missing_prerequisites"][0], "Algebra");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

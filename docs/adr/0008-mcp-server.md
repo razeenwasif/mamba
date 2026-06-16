@@ -29,8 +29,8 @@ into a reusable **verification backend** — a small surface, high leverage.
 - **Tools.** `verify` (check an answer against an expected one — honours
   `answer_kind`, unit dimensional checks, and returns the near-miss hint),
   `solve` (verify against a bank problem by id), `get_problem` (the statement
-  *without* the answer, so it stays a real exercise), `list_problems`, and
-  `recommend_next`.
+  *without* the answer, so it stays a real exercise), `list_problems`,
+  `recommend_next`, and the coaching read-outs `due`, `stats`, and `curriculum`.
 - **MCP conventions.** Tool results are the structured verdict as JSON text;
   tool-level failures return `isError` results (not JSON-RPC errors); the
   `initialize` reply echoes the client's `protocolVersion` for compatibility.

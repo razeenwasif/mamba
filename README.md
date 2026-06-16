@@ -132,8 +132,9 @@ claude mcp add mamba -- mamba mcp     # register with Claude Code
 Tools: `verify` (check an answer against an expected one — algebraic
 equivalence, matrix, or exact integer, with unit and near-miss diagnostics),
 `solve` (verify against a bank problem by id), `get_problem`, `list_problems`,
-and `recommend_next`. No async runtime, no network — the protocol is hand-rolled
-over stdin/stdout.
+`recommend_next`, `due` (problems due for review), `stats`, and `curriculum` (the
+topic prerequisite path). No async runtime, no network — the protocol is
+hand-rolled over stdin/stdout.
 
 ### From a checkout, without installing
 
