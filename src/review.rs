@@ -25,27 +25,38 @@ pub fn interval_days(solves: u32) -> i64 {
     }
 }
 
-/// Whether a problem is due for review as of `today`, given its solve history.
-/// A problem with no history (never solved) is due; otherwise it is due once
-/// its interval has elapsed since the last solve.
+/// Whether a problem is due for review as of `today`. A never-solved problem is
+/// due; an FSRS-scheduled one is due on/after its precomputed [`due`] date
+/// (recomputed on every solve *and* lapse); a pre-FSRS note falls back to the
+/// Leitner ladder over its last solve.
+///
+/// [`due`]: ProblemHistory::due
 pub fn is_due(history: Option<&ProblemHistory>, today: NaiveDate) -> bool {
     let Some(h) = history else {
         return true; // never solved → a new card, always due
     };
+    if let Some(due) = h.due {
+        return today >= due;
+    }
     match h.last_solved {
         None => true,
-        Some(last) => (today - last).num_days() >= interval_for(h),
+        Some(last) => (today - last).num_days() >= interval_days(h.solves),
     }
 }
 
-/// Days until a card is due again: the FSRS interval when the note carries
-/// memory ([`ProblemHistory::memory`]), else the Leitner ladder for a pre-FSRS
-/// note. The single source of "how long until this resurfaces", shared by the
-/// review filter and the [`crate::recommend`] ranking.
-pub fn interval_for(history: &ProblemHistory) -> i64 {
-    match history.memory {
-        Some(m) => m.interval(crate::fsrs::DEFAULT_RETENTION),
-        None => interval_days(history.solves),
+/// How many days past due a card is (negative if not yet due). The shared
+/// scheduling signal behind the [`crate::recommend`] ranking; uses the FSRS
+/// `due` date when present, else the Leitner ladder.
+pub fn overdue_days(history: Option<&ProblemHistory>, today: NaiveDate) -> i64 {
+    let Some(h) = history else {
+        return 0;
+    };
+    if let Some(due) = h.due {
+        return (today - due).num_days();
+    }
+    match h.last_solved {
+        Some(last) => (today - last).num_days() - interval_days(h.solves),
+        None => 0,
     }
 }
 
@@ -62,6 +73,7 @@ mod tests {
             solves,
             last_solved: Some(last),
             memory: None,
+            due: None,
         }
     }
 
@@ -81,6 +93,7 @@ mod tests {
                 solves: 0,
                 last_solved: None,
                 memory: None,
+                due: None,
             }),
             day(15)
         ));

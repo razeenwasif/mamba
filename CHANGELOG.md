@@ -6,6 +6,19 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **FSRS lapse capture.** Leaving a *previously-solved* card that you attempted
+  but couldn't re-solve now records an FSRS `Again`, collapsing its stability so
+  it resurfaces soon — the signal FSRS most needs. `vault::record_lapse` rewrites
+  only the note's scheduling frontmatter (the solve history is untouched — a
+  lapse is not a solve), and scheduling now keys off the precomputed `due` date
+  (recomputed on solve *and* lapse) via `review::overdue_days`, with the Leitner
+  ladder still the fallback for pre-FSRS notes.
+- **Review-event log (`reviews.jsonl`).** Every graded review (solve or lapse)
+  appends one line to an append-only log in the data dir — a rebuildable,
+  plain-text corpus (the vault stays the source of truth) that `mamba optimize`
+  will fit the scheduler weights to.
+
 ## [0.6.0] — 2026-06-16
 
 A verification-and-learning release: the tutor now *generates* engine-verified

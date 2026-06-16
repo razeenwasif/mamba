@@ -53,18 +53,11 @@ fn topic_mastery(
     mastery
 }
 
-/// How many days a card is overdue as of `today`: positive when past its
-/// scheduled review, zero on the due date, negative when not yet due. A
-/// never-solved card is treated as "due today" (`0`), so genuinely overdue
+/// How many days a card is overdue as of `today` (see [`review::overdue_days`]).
+/// A never-solved card is treated as "due today" (`0`), so genuinely overdue
 /// reviews outrank brand-new cards.
 fn overdue_days(history: Option<&ProblemHistory>, today: NaiveDate) -> i64 {
-    match history {
-        Some(h) => match h.last_solved {
-            Some(last) => (today - last).num_days() - review::interval_for(h),
-            None => 0,
-        },
-        None => 0,
-    }
+    review::overdue_days(history, today)
 }
 
 /// Recommends the single best problem to attempt next, or `None` if the bank is

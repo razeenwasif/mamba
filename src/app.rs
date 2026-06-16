@@ -19,9 +19,11 @@ use ratatui::widgets::ListState;
 
 use crate::agent::{self, AgentEvent, ChatMessage};
 use crate::engine::{self, Verdict};
+use crate::fsrs::{self, Grade};
 use crate::generate;
 use crate::recommend;
 use crate::review;
+use crate::review_log;
 use crate::semantic;
 use crate::storage::problem::Problem;
 use crate::storage::{progress, vault};
@@ -913,7 +915,32 @@ impl App {
     /// and cancelling any in-flight verification. Unlike [`open_selected`], this
     /// works from any source — the navigator cursor, the fuzzy finder, or the
     /// `n` recommendation — not just the current selection.
+    /// Records a lapse if the *currently open* bank problem was attempted this
+    /// sitting but never solved — the FSRS signal that a previously-known card
+    /// was forgotten. A no-op for generated problems, never-attempted opens, and
+    /// solved opens. Called when leaving a problem (see [`open_index`]).
+    fn maybe_record_lapse(&mut self) {
+        if self.generated.is_some() || self.attempts == 0 || self.exported_to.is_some() {
+            return;
+        }
+        let Some(idx) = self.open_problem else {
+            return;
+        };
+        let problem = self.problems[idx].clone();
+        let today = Local::now().date_naive();
+        // `record_lapse` is a no-op (returns None) for a never-solved/pre-FSRS
+        // card, so only genuine lapses of known cards are logged.
+        if matches!(
+            vault::record_lapse(&self.vault_path, &problem, today),
+            Ok(Some(_))
+        ) {
+            review_log::append(&problem.id, today, Grade::Again);
+        }
+    }
+
     fn open_index(&mut self, idx: usize) {
+        // Leaving the current problem unsolved-but-attempted records a lapse.
+        self.maybe_record_lapse();
         // Opening a bank problem leaves generated mode.
         self.generated = None;
         self.generated_note = None;
@@ -1042,6 +1069,15 @@ impl App {
                 if verdict.is_correct() {
                     self.export_solution(&job.problem, &job.answer, job.opened_at);
                     self.mark_session_solved();
+                    // Log the graded review for FSRS optimisation (a generated
+                    // problem isn't a bank card, so it isn't logged).
+                    if self.generated.is_none() {
+                        review_log::append(
+                            &job.problem.id,
+                            Local::now().date_naive(),
+                            fsrs::grade_for_solve(self.attempts),
+                        );
+                    }
                 }
                 self.verdict = Some(verdict);
                 self.console_scroll = 0;
@@ -1263,6 +1299,8 @@ impl App {
     /// Enters generated mode: makes `problem` the active (off-bank) problem,
     /// resetting per-problem state exactly as opening a bank problem would.
     fn open_generated(&mut self, problem: Problem, verified: bool, note: String) {
+        // Leaving an attempted-but-unsolved bank problem still records a lapse.
+        self.maybe_record_lapse();
         // Cancel any in-flight verification and clear the per-problem slate.
         self.verify_job = None;
         self.open_problem = None; // generated mode: no bank index

@@ -64,6 +64,16 @@ fn init_difficulty(g: i32) -> f64 {
     clamp_difficulty(W[4] - (W[5] * (g as f64 - 1.0)).exp() + 1.0)
 }
 
+/// The grade a *solve* earns: a first-try solve is Good, a multi-attempt solve
+/// is Hard. (A lapse — Again — comes from leaving a known card unsolved.)
+pub fn grade_for_solve(attempts: u32) -> Grade {
+    if attempts <= 1 {
+        Grade::Good
+    } else {
+        Grade::Hard
+    }
+}
+
 impl Memory {
     /// The memory state after the *first* review of a brand-new card.
     pub fn init(grade: Grade) -> Memory {

@@ -64,3 +64,12 @@ pub fn default_embeddings_path() -> anyhow::Result<PathBuf> {
     let data = dirs::data_dir().context("could not determine the platform data directory")?;
     Ok(data.join("mamba").join("embeddings.json"))
 }
+
+/// Resolves the append-only FSRS review-event log, e.g.
+/// `~/.local/share/mamba/reviews.jsonl`. One line per graded review (solve or
+/// lapse); the vault remains the source of truth, this is the corpus `mamba
+/// optimize` fits the scheduler weights to. Deleting it is safe.
+pub fn default_reviews_path() -> anyhow::Result<PathBuf> {
+    let data = dirs::data_dir().context("could not determine the platform data directory")?;
+    Ok(data.join("mamba").join("reviews.jsonl"))
+}

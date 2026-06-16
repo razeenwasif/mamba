@@ -48,17 +48,21 @@ pub fn export(
         .unwrap_or_default();
     let prior_last = rows.last().and_then(|r| row_date(r));
     let prior_memory = prior.as_deref().and_then(parse_memory);
+    // The FSRS elapsed anchor is the last *review* of any kind (`reviewed`),
+    // which diverges from the last solve once lapses are recorded; old notes
+    // without it fall back to the last solve date.
+    let prior_reviewed = prior
+        .as_deref()
+        .and_then(|c| frontmatter_value(c, "reviewed"))
+        .and_then(|v| NaiveDate::parse_from_str(v, "%Y-%m-%d").ok())
+        .or(prior_last);
 
     // Grade the review from the outcome: a first-try solve is Good, a
-    // multi-attempt solve is Hard (a lapse — Again — is recorded elsewhere).
-    let grade = if attempts <= 1 {
-        Grade::Good
-    } else {
-        Grade::Hard
-    };
+    // multi-attempt solve is Hard (a lapse — Again — is recorded by record_lapse).
+    let grade = fsrs::grade_for_solve(attempts);
     let memory = match prior_memory {
         Some(m) => {
-            let elapsed = prior_last.map_or(0, |d| (solved_on - d).num_days().max(0)) as f64;
+            let elapsed = prior_reviewed.map_or(0, |d| (solved_on - d).num_days().max(0)) as f64;
             m.review(grade, elapsed)
         }
         None => Memory::init(grade),
@@ -89,6 +93,9 @@ pub struct ProblemHistory {
     /// The card's FSRS memory state, if the note records it (notes written
     /// before FSRS have none — scheduling falls back to the Leitner ladder).
     pub memory: Option<Memory>,
+    /// The precomputed next-due date from the last review (solve or lapse).
+    /// `None` on a pre-FSRS note; then scheduling uses the Leitner interval.
+    pub due: Option<NaiveDate>,
 }
 
 /// Reads the solve history for `problem` from its vault note, or `None` if it
@@ -101,11 +108,95 @@ pub fn history(vault: &Path, problem: &Problem) -> Option<ProblemHistory> {
         return None;
     }
     let last_solved = rows.last().and_then(|row| row_date(row));
+    let due = frontmatter_value(&content, "due")
+        .and_then(|v| NaiveDate::parse_from_str(v, "%Y-%m-%d").ok());
     Some(ProblemHistory {
         solves: rows.len() as u32,
         last_solved,
         memory: parse_memory(&content),
+        due,
     })
+}
+
+/// Records a **lapse** — a failed review of a previously-solved card — by
+/// applying an FSRS `Again` to its memory and rewriting the note's scheduling
+/// frontmatter (`stability`/`difficulty_fsrs`/`reviewed`/`due`). The solve
+/// history and body are left untouched (a lapse is not a solve). Returns the
+/// path if a note with memory existed, or `None` (a never-solved/pre-FSRS card
+/// has nothing to lapse).
+pub fn record_lapse(
+    vault: &Path,
+    problem: &Problem,
+    today: NaiveDate,
+) -> anyhow::Result<Option<PathBuf>> {
+    let path = vault.join(format!("{}.md", slugify(&problem.title)));
+    let Ok(content) = fs::read_to_string(&path) else {
+        return Ok(None);
+    };
+    let Some(memory) = parse_memory(&content) else {
+        return Ok(None); // pre-FSRS note → nothing to lapse
+    };
+
+    let prior_reviewed = frontmatter_value(&content, "reviewed")
+        .and_then(|v| NaiveDate::parse_from_str(v, "%Y-%m-%d").ok())
+        .or_else(|| {
+            extract_history_rows(&content)
+                .last()
+                .and_then(|r| row_date(r))
+        })
+        .unwrap_or(today);
+    let elapsed = (today - prior_reviewed).num_days().max(0) as f64;
+    let lapsed = memory.review(Grade::Again, elapsed);
+    let due = today + chrono::Duration::days(lapsed.interval(fsrs::DEFAULT_RETENTION));
+
+    let updated = update_frontmatter(
+        &content,
+        &[
+            ("stability", format!("{:.4}", lapsed.stability)),
+            ("difficulty_fsrs", format!("{:.4}", lapsed.difficulty)),
+            ("reviewed", today.format("%Y-%m-%d").to_string()),
+            ("due", due.format("%Y-%m-%d").to_string()),
+        ],
+    );
+    fs::write(&path, updated).with_context(|| format!("failed to write {}", path.display()))?;
+    Ok(Some(path))
+}
+
+/// Replaces the given `key: value` lines within a note's leading frontmatter,
+/// leaving every other line (and the body) byte-for-byte unchanged.
+fn update_frontmatter(content: &str, updates: &[(&str, String)]) -> String {
+    let mut in_frontmatter = false;
+    let mut seen_open = false;
+    let mut out = String::with_capacity(content.len() + 32);
+    for (i, line) in content.lines().enumerate() {
+        let is_fence = line.trim() == "---";
+        if i == 0 && is_fence {
+            in_frontmatter = true;
+            seen_open = true;
+            out.push_str(line);
+            out.push('\n');
+            continue;
+        }
+        if in_frontmatter && is_fence {
+            in_frontmatter = false;
+            out.push_str(line);
+            out.push('\n');
+            continue;
+        }
+        if in_frontmatter && seen_open {
+            if let Some((key, value)) = updates.iter().find_map(|(k, v)| {
+                line.strip_prefix(k)
+                    .and_then(|r| r.strip_prefix(':'))
+                    .map(|_| (*k, v))
+            }) {
+                out.push_str(&format!("{key}: {value}\n"));
+                continue;
+            }
+        }
+        out.push_str(line);
+        out.push('\n');
+    }
+    out
 }
 
 /// The date in a history row's first cell, if parseable.
@@ -188,6 +279,7 @@ fn render_note(
          solves: {solves}\n\
          stability: {stability:.4}\n\
          difficulty_fsrs: {difficulty_fsrs:.4}\n\
+         reviewed: {reviewed}\n\
          due: {due}\n\
          tags: [mamba, math]\n\
          ---\n\
@@ -219,6 +311,7 @@ fn render_note(
         solves = history_rows.len(),
         stability = memory.stability,
         difficulty_fsrs = memory.difficulty,
+        reviewed = solved_on.format("%Y-%m-%d"),
         due = (solved_on + chrono::Duration::days(memory.interval(fsrs::DEFAULT_RETENTION)))
             .format("%Y-%m-%d"),
         raw_title = problem.title,
@@ -460,6 +553,72 @@ mod tests {
         let second = history(&dir, &fixture()).unwrap().memory.expect("memory");
         assert!(second.stability > first.stability);
 
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn record_lapse_collapses_stability_without_adding_a_solve() {
+        let dir = std::env::temp_dir().join(format!("mamba-vault-lapse-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let day = |d: u32| NaiveDate::from_ymd_opt(2026, 6, d).unwrap();
+
+        export(
+            &dir,
+            &fixture(),
+            "x",
+            1,
+            Duration::from_secs(30),
+            day(1),
+            None,
+        )
+        .unwrap();
+        export(
+            &dir,
+            &fixture(),
+            "x",
+            1,
+            Duration::from_secs(30),
+            day(4),
+            None,
+        )
+        .unwrap();
+        let before = history(&dir, &fixture()).unwrap();
+        let s_before = before.memory.unwrap().stability;
+
+        let lapse_day = day(20);
+        let path = record_lapse(&dir, &fixture(), lapse_day).unwrap();
+        assert!(path.is_some());
+
+        let after = history(&dir, &fixture()).unwrap();
+        assert!(
+            after.memory.unwrap().stability < s_before,
+            "lapse must shrink stability"
+        );
+        assert_eq!(after.solves, before.solves, "a lapse is not a solve");
+        assert_eq!(
+            after.last_solved, before.last_solved,
+            "last solve unchanged"
+        );
+        // The next-due date is recomputed from the lapse day, soon after it.
+        let due = after.due.expect("due");
+        assert!(due >= lapse_day);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn record_lapse_is_a_noop_for_an_unsolved_card() {
+        let dir = std::env::temp_dir().join(format!("mamba-vault-nolapse-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        assert!(
+            record_lapse(
+                &dir,
+                &fixture(),
+                NaiveDate::from_ymd_opt(2026, 6, 15).unwrap()
+            )
+            .unwrap()
+            .is_none()
+        );
         let _ = fs::remove_dir_all(&dir);
     }
 }

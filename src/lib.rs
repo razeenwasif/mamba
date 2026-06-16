@@ -38,6 +38,7 @@ pub mod generate;
 pub mod mcp;
 pub mod recommend;
 pub mod review;
+pub mod review_log;
 pub mod semantic;
 pub mod storage;
 pub mod ui;
