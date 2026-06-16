@@ -7,6 +7,11 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Curriculum override file.** The prerequisite DAG behind `mamba next` and
+  `mamba path` can now be customised in `~/.config/mamba/curriculum.toml` — a
+  table mapping each topic to its prerequisites (`"Calculus" = ["Algebra"]`).
+  Absent or malformed → the embedded default. The edges are loaded once at first
+  use; `curriculum::prerequisites` now returns owned data sourced from either.
 - **FSRS parameter optimization (`mamba optimize`).** The 17 FSRS weights are now
   *personalisable*: `mamba optimize` replays your `reviews.jsonl`, fits the
   weights by clamped numerical-gradient descent on the log-loss of predicted vs.

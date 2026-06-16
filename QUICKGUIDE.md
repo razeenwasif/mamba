@@ -124,3 +124,7 @@ mamba optimize                 # tune FSRS scheduling to your review history
 Set any of these once in `~/.config/mamba/config.toml` (keys `vault`,
 `problems`, `theme`, `ollama_model`, `ollama_url`, `embed_model`) instead of
 exporting them. Precedence: **env var > config file > default**.
+
+The `mamba path` curriculum can be overridden in `~/.config/mamba/curriculum.toml`
+— a table of `"Topic" = ["Prereq", …]`; absent/malformed falls back to the
+built-in prerequisite DAG.

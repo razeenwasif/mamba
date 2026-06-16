@@ -232,6 +232,18 @@ Precedence is **environment variable > config file > built-in default**, so an
 explicit `MAMBA_*` in the shell always wins. A malformed file is reported and
 ignored, never fatal.
 
+The prerequisite **curriculum** (`mamba path`) can likewise be overridden with
+`~/.config/mamba/curriculum.toml` — a table mapping each topic to its
+prerequisites (omit a topic to make it a root):
+
+```toml
+"Calculus"         = ["Algebra"]
+"Machine Learning" = ["Calculus", "Linear Algebra", "Probability"]
+"Deep Learning"    = ["Machine Learning"]
+```
+
+Absent or malformed → the built-in default DAG.
+
 ## Tests
 
 ```sh
