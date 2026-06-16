@@ -6,6 +6,13 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-06-16
+
+A verification-and-learning release: the tutor now *generates* engine-verified
+problems, wrong answers explain themselves, physics answers are unit-checked,
+scheduling moves to FSRS, a prerequisite curriculum guides what's next, and an
+MCP server exposes the engine to other agents.
+
 ### Added
 - **MCP server (`mamba mcp`).** Mamba now speaks the Model Context Protocol over
   stdio, exposing its verification engine and bank as tools so *other* AI agents
