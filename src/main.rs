@@ -37,6 +37,14 @@ fn main() -> anyhow::Result<()> {
     // (Real env vars still win — see `config::apply`.)
     mamba::config::apply();
 
+    // Install personalised FSRS weights (from `mamba optimize`), if any, before
+    // any scheduling runs. Absent → the built-in defaults.
+    if let Ok(path) = storage::default_fsrs_weights_path()
+        && let Some(weights) = mamba::fsrs::load_weights(&path)
+    {
+        mamba::fsrs::set_weights(weights);
+    }
+
     // Lightweight CLI handling *before* we touch the terminal, so `mamba
     // --version` and `mamba --help` work from any directory and are scriptable
     // (a TUI binary that only ever launches an alternate screen is impossible
@@ -100,6 +108,8 @@ fn main() -> anyhow::Result<()> {
         // `mamba mcp` — run an MCP server over stdio, exposing the verification
         // engine and bank as tools for other AI agents.
         Some("mcp") => return mamba::mcp::serve(),
+        // `mamba optimize` — fit the FSRS scheduler weights to your review log.
+        Some("optimize") => return optimize_fsrs(),
         Some(other) => {
             eprintln!("mamba: unrecognized argument '{other}'\n");
             print_help();
@@ -417,6 +427,69 @@ fn print_path() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Fits the FSRS scheduler weights to the user's review log and, if they explain
+/// the history better than the defaults, persists them for the next run. See
+/// [`mamba::fsrs::optimize`]; the log is built by [`mamba::review_log`].
+fn optimize_fsrs() -> anyhow::Result<()> {
+    use std::collections::BTreeMap;
+
+    let events = mamba::review_log::load();
+    if events.is_empty() {
+        println!("No review history yet — solve and review some problems first.");
+        return Ok(());
+    }
+
+    // Group reviews by card, ordered by date, into elapsed/grade sequences.
+    let mut by_id: BTreeMap<String, Vec<(chrono::NaiveDate, mamba::fsrs::Grade)>> = BTreeMap::new();
+    for e in &events {
+        if let (Some(date), Some(grade)) = (e.date(), mamba::fsrs::Grade::from_u8(e.grade)) {
+            by_id.entry(e.id.clone()).or_default().push((date, grade));
+        }
+    }
+    let sequences: Vec<mamba::fsrs::Sequence> = by_id
+        .into_values()
+        .map(|mut revs| {
+            revs.sort_by_key(|(d, _)| *d);
+            let mut prev: Option<chrono::NaiveDate> = None;
+            revs.into_iter()
+                .map(|(date, grade)| {
+                    let elapsed = prev.map_or(0, |p| (date - p).num_days().max(0)) as f64;
+                    prev = Some(date);
+                    (elapsed, grade)
+                })
+                .collect()
+        })
+        .collect();
+
+    let scorable = mamba::fsrs::scorable_reviews(&sequences);
+    let before = mamba::fsrs::loss(&mamba::fsrs::DEFAULT_WEIGHTS, &sequences);
+    println!(
+        "Reviews: {} events · {scorable} scorable across {} cards.",
+        events.len(),
+        sequences.len()
+    );
+    if scorable < 25 {
+        println!(
+            "⚠ Too little history to optimize meaningfully ({scorable} scorable reviews; aim for 100+)."
+        );
+        println!("  Keeping the FSRS-4.5 defaults.");
+        return Ok(());
+    }
+
+    let tuned = mamba::fsrs::optimize(&sequences, 200);
+    let after = mamba::fsrs::loss(&tuned, &sequences);
+    println!("Log-loss: {before:.4} → {after:.4}");
+    if after + 1e-6 < before {
+        let path = storage::default_fsrs_weights_path()?;
+        mamba::fsrs::save_weights(&path, &tuned)?;
+        println!("✓ Saved personalised weights → {}", path.display());
+        println!("  They take effect next launch.");
+    } else {
+        println!("The defaults already fit your history best — nothing changed.");
+    }
+    Ok(())
+}
+
 /// Prints CLI usage, in-TUI key bindings, and the environment overrides.
 fn print_help() {
     println!(
@@ -428,7 +501,8 @@ fn print_help() {
          mamba next                          Recommend the next problem to attempt\n    \
          mamba stats                         Print the progress dashboard\n    \
          mamba path                          Print the curriculum (topic prerequisites)\n    \
-         mamba mcp                           Run an MCP server (verification engine as a tool)\n\n\
+         mamba mcp                           Run an MCP server (verification engine as a tool)\n    \
+         mamba optimize                      Tune FSRS scheduling to your review history\n\n\
          OPTIONS:\n    \
          -h, --help       Print this help and exit\n    \
          -V, --version    Print the version and exit\n    \

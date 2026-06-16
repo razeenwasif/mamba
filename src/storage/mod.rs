@@ -73,3 +73,11 @@ pub fn default_reviews_path() -> anyhow::Result<PathBuf> {
     let data = dirs::data_dir().context("could not determine the platform data directory")?;
     Ok(data.join("mamba").join("reviews.jsonl"))
 }
+
+/// Resolves the personalised FSRS weights file, e.g.
+/// `~/.local/share/mamba/fsrs-weights.json`, written by `mamba optimize` and
+/// loaded at startup. Absent → the built-in FSRS-4.5 defaults are used.
+pub fn default_fsrs_weights_path() -> anyhow::Result<PathBuf> {
+    let data = dirs::data_dir().context("could not determine the platform data directory")?;
+    Ok(data.join("mamba").join("fsrs-weights.json"))
+}

@@ -107,6 +107,7 @@ mamba next                     # recommend the next problem to attempt
 mamba stats                    # print the progress dashboard
 mamba path                     # print the curriculum (topic prerequisites)
 mamba mcp                      # run an MCP server (verification engine as a tool)
+mamba optimize                 # tune FSRS scheduling to your review history
 ```
 
 ## Environment

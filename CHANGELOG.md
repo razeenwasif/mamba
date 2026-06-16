@@ -7,6 +7,14 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **FSRS parameter optimization (`mamba optimize`).** The 17 FSRS weights are now
+  *personalisable*: `mamba optimize` replays your `reviews.jsonl`, fits the
+  weights by clamped numerical-gradient descent on the log-loss of predicted vs.
+  actual recall, and — only if they explain your history better than the
+  defaults — saves them to `fsrs-weights.json`, which is loaded at startup. The
+  scheduler math is now parameterised by a weight vector (defaults unchanged);
+  it reports the before/after log-loss and declines to tune on too little
+  history. Pure-Rust, no ML dependency.
 - **FSRS lapse capture.** Leaving a *previously-solved* card that you attempted
   but couldn't re-solve now records an FSRS `Again`, collapsing its stability so
   it resurfaces soon — the signal FSRS most needs. `vault::record_lapse` rewrites

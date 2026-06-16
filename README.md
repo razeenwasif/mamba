@@ -92,6 +92,7 @@ mamba next          # recommend the single best problem to attempt next
 mamba stats         # print the progress dashboard (totals, streaks, mastery)
 mamba path          # print the curriculum (topics in prerequisite order)
 mamba mcp           # run an MCP server exposing the verification engine (stdio)
+mamba optimize      # tune the FSRS scheduler to your own review history
 ```
 
 Keys: `/` find (`Tab` toggles fuzzy ↔ semantic) · `n` next recommended problem ·
