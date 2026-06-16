@@ -226,6 +226,9 @@ exact arithmetic (correct by construction) and emits it in Mamba syntax;
 - `MAMBA_OLLAMA_URL` — Ollama server URL (default `http://localhost:11434`).
 - `MAMBA_EMBED_MODEL` — semantic-search embedding model (default
   `nomic-embed-text`); vectors are cached in the data dir (`embeddings.json`).
+- `MAMBA_RETENTION` — FSRS target retention (default `0.9`, clamped to
+  `0.70–0.97`). Higher = shorter intervals / remember more; lower = longer
+  intervals / review less.
 
 ### Config file
 
@@ -252,6 +255,8 @@ prerequisites (omit a topic to make it a root):
 "Machine Learning" = ["Calculus", "Linear Algebra", "Probability"]
 "Deep Learning"    = ["Machine Learning"]
 ```
+
+`config.toml` also takes `retention = 0.9` (the FSRS target retention).
 
 Absent or malformed → the built-in default DAG.
 

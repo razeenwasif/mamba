@@ -120,10 +120,11 @@ mamba optimize                 # tune FSRS scheduling to your review history
 | `MAMBA_OLLAMA_MODEL` | `gemma4:12b-it-qat` | tutor model tag |
 | `MAMBA_OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
 | `MAMBA_EMBED_MODEL` | `nomic-embed-text` | semantic-search embedding model |
+| `MAMBA_RETENTION` | `0.9` | FSRS target retention (0.70–0.97) |
 
 Set any of these once in `~/.config/mamba/config.toml` (keys `vault`,
-`problems`, `theme`, `ollama_model`, `ollama_url`, `embed_model`) instead of
-exporting them. Precedence: **env var > config file > default**.
+`problems`, `theme`, `ollama_model`, `ollama_url`, `embed_model`, `retention`)
+instead of exporting them. Precedence: **env var > config file > default**.
 
 The `mamba path` curriculum can be overridden in `~/.config/mamba/curriculum.toml`
 — a table of `"Topic" = ["Prereq", …]`; absent/malformed falls back to the

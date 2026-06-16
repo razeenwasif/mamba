@@ -111,6 +111,19 @@ const FACTOR: f64 = 19.0 / 81.0;
 /// Desired retention used when nothing else is specified (Anki's default).
 pub const DEFAULT_RETENTION: f64 = 0.9;
 
+/// The active target retention: `MAMBA_RETENTION` if set and sane, else the
+/// default. Clamped to `[0.70, 0.97]` — outside that, FSRS intervals get
+/// pathological (almost never reviewing, or reviewing constantly). Higher
+/// retention means shorter intervals (study more, forget less).
+pub fn retention() -> f64 {
+    std::env::var("MAMBA_RETENTION")
+        .ok()
+        .and_then(|v| v.trim().parse::<f64>().ok())
+        .filter(|r| r.is_finite())
+        .map(|r| r.clamp(0.70, 0.97))
+        .unwrap_or(DEFAULT_RETENTION)
+}
+
 fn clamp_difficulty(d: f64) -> f64 {
     d.clamp(1.0, 10.0)
 }
@@ -379,6 +392,25 @@ mod tests {
             assert!(tuned[i] >= BOUNDS[i].0 - 1e-9 && tuned[i] <= BOUNDS[i].1 + 1e-9);
         }
         assert_eq!(scorable_reviews(&sequences), 5);
+    }
+
+    #[test]
+    fn retention_clamps_and_defaults() {
+        // The pure clamp logic (independent of the live env var).
+        let resolve = |raw: &str| {
+            raw.trim()
+                .parse::<f64>()
+                .ok()
+                .filter(|r| r.is_finite())
+                .map(|r| r.clamp(0.70, 0.97))
+                .unwrap_or(DEFAULT_RETENTION)
+        };
+        assert_eq!(resolve("0.85"), 0.85);
+        assert_eq!(resolve("0.5"), 0.70); // clamped up
+        assert_eq!(resolve("0.999"), 0.97); // clamped down
+        assert_eq!(resolve("nonsense"), DEFAULT_RETENTION);
+        // The default is used when the env var is unset (the common case).
+        assert!((0.70..=0.97).contains(&retention()));
     }
 
     #[test]

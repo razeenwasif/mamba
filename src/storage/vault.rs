@@ -147,7 +147,7 @@ pub fn record_lapse(
         .unwrap_or(today);
     let elapsed = (today - prior_reviewed).num_days().max(0) as f64;
     let lapsed = memory.review(Grade::Again, elapsed);
-    let due = today + chrono::Duration::days(lapsed.interval(fsrs::DEFAULT_RETENTION));
+    let due = today + chrono::Duration::days(lapsed.interval(fsrs::retention()));
 
     let updated = update_frontmatter(
         &content,
@@ -314,7 +314,7 @@ fn render_note(
         stability = memory.stability,
         difficulty_fsrs = memory.difficulty,
         reviewed = solved_on.format("%Y-%m-%d"),
-        due = (solved_on + chrono::Duration::days(memory.interval(fsrs::DEFAULT_RETENTION)))
+        due = (solved_on + chrono::Duration::days(memory.interval(fsrs::retention())))
             .format("%Y-%m-%d"),
         raw_title = problem.title,
         prompt = problem.prompt.trim_end(),

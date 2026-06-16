@@ -39,6 +39,9 @@ pub struct Config {
     pub ollama_url: Option<String>,
     /// Semantic-search embedding model (`MAMBA_EMBED_MODEL`).
     pub embed_model: Option<String>,
+    /// FSRS target retention (`MAMBA_RETENTION`), e.g. `0.9`. Higher = shorter
+    /// intervals / less forgetting; lower = longer intervals / less reviewing.
+    pub retention: Option<f64>,
 }
 
 /// The config file path, `~/.config/mamba/config.toml` on Linux.
@@ -63,7 +66,7 @@ pub fn load() -> Option<Config> {
 /// The `(env var, value)` pairs a config implies — every field that is set to a
 /// non-empty string. Pure (no env or filesystem access) so it's unit-testable.
 fn env_pairs(cfg: &Config) -> Vec<(&'static str, String)> {
-    [
+    let mut pairs: Vec<(&'static str, String)> = [
         ("MAMBA_VAULT", &cfg.vault),
         ("MAMBA_PROBLEMS", &cfg.problems),
         ("MAMBA_THEME", &cfg.theme),
@@ -79,7 +82,12 @@ fn env_pairs(cfg: &Config) -> Vec<(&'static str, String)> {
             .filter(|v| !v.is_empty())
             .map(|v| (key, v.to_string()))
     })
-    .collect()
+    .collect();
+    // A numeric setting, formatted into the same `MAMBA_*` env mechanism.
+    if let Some(retention) = cfg.retention {
+        pairs.push(("MAMBA_RETENTION", retention.to_string()));
+    }
+    pairs
 }
 
 /// Applies the config file to the environment: for each configured setting whose
@@ -116,14 +124,16 @@ mod tests {
             ollama_model: Some("gemma4:12b-it-qat".into()),
             ollama_url: None,
             embed_model: None,
+            retention: Some(0.85),
         };
         let pairs = env_pairs(&cfg);
         assert!(pairs.contains(&("MAMBA_VAULT", "~/Notes/Mamba".to_string())));
         assert!(pairs.contains(&("MAMBA_OLLAMA_MODEL", "gemma4:12b-it-qat".to_string())));
+        assert!(pairs.contains(&("MAMBA_RETENTION", "0.85".to_string())));
         // Unset and whitespace-only fields contribute nothing.
         assert!(pairs.iter().all(|(k, _)| *k != "MAMBA_THEME"));
         assert!(pairs.iter().all(|(k, _)| *k != "MAMBA_PROBLEMS"));
-        assert_eq!(pairs.len(), 2);
+        assert_eq!(pairs.len(), 3);
     }
 
     #[test]

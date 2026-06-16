@@ -6,6 +6,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Configurable FSRS target retention** (`MAMBA_RETENTION` / `retention` in
+  `config.toml`, default `0.9`, clamped to `0.70–0.97`). Higher retention →
+  shorter intervals (study more, forget less); lower → longer intervals. Applied
+  when the next-due date is computed on a solve or lapse.
+
 ## [0.7.0] — 2026-06-16
 
 Scheduling and project hygiene: FSRS gains lapse capture and per-user
