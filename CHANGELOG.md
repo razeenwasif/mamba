@@ -6,6 +6,12 @@ to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-06-18
+
+Scheduler refinement and a fuller agent surface: target retention is tunable,
+fast solves earn a stronger grade, the curriculum's lock state shows up in the
+TUI, and the MCP server gains a coaching read-out.
+
 ### Added
 - **Three more MCP tools** — `due` (problems due for review, most-overdue first),
   `stats` (totals, streaks, per-domain/difficulty/topic counts), and
