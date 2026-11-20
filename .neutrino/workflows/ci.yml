@@ -1,0 +1,46 @@
+# mamba's .github/workflows/ci.yml, on Neutrino.
+#
+# The same gates as `make test`, on pushes to main and every pull request.
+# Changes from the GitHub version:
+#   * ubuntu-latest + rust-toolchain  ->  a rust:1-slim container on Graviton
+#     (arm64 Linux), with rustfmt and clippy added by rustup
+#   * rust-cache  ->  a Neutrino cache for cargo's registry and target/, kept
+#     in the workspace on atlas's disk (a container's own files live in its
+#     VM's RAM); no debug info, for the same reason
+
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request: {}
+  workflow_dispatch: {}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_PROFILE_TEST_DEBUG: 0
+  CARGO_HOME: /workspace/.cargo
+  PATH: /workspace/.cargo/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+jobs:
+  build:
+    name: fmt · clippy · test · verify
+    image: rust:1-slim
+    resources: { cpus: 4, memory: 6G }
+    timeout-minutes: 30
+    cache:
+      - key: cargo-${{ hashFiles('Cargo.lock') }}
+        path: [.cargo, target]
+        restore-keys: [cargo-]
+    steps:
+      - run: rustup component add rustfmt clippy
+      - name: Formatting
+        run: cargo fmt --all -- --check
+      - name: Clippy (warnings are errors)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Tests
+        run: cargo test --all
+      # Every problem's canonical answer back through the real engine, so a
+      # bad bank edit fails CI just like tests/bank_is_solvable.rs does.
+      - name: Verify the problem bank
+        run: cargo run -- --verify problems
